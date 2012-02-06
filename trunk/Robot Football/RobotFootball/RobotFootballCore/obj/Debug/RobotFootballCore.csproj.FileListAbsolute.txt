@@ -1,0 +1,5 @@
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballCore\obj\Debug\ResolveAssemblyReference.cache
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballCore\bin\Debug\RobotFootballCore.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballCore\bin\Debug\RobotFootballCore.pdb
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballCore\obj\Debug\RobotFootballCore.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballCore\obj\Debug\RobotFootballCore.pdb

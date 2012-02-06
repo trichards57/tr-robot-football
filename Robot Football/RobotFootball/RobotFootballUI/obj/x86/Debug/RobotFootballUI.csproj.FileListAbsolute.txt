@@ -1,0 +1,15 @@
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\bin\Debug\RobotFootballUI.exe
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\bin\Debug\RobotFootballUI.pdb
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\ResolveAssemblyReference.cache
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\MainWindow.baml
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\MainWindow.g.cs
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\App.g.cs
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\RobotFootballUI_MarkupCompile.cache
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\RobotFootballUI.g.resources
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\RobotFootballUI.Properties.Resources.resources
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\GenerateResource.read.1.tlog
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\GenerateResource.write.1.tlog
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\RobotFootballUI.exe
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\obj\x86\Debug\RobotFootballUI.pdb
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\bin\Debug\RobotFootballCore.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\RobotFootballUI\bin\Debug\RobotFootballCore.pdb

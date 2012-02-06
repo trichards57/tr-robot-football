@@ -1,0 +1,7 @@
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\bin\Debug\AStarRouteFinder.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\bin\Debug\AStarRouteFinder.pdb
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\bin\Debug\RobotFootballCore.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\bin\Debug\RobotFootballCore.pdb
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\obj\Debug\ResolveAssemblyReference.cache
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\obj\Debug\AStarRouteFinder.dll
+\\myfiles\ar302\tr-robot-football\Robot Football\RobotFootball\AStarRouteFinder\obj\Debug\AStarRouteFinder.pdb

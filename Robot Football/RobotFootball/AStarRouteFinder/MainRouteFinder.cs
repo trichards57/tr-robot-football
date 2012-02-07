@@ -13,7 +13,7 @@ namespace AStarRouteFinder
     {
         public MainRouteFinder()
         {
-            Resolution = new SizeF(10, 10);
+            Resolution = new Size(10, 10);
         }
 
         public Route FindPath(PointF startPoint, PointF endPoint, Field field)
@@ -25,10 +25,22 @@ namespace AStarRouteFinder
 
             var route = new Route();
 
+            var gridSize = new Size(field.Width / Resolution.Width, field.Height / Resolution.Height);
+
+            var grid = new GridSquare[gridSize.Height * gridSize.Width];
+
+            foreach (var player in from p in field.Players where p.Team == Team.Opposition select p)
+            {
+                var x = (int)Math.Floor(player.Position.X / Resolution.Width);
+                var y = (int)Math.Floor(player.Position.Y / Resolution.Height);
+
+                grid[x + y * gridSize.Width].Type = SquareType.Obstacle;
+            }
+
             return route;
         }
 
-        public SizeF Resolution
+        public Size Resolution
         {
             get;
             set;

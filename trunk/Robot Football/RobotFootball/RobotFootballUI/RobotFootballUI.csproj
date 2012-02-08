@@ -94,6 +94,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AStarRouteFinder\RouteFinders.csproj">
+      <Project>{3653DC44-E03A-4598-9865-279C2A5042CE}</Project>
+      <Name>RouteFinders</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RobotFootballCore\RobotFootballCore.csproj">
       <Project>{70573F0B-3D2E-43ED-8D57-248F9C968101}</Project>
       <Name>RobotFootballCore</Name>

@@ -2,20 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
-namespace AStarRouteFinder
+namespace RouteFinders
 {
     class GridSquare
     {
-        private bool obstacle = false;
+        public GridSquare()
+        {
+            KnownScore = float.MaxValue;
+        }
 
-        public int? Weight { get; set; }
+        public float KnownScore { get; set; }
+        public float HeuristicScore { get; set; }
+        public float TotalScore { get { return KnownScore + HeuristicScore; } }
         public SquareType Type { get; set; }
-
+        public Point Location { get; set; }
     }
 
     public enum SquareType
     {
+        Empty = 0,
         Origin,
         Obstacle,
         Destination

@@ -8,6 +8,7 @@ namespace RobotFootballCore.Interfaces
 {
     public interface IPositionedObject
     {
-        PointF Position { get; }
+        Point Position { get; }
+        Size Size { get; }
     }
 }

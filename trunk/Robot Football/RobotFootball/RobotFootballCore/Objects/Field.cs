@@ -10,30 +10,30 @@ namespace RobotFootballCore.Objects
 {
     public class Field
     {
-        
-
         public int BorderWidth { get; set; }
 
         public List<Player> Players { get; set; }
         public Ball Ball { get; set; }
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public Size Size { get; private set; }
+
+        public int Width { get { return Size.Width; } }
+        public int Height { get { return Size.Height; } }
 
         public Field(int width, int height)
         {
-            Width = width;
-            Height = height;
+            Size = new Size(width, height);
             
             Players = new List<Player>();
-            Ball = new Ball(new PointF(((float)width) / 2, ((float)height) / 2));
+            Ball = new Ball(new Point(width / 2, height / 2));
             
             BorderWidth = 5;
         }
 
         public Bitmap ToBitmap()
         {
-            var output = new Bitmap(Width + 2 * BorderWidth, Height + 2 * BorderWidth);
+            var outputSize = Size + new Size(2 * BorderWidth, 2 * BorderWidth);
+            var output = new Bitmap(outputSize.Width, outputSize.Height);
 
             using (var graph = Graphics.FromImage(output))
             {

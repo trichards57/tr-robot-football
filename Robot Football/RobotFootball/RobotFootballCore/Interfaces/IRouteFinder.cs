@@ -10,8 +10,8 @@ namespace RobotFootballCore.Interfaces
 {
     public interface IRouteFinder
     {
-        public Route FindPath(PointF startPoint, PointF endPoint, Field field);
+        Route FindPath(PointF startPoint, PointF endPoint, Field field);
 
-        public SizeF Resolution { get; set; }
+        SizeF Resolution { get; set; }
     }
 }

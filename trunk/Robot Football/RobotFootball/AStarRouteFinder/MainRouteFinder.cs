@@ -45,5 +45,18 @@ namespace AStarRouteFinder
             get;
             set;
         }
+
+
+        SizeF IRouteFinder.Resolution
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

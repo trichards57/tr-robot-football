@@ -15,6 +15,9 @@ using RobotFootballCore;
 using System.IO;
 using System.Drawing.Imaging;
 using RobotFootballCore.Objects;
+using System.Drawing;
+using RouteFinders;
+using System.Threading.Tasks;
 
 namespace RobotFootballUI
 {
@@ -30,11 +33,13 @@ namespace RobotFootballUI
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            field = new Field(1000, 1000);
+            field = new Field(5000, 1000);
 
-            field.Players.AddRange(new[] { new Player(new System.Drawing.PointF(100, 100), Team.Current), new Player(new System.Drawing.PointF(200, 200), Team.Opposition) });
+            field.Players.AddRange(new[] { new Player(new System.Drawing.Point(100, 100), Team.Current), new Player(new System.Drawing.Point(200, 200), Team.Opposition) });
 
-            UpdateFieldDisplay();
+            var t = new Task(() => UpdateFieldDisplay());
+
+            t.Start();
         }
 
         private Field field;
@@ -43,18 +48,31 @@ namespace RobotFootballUI
         {
             var image = field.ToBitmap();
 
-            using (var stream = new MemoryStream())
+            var routePlotter = new AStarRouteFinder();
+            var route = routePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            
+            using (var graph = Graphics.FromImage(image))
             {
-                image.Save(stream, ImageFormat.Png);
-                stream.Seek(0, SeekOrigin.Begin);
-
-                var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-
-                var writeable = new WriteableBitmap(decoder.Frames.Single());
-                writeable.Freeze();
-
-                FieldImage.Source = writeable;
+                route.Draw(graph);
             }
+
+            Action refresh = () =>
+            {
+                using (var stream = new MemoryStream())
+                {
+                    image.Save(stream, ImageFormat.Png);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+
+                    var writeable = new WriteableBitmap(decoder.Frames.Single());
+                    writeable.Freeze();
+
+                    FieldImage.Source = writeable;
+                }
+            };
+
+            Dispatcher.Invoke(refresh, null);
         }
     }
 }

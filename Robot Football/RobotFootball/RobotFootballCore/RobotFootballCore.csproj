@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="Objects\Ball.cs" />
     <Compile Include="Objects\Field.cs" />
-    <Compile Include="Interfaces\IRouteFinder.cs" />
+    <Compile Include="Interfaces\RouteFinder.cs" />
     <Compile Include="Objects\Player.cs" />
     <Compile Include="Interfaces\IPositionedObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -51,6 +51,8 @@
     <Compile Include="RouteObjects\LineSegment.cs" />
     <Compile Include="RouteObjects\Route.cs" />
     <Compile Include="RouteObjects\RouteSegment.cs" />
+    <Compile Include="Utilities\PointExtensions.cs" />
+    <Compile Include="Utilities\SizeExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

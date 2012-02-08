@@ -9,15 +9,15 @@ namespace RobotFootballCore.Objects
 {
     public class Player : IPositionedObject
     {
-        public static readonly SizeF PlayerSize = new SizeF(50, 50);
+        public static readonly Size PlayerSize = new Size(50, 50);
 
-        public PointF Position
+        public Point Position
         {
             get;
             private set;
         }
 
-        public Player(PointF startPosition, Team team)
+        public Player(Point startPosition, Team team)
         {
             Position = startPosition;
 
@@ -28,7 +28,7 @@ namespace RobotFootballCore.Objects
         {
             var brush = Team == Team.Current ? Brushes.Green : Brushes.Red;
 
-            var startPoint = Position - new SizeF(PlayerSize.Width / 2, PlayerSize.Height / 2);
+            var startPoint = (PointF)Position - new SizeF(PlayerSize.Width / 2, PlayerSize.Height / 2);
             var rect = new RectangleF(startPoint, PlayerSize);
 
             field.FillRectangle(brush, rect);
@@ -36,5 +36,11 @@ namespace RobotFootballCore.Objects
         }
 
         public Team Team { get; private set; }
+
+
+        public Size Size
+        {
+            get { return PlayerSize; }
+        }
     }
 }

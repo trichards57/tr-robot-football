@@ -78,6 +78,7 @@
     <ClInclude Include="Field.h" />
     <ClInclude Include="GridSquare.h" />
     <ClInclude Include="MovingObject.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="PointUtilities.h" />
     <ClInclude Include="PositionedObject.h" />
     <ClInclude Include="stdafx.h" />

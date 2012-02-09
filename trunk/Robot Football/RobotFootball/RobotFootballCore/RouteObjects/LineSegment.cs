@@ -9,7 +9,7 @@ namespace RobotFootballCore.RouteObjects
 {
     public class LineSegment : RouteSegment
     {
-        public override float Length
+        
         public LineSegment(PointF startPoint, PointF endPoint)
         {
             StartPoint = startPoint;

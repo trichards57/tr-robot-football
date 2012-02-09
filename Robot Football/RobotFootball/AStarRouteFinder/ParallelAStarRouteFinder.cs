@@ -1,0 +1,175 @@
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using RobotFootballCore.Interfaces;
+using RobotFootballCore.Objects;
+using RobotFootballCore.RouteObjects;
+using RobotFootballCore.Utilities;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace RouteFinders
+{
+    public class ParallelAStarRouteFinder : RouteFinder
+    {
+        public int ObjectClearance { get; set; }
+
+        public ParallelAStarRouteFinder()
+        {
+            Resolution = new Size(10, 10);
+            ObjectClearance = 20;
+        }
+
+        private GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
+        {
+            var playersize = (movingObject.Size + new Size(ObjectClearance, ObjectClearance)).Scale(Resolution).Scale(2.0f).Ceiling();
+            var clearance = Math.Max(playersize.Width, playersize.Height); // The amount to increase an obstacle's size by to allow for the player's size
+
+            var grid = new GridSquare[gridSize.Height * gridSize.Width];
+            // Initialize the grid
+            Parallel.For(0, grid.Length, i =>
+            {
+                grid[i] = new GridSquare();
+                grid[i].Location = PointExtensions.FromIndex(i, gridSize.Width);
+            });
+
+            Parallel.ForEach(from p in field.Players where p.Team == Team.Opposition select p, player =>
+            {
+                var centerGridPoint = player.Position.Scale(Resolution).Floor();
+
+                var minX = Math.Max(0, centerGridPoint.X - playersize.Width - clearance);
+                var maxX = Math.Min(centerGridPoint.X + playersize.Width + clearance, gridSize.Width);
+                var minY = Math.Max(0, centerGridPoint.Y - playersize.Height - clearance);
+                var maxY = Math.Min(centerGridPoint.Y + playersize.Height + clearance, gridSize.Height);
+
+                for (var i = minX; i < maxX; i++)
+                {
+                    for (var j = minY; j < maxY; j++)
+                    {
+                        if (i < 0 || j < 0)
+                            continue;
+
+                        var gridPoint = new Point(i, j);
+                        grid[gridPoint.ToIndex(gridSize.Width)].Type = SquareType.Obstacle;
+                    }
+                }
+            });
+
+            var gridEndPoint = endPoint.Scale(Resolution).Floor();
+
+            grid[gridEndPoint.ToIndex(gridSize.Width)].Type = SquareType.Destination;
+
+            var gridStartPoint = startPoint.Scale(Resolution).Floor();
+            grid[gridStartPoint.ToIndex(gridSize.Width)].Type = SquareType.Origin;
+
+            return grid;
+        }
+
+        public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
+        {
+            if (Resolution.Height < 1 || Resolution.Width < 1)
+                throw new InvalidOperationException("Resolution must be greater than or equal to 1 pixel by 1 pixel");
+
+            var gridSize = field.Size.Scale(Resolution).Ceiling();
+
+            var grid = InitGrid(startPoint, endPoint, field, gridSize, movingObject);
+
+            var startPoints = from g in grid where g.Type == SquareType.Origin select g;
+
+            var closedSet = new List<GridSquare>(); // The already checked points
+            var openSet = new List<GridSquare>(from g in grid where g.Type == SquareType.Origin select g); // The points to check
+            var cameFrom = new Dictionary<GridSquare, GridSquare>(); // A list of route data already calculated
+
+            // Initialise the origin points
+            Parallel.ForEach(startPoints, g => { g.KnownScore = 0; g.HeuristicScore = CalculateLength(g.Location, endPoint); });
+
+            var tasks = new List<Task>();
+
+            var openSetLock = new ReaderWriterLockSlim();
+
+            // While there are points available to check
+            while (openSet.Any() || tasks.Any(t => !t.IsCompleted))
+            {
+                var square = openSet.OrderBy(p => p.TotalScore).First();
+                if (square.Type == SquareType.Destination)
+                {
+                    var path = ReconstructPath(cameFrom, cameFrom[square]);
+                    path.Path.Add(new LineSegment(cameFrom[square].Location, square.Location));
+                    path.Scale(Resolution.Invert()); // Convert the path back to world coordinates from grid coordinates
+                    return path;
+                }
+
+                openSet.Remove(square);
+                closedSet.Add(square);
+
+                var index = square.Location.ToIndex(gridSize.Width);
+
+                // Calculate the neighbouring indexes and discard the ones out of range.
+                var neighbourIndexes = new[] { index + 1, 
+                                               index - 1, 
+                                               index + gridSize.Width, 
+                                               index - gridSize.Width,
+                                               index + gridSize.Width + 1, 
+                                               index - gridSize.Width + 1,
+                                               index + gridSize.Width - 1, 
+                                               index - gridSize.Width - 1 }.Where(i => (i >= 0) && (i < grid.Length) && !closedSet.Contains(grid[i]));
+
+                foreach (var i in neighbourIndexes)
+                {
+                    var neighbour = grid[i];
+                    if (!openSet.Contains(neighbour))
+                    {
+                        openSet.Add(neighbour);
+                        cameFrom[neighbour] = null;
+                        neighbour.HeuristicScore = CalculateHeuristic(neighbour, endPoint);
+                    }
+                }
+
+                Parallel.ForEach(neighbourIndexes, (i, state) =>
+                {
+                    var neighbour = grid[i];
+
+                    // Work out the distance to the origin
+                    var tentativeKnownScore = square.KnownScore + CalculateLength(square.Location, neighbour.Location);
+                    
+                    if (tentativeKnownScore < neighbour.KnownScore)
+                    {
+                        // If necessary, update the square's known score and note the path to that square.
+                        cameFrom[neighbour] = square;
+                        neighbour.KnownScore = tentativeKnownScore;
+                    }
+                });
+            }
+
+            return null;
+        }
+
+        private Route ReconstructPath(Dictionary<GridSquare, GridSquare> cameFrom, GridSquare currentSquare)
+        {
+            if (cameFrom.ContainsKey(currentSquare))
+            {
+                var path = ReconstructPath(cameFrom, cameFrom[currentSquare]);
+                path.Path.Add(new LineSegment(cameFrom[currentSquare].Location, currentSquare.Location));
+                return path;
+            }
+            return new Route();
+        }
+
+        private float CalculateHeuristic(GridSquare square, PointF endPoint)
+        {
+            if (square.Type == SquareType.Obstacle)
+                return float.PositiveInfinity;
+            else
+                return CalculateLength(square.Location, endPoint);
+        }
+
+        private float CalculateLength(PointF startPoint, PointF endPoint)
+        {
+            var xLength = startPoint.X - endPoint.X;
+            var yLength = startPoint.Y - endPoint.Y;
+
+            return (float)Math.Sqrt(xLength * xLength + yLength * yLength);
+        }
+    }
+}

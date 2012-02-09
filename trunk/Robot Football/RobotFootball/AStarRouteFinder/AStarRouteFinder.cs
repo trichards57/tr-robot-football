@@ -166,12 +166,6 @@ namespace RouteFinders
                 return CalculateLength(square.Location, endPoint);
         }
 
-        private float CalculateLength(PointF startPoint, PointF endPoint)
-        {
-            var xLength = startPoint.X - endPoint.X;
-            var yLength = startPoint.Y - endPoint.Y;
-
-            return (float)Math.Sqrt(xLength * xLength + yLength * yLength);
-        }
+        
     }
 }

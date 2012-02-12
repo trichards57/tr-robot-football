@@ -14,6 +14,17 @@ namespace RobotFootballCore.RouteObjects
             Path = new Collection<RouteSegment>();
         }
 
+        public Route(Point[] points)
+        {
+            Path = new Collection<RouteSegment>();
+            for (var i = 0; i < points.Length - 1; i++)
+            {
+                if ((points[i] == Point.Empty || points[i + 1] == Point.Empty))
+                    break;
+                Path.Add(new LineSegment(points[i], points[i + 1]));
+            }
+        }
+
         public Collection<RouteSegment> Path { get; private set; }
 
         public void Draw(Graphics field)

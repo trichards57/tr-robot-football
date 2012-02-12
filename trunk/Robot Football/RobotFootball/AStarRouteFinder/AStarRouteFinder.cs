@@ -80,7 +80,7 @@ namespace RouteFinders
             var cameFrom = new Dictionary<GridSquare, GridSquare>(); // A list of route data already calculated
 
             // Initialise the origin points
-            Parallel.ForEach(startPoints, g => { g.KnownScore = 0; g.HeuristicScore = CalculateLength(g.Location, endPoint); });
+            Parallel.ForEach(startPoints, g => { g.KnownScore = 0; g.HeuristicScore = CalculateHeuristic(g, endPoint); });
 
             // While there are points available to check
             while (openSet.Any())

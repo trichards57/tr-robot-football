@@ -19,7 +19,7 @@ namespace TestBench
 
             var parRoutePlotter = new ParallelAStarRouteFinder();
             var routePlotter = new AStarRouteFinder();
-            
+
 
             var span = Markers.EnterSpan("Parallel Route Finding");
 
@@ -32,6 +32,13 @@ namespace TestBench
 
             span1.Leave();
 
+            var span2 = Markers.EnterSpan("Native Route Finding");
+            
+            var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
+            var route2 = new Point[1024]; for (var i = 0; i < 1024; i++) route2[i] = Point.Empty;
+            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length);
+
+            span2.Leave();
         }
     }
 }

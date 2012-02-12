@@ -10,7 +10,12 @@ POINT PointFromIndex(int index, int width)
 	return p;
 }
 
-int IndexFromPoint(POINT point, int width)
+int IndexFromPoint(LONG x, LONG y, LONG width)
+{
+	return x + y * width;
+}
+
+int IndexFromPoint(POINT point, LONG width)
 {
 	return point.x + point.y * width;
 }

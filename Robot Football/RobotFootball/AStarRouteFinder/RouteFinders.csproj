@@ -43,7 +43,9 @@
   <ItemGroup>
     <Compile Include="AStarRouteFinder.cs" />
     <Compile Include="GridSquare.cs" />
+    <Compile Include="NativeRouteFinder.cs" />
     <Compile Include="ParallelAStarRouteFinder.cs" />
+    <Compile Include="PositionedObject.cs" />
     <Compile Include="PotentialFieldRouteFinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

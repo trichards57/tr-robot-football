@@ -8,6 +8,11 @@ using System.Drawing.Imaging;
 
 namespace RobotFootballCore.Objects
 {
+    public struct NativeField
+    {
+
+    }
+
     public class Field
     {
         public int BorderWidth { get; set; }

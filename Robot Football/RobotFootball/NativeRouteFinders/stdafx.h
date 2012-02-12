@@ -19,5 +19,10 @@
 
 #include <math.h>
 #include <ppl.h>
+#include <concurrent_vector.h>
+#include <map>
+#include <vector>
+#include <limits>
 
 using namespace Concurrency;
+using namespace std;

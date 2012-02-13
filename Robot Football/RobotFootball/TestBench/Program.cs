@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using Microsoft.ConcurrencyVisualizer.Instrumentation;
+//using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using RobotFootballCore.Objects;
 using RouteFinders;
+using System.Diagnostics;
 
 namespace TestBench
 {
@@ -22,52 +23,52 @@ namespace TestBench
             var hashRoutePlotter = new HashSetAStarRouteFinder();
             var parallelHashRoutePlotter = new ParallelHashSetAStarRouteFinder();
 
-            //var span = Markers.EnterSpan("Parallel Route Finding");
+            Console.WriteLine("Route Finder Test Bench");
 
-            //var route = parRoutePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
-            //span.Leave();
+            var timer = new Stopwatch();
 
-            var span1 = Markers.EnterSpan("Series Route Finding");
+            //timer.Start();
+            //var route1 = routePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //timer.Stop();
 
-            var route1 = routePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //Console.WriteLine("Serial Route Finder (Managed, Non-Hashmap) : {0}s", timer.Elapsed.TotalSeconds);
 
-            span1.Leave();
+            //timer.Restart();
+            //var route2 = hashRoutePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //timer.Stop();
 
-            span1 = Markers.EnterSpan("Hash Set Series Route Finding");
+            //Console.WriteLine("Serial Route Finder (Managed, Hashmap) : {0}s", timer.Elapsed.TotalSeconds);
 
-            var route1a = hashRoutePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //timer.Restart();
+            //var route3 = parallelHashRoutePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //timer.Stop();
 
-            span1.Leave();
+            //Console.WriteLine("Parallel Route Finder (Managed, Hashmap) : {0}s", timer.Elapsed.TotalSeconds);
 
-            span1 = Markers.EnterSpan("Parallel Hash Set Series Route Finding");
+            //NativeRouteFinder.Init();
 
-            var route1b = parallelHashRoutePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
+            var route4 = new System.Drawing.Point[1024]; for (var i = 0; i < 1024; i++) route4[i] = System.Drawing.Point.Empty;
 
-            span1.Leave();
+            //timer.Restart();
+            //NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route4.Length, true);
+            //timer.Stop();
 
-            //var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
-            //var route2 = new Point[1024]; for (var i = 0; i < 1024; i++) route2[i] = Point.Empty;
-            //var span2 = Markers.EnterSpan("Native Route Finding (Trial Run)");
-            
-            //NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length, false);
+            //Console.WriteLine("Series Route Finder (Native, Non-Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
 
-            //span2.Leave();
-            
-            //var route3 = new Point[1024]; for (var i = 0; i < 1024; i++) route3[i] = Point.Empty;
-            
-            //var span3 = Markers.EnterSpan("Native Route Finding (Without SQRT)");
-            
-            //NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route3, (uint)route2.Length, false);
-            
-            //span3.Leave();
+            timer.Restart();
+            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route4.Length, true);
+            timer.Stop();
 
-            //var route4 = new Point[1024]; for (var i = 0; i < 1024; i++) route4[i] = Point.Empty;
+            Console.WriteLine("Series Route Finder (Native, Non-Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
 
-            //var span4 = Markers.EnterSpan("Native Route Finding (With SQRT)");
+            timer.Restart();
+            NativeRouteFinder.HashMapAStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route4.Length, true);
+            timer.Stop();
 
-            //NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route2.Length, true);
+            Console.WriteLine("Series Route Finder (Native, Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
 
-            //span4.Leave();
+            Console.ReadLine();
         }
     }
 }

@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include <limits>
+#include <unordered_set>
 
 using namespace Concurrency;
 using namespace std;

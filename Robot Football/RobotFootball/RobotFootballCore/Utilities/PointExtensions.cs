@@ -24,6 +24,14 @@ namespace RobotFootballCore.Utilities
             return new PointF(x, y);
         }
 
+        public static PointF Scale(this Point point, int size)
+        {
+            var x = (float)point.X / size;
+            var y = (float)point.Y / size;
+
+            return new PointF(x, y);
+        }
+
         public static Point FromIndex(int index, int width)
         {
             return new Point(index % width, index / width);

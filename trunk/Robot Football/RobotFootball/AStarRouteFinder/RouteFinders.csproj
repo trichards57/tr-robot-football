@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TestBench|AnyCPU'">
+    <OutputPath>bin\TestBench\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AStarRouteFinder.cs" />
+    <Compile Include="ParallelHashSetAStarRouteFinder.cs" />
+    <Compile Include="HashSetAStarRouteFinder.cs" />
     <Compile Include="GridSquare.cs" />
     <Compile Include="NativeRouteFinder.cs" />
     <Compile Include="ParallelAStarRouteFinder.cs" />

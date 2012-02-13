@@ -7,15 +7,14 @@ using RobotFootballCore.RouteObjects;
 using RobotFootballCore.Utilities;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace RouteFinders
 {
-    public class ParallelAStarRouteFinder : RouteFinder
+    public class HashSetAStarRouteFinder : RouteFinder
     {
         public int ObjectClearance { get; set; }
 
-        public ParallelAStarRouteFinder()
+        public HashSetAStarRouteFinder()
         {
             Resolution = new Size(10, 10);
             ObjectClearance = 20;
@@ -28,16 +27,15 @@ namespace RouteFinders
 
             var grid = new GridSquare[gridSize.Height * gridSize.Width];
             // Initialize the grid
-            Parallel.For(0, grid.Length, i =>
-            {
+            Parallel.For(0, grid.Length, i => { 
                 grid[i] = new GridSquare();
-                grid[i].Location = PointExtensions.FromIndex(i, gridSize.Width);
+                grid[i].Location = PointExtensions.FromIndex(i, gridSize.Width); 
             });
 
             Parallel.ForEach(from p in field.Players where p.Team == Team.Opposition select p, player =>
             {
                 var centerGridPoint = player.Position.Scale(Resolution).Floor();
-
+                
                 var minX = Math.Max(0, centerGridPoint.X - playersize.Width - clearance);
                 var maxX = Math.Min(centerGridPoint.X + playersize.Width + clearance, gridSize.Width);
                 var minY = Math.Max(0, centerGridPoint.Y - playersize.Height - clearance);
@@ -77,19 +75,15 @@ namespace RouteFinders
 
             var startPoints = from g in grid where g.Type == SquareType.Origin select g;
 
-            var closedSet = new List<GridSquare>(); // The already checked points
-            var openSet = new List<GridSquare>(from g in grid where g.Type == SquareType.Origin select g); // The points to check
+            var closedSet = new HashSet<GridSquare>(); // The already checked points
+            var openSet = new HashSet<GridSquare>(from g in grid where g.Type == SquareType.Origin select g); // The points to check
             var cameFrom = new Dictionary<GridSquare, GridSquare>(); // A list of route data already calculated
 
             // Initialise the origin points
-            Parallel.ForEach(startPoints, g => { g.KnownScore = 0; g.HeuristicScore = CalculateLength(g.Location, endPoint); });
-
-            var tasks = new List<Task>();
-
-            var openSetLock = new ReaderWriterLockSlim();
+            Parallel.ForEach(startPoints, g => { g.KnownScore = 0; g.HeuristicScore = CalculateHeuristic(g, endPoint); });
 
             // While there are points available to check
-            while (openSet.Any() || tasks.Any(t => !t.IsCompleted))
+            while (openSet.Any())
             {
                 var square = openSet.OrderBy(p => p.TotalScore).First();
                 if (square.Type == SquareType.Destination)
@@ -113,33 +107,41 @@ namespace RouteFinders
                                                index + gridSize.Width + 1, 
                                                index - gridSize.Width + 1,
                                                index + gridSize.Width - 1, 
-                                               index - gridSize.Width - 1 }.Where(i => (i >= 0) && (i < grid.Length) && !closedSet.Contains(grid[i]));
+                                               index - gridSize.Width - 1 }.Where(i => (i >= 0) && (i < grid.Length));
 
                 foreach (var i in neighbourIndexes)
                 {
                     var neighbour = grid[i];
-                    if (!openSet.Contains(neighbour))
-                    {
-                        openSet.Add(neighbour);
-                        cameFrom[neighbour] = null;
-                        neighbour.HeuristicScore = CalculateHeuristic(neighbour, endPoint);
-                    }
-                }
 
-                Parallel.ForEach(neighbourIndexes, (i, state) =>
-                {
-                    var neighbour = grid[i];
+                    if (closedSet.Contains(neighbour))
+                        continue; // Already checked this square. Skip it
 
                     // Work out the distance to the origin
                     var tentativeKnownScore = square.KnownScore + CalculateLength(square.Location, neighbour.Location);
-                    
-                    if (tentativeKnownScore < neighbour.KnownScore)
+
+                    bool tentativeIsBetter = false;
+
+                    if (!openSet.Contains(neighbour))
+                    {
+                        // First time this point has been considered. The current distance is the best guess.
+                        openSet.Add(neighbour);
+                        neighbour.HeuristicScore = CalculateHeuristic(neighbour, endPoint);
+                        tentativeIsBetter = true;
+                    }
+                    else if (tentativeKnownScore < neighbour.KnownScore)
+                        // Point has been considered before and the last consideration was given a higher score, so use the knew one.
+                        tentativeIsBetter = true;
+                    else
+                        // Point has been considered before and the last consideration was given a lower score, so use that one.
+                        tentativeIsBetter = false;
+
+                    if (tentativeIsBetter)
                     {
                         // If necessary, update the square's known score and note the path to that square.
                         cameFrom[neighbour] = square;
                         neighbour.KnownScore = tentativeKnownScore;
                     }
-                });
+                }
             }
 
             return null;
@@ -163,5 +165,7 @@ namespace RouteFinders
             else
                 return CalculateLength(square.Location, endPoint);
         }
+
+        
     }
 }

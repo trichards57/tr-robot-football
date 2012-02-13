@@ -49,18 +49,18 @@ namespace RobotFootballUI
         {
             var image = field.ToBitmap();
 
-            var routePlotter = new AStarRouteFinder();
-            var route = routePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            //var routePlotter = new AStarRouteFinder();
+            //var route = routePlotter.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
 
-            using (var graph = Graphics.FromImage(image))
-            {
-                route.Draw(graph);
-            }
+            //using (var graph = Graphics.FromImage(image))
+            //{
+            //    route.Draw(graph);
+            //}
 
             var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
             var route2 = new System.Drawing.Point[1024]; for (var i = 0; i < 1024; i++) route2[i] = System.Drawing.Point.Empty;
-            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length);
-            route = new Route(route2);
+            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length, true);
+            var route = new Route(route2);
             
             using (var graph = Graphics.FromImage(image))
             {

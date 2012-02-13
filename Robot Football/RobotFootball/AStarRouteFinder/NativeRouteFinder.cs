@@ -16,7 +16,8 @@ namespace RouteFinders
                                                  Size fieldSize, Size resolution,
                                                  Size movingObjectSize, int objectClearance,
                                                  [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=7)]PositionedObject[] opponents, int opponentsCount,
-                                                 [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex=9)]Point[] routeResult, uint routeResultLength);
+                                                 [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex=9)]Point[] routeResult, uint routeResultLength,
+                                                 bool useSqrt);
                                                  
     }
 }

@@ -9,14 +9,14 @@ void InitGrid(POINT startPoint, POINT endPoint, SIZE fieldSize, SIZE resolution,
 			  PositionedObject* opponents, int opponentsCount);
 
 unique_ptr<vector<POINT>> ReconstructPath(map<GridSquare*, GridSquare*>* cameFrom, GridSquare* currentSquare);
-float CalculateHeuristic(GridSquare* square, POINT endPoint);
-float CalculateLength(POINT startPoint, POINT endPoint);
+float CalculateHeuristic(GridSquare* square, POINT endPoint, bool useSqrt);
+float CalculateLength(POINT startPoint, POINT endPoint, bool useSqrt);
 
 NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint, 
 											  SIZE fieldSize, SIZE resolution, 
 											  SIZE movingObjectSize, int objectClearance,
 											  PositionedObject* opponents, int opponentsCount,
-											  POINT* routeResult, unsigned int routeResultLength)
+											  POINT* routeResult, unsigned int routeResultLength, bool useSqrt)
 {
 	// Prevent any divide by zero errors
 	if (resolution.cx < 1 || resolution.cy < 1)
@@ -43,7 +43,7 @@ NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint,
 		if (square->Type != Origin)
 			return;
 		square->KnownScore = 0;
-		square->HeuristicScore = CalculateHeuristic(square, endPoint);
+		square->HeuristicScore = CalculateHeuristic(square, endPoint, useSqrt);
 		openSet.push_back(square);
 	});
 
@@ -91,13 +91,13 @@ NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint,
 			if (find(closedSet.begin(), closedSet.end(), neighbour) != closedSet.end())
 				continue;
 
-			auto tentativeScore = square->KnownScore + CalculateLength(square->Location, neighbour->Location);
+			auto tentativeScore = square->KnownScore + CalculateLength(square->Location, neighbour->Location, useSqrt);
 			auto tentativeIsBetter = false;
 
 			if (find(openSet.begin(), openSet.end(), neighbour) == openSet.end())
 			{
 				openSet.push_back(neighbour);
-				neighbour->HeuristicScore = CalculateHeuristic(neighbour, endPoint);
+				neighbour->HeuristicScore = CalculateHeuristic(neighbour, endPoint, useSqrt);
 				tentativeIsBetter = true;
 			}
 			else if (tentativeScore < neighbour->KnownScore)
@@ -164,19 +164,31 @@ void InitGrid(POINT startPoint, POINT endPoint, SIZE fieldSize, SIZE resolution,
 	grid[IndexFromPoint(gridStartX, gridStartY, gridSize.cx)]->Type = Origin;
 }
 
-float CalculateLength(POINT startPoint, POINT endPoint)
+//float CalculateLength(POINT startPoint, POINT endPoint)
+//{
+//	auto xLength = startPoint.x - endPoint.x;
+//	auto yLength = startPoint.y - endPoint.y;
+//
+//	return (float)sqrt((double)xLength*xLength + yLength*yLength);
+//}
+
+float CalculateLength(POINT startPoint, POINT endPoint, bool useSqrt)
 {
 	auto xLength = startPoint.x - endPoint.x;
 	auto yLength = startPoint.y - endPoint.y;
 
-	return (float)sqrt((double)xLength*xLength + yLength*yLength);
+	float val = xLength*xLength + yLength*yLength;
+
+	if (useSqrt)
+		val = sqrt(val);
+	return val;
 }
 
-float CalculateHeuristic(GridSquare* square, POINT endPoint)
+float CalculateHeuristic(GridSquare* square, POINT endPoint, bool useSqrt)
 {
 	if (square->Type == Obstacle)
 		return numeric_limits<float>::infinity();
-	return CalculateLength(square->Location, endPoint);
+	return CalculateLength(square->Location, endPoint, useSqrt);
 }
 
 unique_ptr<vector<POINT>> ReconstructPath(map<GridSquare*, GridSquare*>* cameFrom, GridSquare* currentSquare)

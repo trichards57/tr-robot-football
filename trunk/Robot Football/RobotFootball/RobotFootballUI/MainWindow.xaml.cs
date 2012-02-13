@@ -34,9 +34,9 @@ namespace RobotFootballUI
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            field = new Field(5000, 1000);
+            field = new Field(1000, 1200);
 
-            field.Players.AddRange(new[] { new Player(new System.Drawing.Point(100, 100), Team.Current), new Player(new System.Drawing.Point(200, 200), Team.Opposition) });
+            field.Players.AddRange(new[] { new Player(new System.Drawing.Point(100, 100), Team.Current), new Player(new System.Drawing.Point(200, 200), Team.Opposition), new Player(new System.Drawing.Point(200, 400), Team.Opposition) });
 
             var t = new Task(() => UpdateFieldDisplay());
 
@@ -58,9 +58,14 @@ namespace RobotFootballUI
             //}
 
             var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
-            var route2 = new System.Drawing.Point[1024]; for (var i = 0; i < 1024; i++) route2[i] = System.Drawing.Point.Empty;
-            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length, true);
-            var route = new Route(route2);
+
+            var r = new PotentialFieldRouteFinder();
+
+            var route = r.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+
+            //var route2 = new System.Drawing.Point[1024]; for (var i = 0; i < 1024; i++) route2[i] = System.Drawing.Point.Empty;
+            //NativeRouteFinder.HashMapAStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new System.Drawing.Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route2, (uint)route2.Length, true);
+            //var route = new Route(route2);
             
             using (var graph = Graphics.FromImage(image))
             {

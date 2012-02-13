@@ -12,6 +12,11 @@ unique_ptr<vector<POINT>> ReconstructPath(map<GridSquare*, GridSquare*>* cameFro
 float CalculateHeuristic(GridSquare* square, POINT endPoint, bool useSqrt);
 float CalculateLength(POINT startPoint, POINT endPoint, bool useSqrt);
 
+NATIVEROUTEFINDERS_API HRESULT Init()
+{
+	return ERROR_SUCCESS;
+}
+
 NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint, 
 											  SIZE fieldSize, SIZE resolution, 
 											  SIZE movingObjectSize, int objectClearance,
@@ -49,9 +54,9 @@ NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint,
 
 	while (!openSet.empty())
 	{
-		sort(openSet.begin(), openSet.end(), [](GridSquare* square1, GridSquare* square2) { return square1->GetTotalScore() < square2->GetTotalScore(); });
+		auto smallestSquare = min_element(openSet.begin(), openSet.end(), [](GridSquare* square1, GridSquare* square2) { return square1->GetTotalScore() < square2->GetTotalScore(); });
 
-		auto square = openSet[0];
+		auto square = (*smallestSquare);
 		if (square->Type == Destination)
 		{
 			unique_ptr<vector<POINT>> path = ReconstructPath(&cameFrom, cameFrom[square]);
@@ -66,7 +71,7 @@ NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint,
 			return ERROR_SUCCESS;
 		}
 
-		openSet.erase(openSet.begin(), openSet.begin()+1);
+		openSet.erase(smallestSquare, smallestSquare+1);
 		closedSet.push_back(square);
 
 		auto index = IndexFromPoint(square->Location, gridSize.cx);
@@ -97,6 +102,110 @@ NATIVEROUTEFINDERS_API HRESULT AStarFindRoute(POINT startPoint, POINT endPoint,
 			if (find(openSet.begin(), openSet.end(), neighbour) == openSet.end())
 			{
 				openSet.push_back(neighbour);
+				neighbour->HeuristicScore = CalculateHeuristic(neighbour, endPoint, useSqrt);
+				tentativeIsBetter = true;
+			}
+			else if (tentativeScore < neighbour->KnownScore)
+				tentativeIsBetter = true;
+			else
+				tentativeIsBetter = false;
+
+			if (tentativeIsBetter)
+			{
+				cameFrom[neighbour] = square;
+				neighbour->KnownScore = tentativeScore;
+			}
+		}
+	}
+
+	return E_FAIL;
+}
+											  
+NATIVEROUTEFINDERS_API HRESULT HashMapAStarFindRoute(POINT startPoint, POINT endPoint, 
+											  SIZE fieldSize, SIZE resolution, 
+											  SIZE movingObjectSize, int objectClearance,
+											  PositionedObject* opponents, int opponentsCount,
+											  POINT* routeResult, unsigned int routeResultLength, bool useSqrt)
+{
+	// Prevent any divide by zero errors
+	if (resolution.cx < 1 || resolution.cy < 1)
+		return E_INVALIDARG;
+
+	// Calculate the number of squares in the grid
+	SIZE gridSize;
+	gridSize.cx = fieldSize.cx / resolution.cx;
+	gridSize.cy = fieldSize.cy / resolution.cy;
+
+	// Create the grid as an array (for speed of access)
+	auto grid = new GridSquare*[gridSize.cx * gridSize.cy];
+
+	InitGrid(startPoint, endPoint, fieldSize, resolution, gridSize, grid, objectClearance, movingObjectSize, opponents, opponentsCount);
+
+	unordered_set<GridSquare*> openSet;
+	unordered_set<GridSquare*> closedSet;
+	map<GridSquare*, GridSquare*> cameFrom;
+
+	// Would rather do this in parallel, but concurrent_vector doesn't allow you to remove things,
+	// which makes later things more awkward.
+	for_each(grid, grid + gridSize.cx * gridSize.cy, [=,&openSet](GridSquare* square)
+	{
+		if (square->Type != Origin)
+			return;
+		square->KnownScore = 0;
+		square->HeuristicScore = CalculateHeuristic(square, endPoint, useSqrt);
+		openSet.insert(square);
+	});
+
+	while (!openSet.empty())
+	{
+		auto smallestSquare = min_element(openSet.begin(), openSet.end(), [](GridSquare* square1, GridSquare* square2) { return square1->GetTotalScore() < square2->GetTotalScore(); });
+
+		auto square = (*smallestSquare);
+		if (square->Type == Destination)
+		{
+			unique_ptr<vector<POINT>> path = ReconstructPath(&cameFrom, cameFrom[square]);
+			path->push_back(square->Location);
+			if (path->size() > routeResultLength)
+				return ERROR_INSUFFICIENT_BUFFER;
+			for (unsigned int i = 0; i < path->size(); i++)
+			{
+				routeResult[i].x = (*path)[i].x * resolution.cx;
+				routeResult[i].y = (*path)[i].y * resolution.cy;
+			}
+			return ERROR_SUCCESS;
+		}
+
+		openSet.erase(smallestSquare);
+		closedSet.insert(square);
+
+		auto index = IndexFromPoint(square->Location, gridSize.cx);
+
+		int neighbourIndexes[] = { index + gridSize.cx + 1, 
+								  index - gridSize.cx + 1,
+								  index + gridSize.cx - 1, 
+								  index - gridSize.cx - 1, index + 1, 
+							      index - 1, 
+								  index + gridSize.cx, 
+								  index - gridSize.cx,
+								  
+		}; // BUG: This doesn't detect wrapping on to the next line...
+
+		for (auto i = 0; i < 8; i++)
+		{
+			if (neighbourIndexes[i] < 0 || neighbourIndexes[i] >= gridSize.cx * gridSize.cy)
+				continue; // Skip any indexes out of the range of the grid
+
+			auto neighbour = grid[neighbourIndexes[i]];
+			
+			if (closedSet.find(neighbour) != closedSet.end())
+				continue;
+
+			auto tentativeScore = square->KnownScore + CalculateLength(square->Location, neighbour->Location, useSqrt);
+			auto tentativeIsBetter = false;
+
+			if (openSet.find(neighbour) == openSet.end())
+			{
+				openSet.insert(neighbour);
 				neighbour->HeuristicScore = CalculateHeuristic(neighbour, endPoint, useSqrt);
 				tentativeIsBetter = true;
 			}
@@ -177,11 +286,11 @@ float CalculateLength(POINT startPoint, POINT endPoint, bool useSqrt)
 	auto xLength = startPoint.x - endPoint.x;
 	auto yLength = startPoint.y - endPoint.y;
 
-	float val = xLength*xLength + yLength*yLength;
+	double val = xLength*xLength + yLength*yLength;
 
 	if (useSqrt)
 		val = sqrt(val);
-	return val;
+	return (float)val;
 }
 
 float CalculateHeuristic(GridSquare* square, POINT endPoint, bool useSqrt)

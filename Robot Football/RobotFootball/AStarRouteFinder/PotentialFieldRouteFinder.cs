@@ -17,9 +17,9 @@ namespace RouteFinders
         public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
         {
             var attractiveConstant = 1;
-            var repulsiveConstant = -5000000;
+            var repulsiveConstant = -50000000;
             var repulsiveDistance = 150;
-            var timestep = 0.1;
+            var timestep = 0.05;
 
             var currentVelocity = new Vector(2, 0);
             var currentPosition = new Vector(new double[] { startPoint.X, startPoint.Y });

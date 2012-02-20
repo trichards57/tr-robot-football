@@ -19,8 +19,8 @@ namespace RouteFinders
             var attractiveConstant = 1;
             var repulsiveConstant = -5000000;
             var repulsiveDistance = 150;
-            var timestep = 0.001;
-            var mass = 10;
+            var timestep = 0.1;
+            var mass = 40;
             var flowResistance = 0.1;
 
             var currentVelocity = new Vector(2, 0);
@@ -63,11 +63,13 @@ namespace RouteFinders
                     totalForce = attractForce + repulseForce;
                 }
 
-                currentVelocity += mass * totalForce * timestep;
+                currentVelocity += totalForce * timestep / mass;
                 currentVelocity -= flowResistance * currentVelocity;
                 var oldPosition = currentPosition;
                 currentPosition += currentVelocity * timestep;
                 route.Path.Add(new LineSegment(new PointF((float)oldPosition[0], (float)oldPosition[1]), new PointF((float)currentPosition[0], (float)currentPosition[1])));
+                if (route.Path.Count > 80000)
+                    break;
                 distance = endVector - currentPosition;
             }
 

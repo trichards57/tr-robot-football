@@ -36,7 +36,7 @@ namespace RobotFootballUI
         {
             field = new Field(1000, 1200);
 
-            field.Players.AddRange(new[] { new Player(new System.Drawing.Point(100, 100), Team.Current), new Player(new System.Drawing.Point(200, 200), Team.Opposition), new Player(new System.Drawing.Point(200, 400), Team.Opposition), new Player(new System.Drawing.Point(400, 400), Team.Opposition) });
+            field.Players.AddRange(new[] { new Player(new System.Drawing.Point(100, 100), Team.Current), new Player(new System.Drawing.Point(200, 200), Team.Opposition), new Player(new System.Drawing.Point(200, 400), Team.Opposition), new Player(new System.Drawing.Point(400, 400), Team.Opposition), new Player(new System.Drawing.Point(400, 200), Team.Opposition) });
 
             var t = new Task(() => UpdateFieldDisplay());
 
@@ -59,7 +59,7 @@ namespace RobotFootballUI
 
             var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject)t).ToArray();
 
-            var r = new MassedPotentialFieldRouteFinder();
+            var r = new PotentialFieldRouteFinder();
 
             var route = r.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
 

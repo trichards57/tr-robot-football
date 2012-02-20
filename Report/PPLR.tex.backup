@@ -1,0 +1,78 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{titlepage}
+  \setlength{\parindent}{0cm}
+
+  \includegraphics[width=200px]{./Images/uob-logo-black-transparent.eps}
+
+  \Large
+  Faculty of Engineering and Design
+
+  \vspace{80pt}
+
+  \LARGE
+  Final Year MEng Project \\
+  Project Plan and Literature Review
+
+  \vspace{80pt}
+  \textbf{Robot Football - High Level Control and Strategy Implementation}
+
+  \vspace{10pt}
+  \emph{Anthony Richards} \\
+  \emph{\today}
+
+  \vspace{80pt}
+  Supervisor: \emph{Dr.~Pejman Iravani}
+
+  \vspace{10pt}
+  Assessor: \emph{TBD}
+\end{titlepage}
+
+\pagenumbering{roman}
+
+\begin{abstract}
+TODO : Abstract
+\cite{test}
+\end{abstract}
+
+\tableofcontents
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\section{Project Background}
+TODO : Background
+
+\section{Aims and Objectives}
+TODO : Aims and objectives
+
+\section{Methodology and Deliverables}
+TODO : Methodology and deliverables
+
+\section{Resources}
+As this project is targeted at the SimuroSot league, all the activities will be carried out in software only.  In order to produce the required software, the following software will be required:
+
+\begin{itemize}
+ \item Microsoft Visual Studio 2010
+ \item SimuroSot Middle League Simulator
+\end{itemize}
+
+Visual Studio is available on the university computers in the Maxwell and Faraday labs in the Electrical Engineering Department, as well as on the GigaTerms server which is availble via Remote Desktop.  It is also available free of charge to students
+
+\section{Predicted Timescale}
+TODO : Gannt Chart
+
+\cleardoublepage
+\bibliographystyle{plain}
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\bibliography{References/references}
+
+\end{document}

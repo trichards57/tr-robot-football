@@ -1,0 +1,1 @@
+void Attacker1(Environment *env, RealEnvironment REnv);

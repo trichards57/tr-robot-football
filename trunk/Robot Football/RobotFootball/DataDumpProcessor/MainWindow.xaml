@@ -1,0 +1,35 @@
+﻿<Window x:Class="DataDumpProcessor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:charts="clr-namespace:Visiblox.Charts;assembly=Visiblox.Charts"
+        Title="MainWindow" Height="350" Width="525">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Left">
+            <Expander Header="Data File" IsExpanded="True">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock VerticalAlignment="Center" Width="100" Text="{Binding DataFilePath}" Grid.Column="0" />
+                    <Button Grid.Column="1">Browse</Button>
+                    <Button Grid.Row="1" Click="ReloadFile">Reload</Button>
+                </Grid>
+            </Expander>
+            <Expander Header="Data Entries">
+                <ListBox ItemsSource="{Binding DataEntries}" SelectedItem="{Binding SelectedDataEntries}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding EntryDate}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Expander>
+        </StackPanel>
+        <charts:Chart Series="{Binding CurrentDataSeries}"></charts:Chart>
+    </DockPanel>
+</Window>

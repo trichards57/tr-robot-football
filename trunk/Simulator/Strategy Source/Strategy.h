@@ -1,5 +1,4 @@
-#ifndef Strategy_H
-#define Strategy_H
+#pragma once
 
 // The following ifdef block is the standard way of creating macros which make exporting 
 // from a DLL simpler. All files within this DLL are compiled with the STRATEGY_EXPORTS
@@ -85,7 +84,3 @@ typedef void (*MyStrategyProc)(Environment*);
 extern "C" STRATEGY_API void Create ( Environment *env ); // implement this function to allocate user data and assign to Environment->userData
 extern "C" STRATEGY_API void Strategy ( Environment *env );
 extern "C" STRATEGY_API void Destroy ( Environment *env ); // implement this function to free user data created in  Create (Environment*)
-
-
-
-#endif // Strategy_H

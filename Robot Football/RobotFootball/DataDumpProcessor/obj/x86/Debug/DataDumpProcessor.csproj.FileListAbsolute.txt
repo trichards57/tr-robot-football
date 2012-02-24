@@ -1,0 +1,15 @@
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\ResolveAssemblyReference.cache
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\MainWindow.g.cs
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\App.g.cs
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor_MarkupCompile.cache
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\DataDumpProcessor.exe
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\DataDumpProcessor.pdb
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\Visiblox.Charts.dll
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\Visiblox.Charts.xml
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\MainWindow.baml
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.g.resources
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.Properties.Resources.resources
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\GenerateResource.read.1.tlog
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\GenerateResource.write.1.tlog
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.exe
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.pdb

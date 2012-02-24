@@ -1,0 +1,1 @@
+void Defender2(Environment *env, RealEnvironment REnv);

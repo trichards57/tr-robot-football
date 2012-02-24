@@ -13,12 +13,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBench", "TestBench\Test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3C6726CA-76BF-497E-B79A-97F9D415982C}"
 	ProjectSection(SolutionItems) = preProject
+		DeployStrategy.bat = DeployStrategy.bat
 		Performance1.psess = Performance1.psess
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NativeTestBed", "NativeTestBed\NativeTestBed.vcxproj", "{0E85B67A-6821-4661-8120-277AACA34487}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionPrediction", "MotionPrediction\MotionPrediction.vcxproj", "{E6053A38-A4DB-4D14-8075-490B1B1813FE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HoldStillStrategy", "HoldStillStrategy\HoldStillStrategy.vcxproj", "{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Strategies", "Strategies", "{F080245A-9809-436C-BFBE-07D8E6AA555D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhysicsStrategy", "PhysicsStrategy\PhysicsStrategy.vcxproj", "{3DE7D485-61C6-4ED4-8749-858B810F7DDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataDumpProcessor", "DataDumpProcessor\DataDumpProcessor.csproj", "{D5F77C19-E9C4-4AE1-A972-BF20770328EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -162,8 +171,66 @@ Global
 		{E6053A38-A4DB-4D14-8075-490B1B1813FE}.TestBench|Win32.ActiveCfg = Release|Win32
 		{E6053A38-A4DB-4D14-8075-490B1B1813FE}.TestBench|Win32.Build.0 = Release|Win32
 		{E6053A38-A4DB-4D14-8075-490B1B1813FE}.TestBench|x86.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|Win32.Build.0 = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Debug|x86.ActiveCfg = Debug|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|Any CPU.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|Win32.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|Win32.Build.0 = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.Release|x86.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|Any CPU.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|Mixed Platforms.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|Mixed Platforms.Build.0 = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|Win32.ActiveCfg = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|Win32.Build.0 = Release|Win32
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58}.TestBench|x86.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|Win32.Build.0 = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Debug|x86.ActiveCfg = Debug|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|Win32.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|Win32.Build.0 = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.Release|x86.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|Any CPU.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|Mixed Platforms.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|Mixed Platforms.Build.0 = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|Win32.ActiveCfg = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|Win32.Build.0 = Release|Win32
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD}.TestBench|x86.ActiveCfg = Release|Win32
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|Win32.ActiveCfg = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|x86.ActiveCfg = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Debug|x86.Build.0 = Debug|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|Any CPU.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|Mixed Platforms.Build.0 = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|Win32.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|x86.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.Release|x86.Build.0 = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|Any CPU.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|Mixed Platforms.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|Mixed Platforms.Build.0 = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|Win32.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|x86.ActiveCfg = Release|x86
+		{D5F77C19-E9C4-4AE1-A972-BF20770328EB}.TestBench|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E7F8EC5F-C965-4C8D-8D56-C945F7D49E58} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
+		{3DE7D485-61C6-4ED4-8749-858B810F7DDD} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
 	EndGlobalSection
 EndGlobal

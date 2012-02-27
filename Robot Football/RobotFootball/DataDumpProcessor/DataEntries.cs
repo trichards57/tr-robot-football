@@ -23,7 +23,7 @@ namespace DataDumpProcessor
 
     struct TimedDataEntry
     {
-        public long Time { get; set; }
+        public double Time { get; set; }
         public Point Point { get; set; }
     }
 

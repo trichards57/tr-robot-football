@@ -28,8 +28,8 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 	case RobotMotion:
 		// We're currently testing the motion of the robot to determine weight
 		auto bot = &env->home[1];
-		bot->velocityLeft = 125.0;
-		bot->velocityRight = 125.0;
+		bot->velocityLeft = 25.0;
+		bot->velocityRight = 25.0;
 		LARGE_INTEGER hiResTimer;
 		LARGE_INTEGER hiResTimerFreq;
 		QueryPerformanceCounter(&hiResTimer);

@@ -13,3 +13,8 @@ H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debu
 H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\GenerateResource.write.1.tlog
 H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.exe
 H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\obj\x86\Debug\DataDumpProcessor.pdb
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\MathNet.Iridium.dll
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\MathNet.Iridium.pdb
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\de\MathNet.Iridium.resources.dll
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\es\MathNet.Iridium.resources.dll
+H:\tr-robot-football\Robot Football\RobotFootball\DataDumpProcessor\bin\Debug\fr\MathNet.Iridium.resources.dll

@@ -29,7 +29,52 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </Expander>
+            <Expander Header="Data Sets">
+                <ItemsControl ItemsSource="{Binding SeriesSettings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition SharedSizeGroup="Col1" />
+                                    <ColumnDefinition SharedSizeGroup="Col2" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Title}" Grid.Column="0" />
+                                <CheckBox IsChecked="{Binding Visible}" Grid.Column="1">Show</CheckBox>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+            <Expander Header="Secondary Y-Axis Range">
+                <StackPanel>
+                    <RadioButton IsChecked="{Binding BothScaleRange}">Both</RadioButton>
+                    <RadioButton IsChecked="{Binding VelocityScaleRange}">Velocity</RadioButton>
+                    <RadioButton IsChecked="{Binding AccelerationScaleRange}">Acceleration</RadioButton>
+                </StackPanel>
+            </Expander>
         </StackPanel>
-        <charts:Chart Series="{Binding CurrentDataSeries}"></charts:Chart>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <charts:Chart Grid.ColumnSpan="2"  XAxis="{Binding MainXAxis}" YAxis="{Binding MainYAxis}" SecondaryYAxis="{Binding SecondYAxis}" Series="{Binding CurrentDataSeries}" />
+            <charts:Chart Grid.Row="1" Series="{Binding TimeStepDistribution}" />
+            <StackPanel Grid.Row="1" Grid.Column="1">
+                <WrapPanel>
+                    <TextBlock xml:space="preserve">Mean </TextBlock>
+                    <TextBlock Text="{Binding TimeStepMean}" />
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock xml:space="preserve">Standard Deviation </TextBlock>
+                    <TextBlock Text="{Binding TimeStepStandardDeviation}" />
+                </WrapPanel>
+                
+            </StackPanel>
+        </Grid>
     </DockPanel>
 </Window>

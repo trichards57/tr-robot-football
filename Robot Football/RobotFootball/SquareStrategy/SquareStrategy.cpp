@@ -31,7 +31,7 @@ extern "C" STRATEGY_API void Destroy(Environment* env)
 #define BOTTOM_Y (FBOT + CM_TO_INCHES(30))
 
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
-#define PATH_LENGTH 5000
+#define PATH_LENGTH 1500
 
 Vector3D Path()
 {

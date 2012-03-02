@@ -6,8 +6,8 @@ using System.Text;
 using System.ComponentModel;
 using Visiblox.Charts;
 using System.Windows;
-using MathNet.Numerics;
-using MathNet.Numerics.Statistics;
+//using MathNet.Numerics;
+//using MathNet.Numerics.Statistics;
 
 namespace DataDumpProcessor
 {
@@ -178,7 +178,11 @@ namespace DataDumpProcessor
         public string DataFilePath
         {
             get { return dataFilePath; }
-            set { dataFilePath = value; }
+            set 
+            {
+                dataFilePath = value;
+                OnPropertyChanged("DataFilePath");
+            }
         }
 
         private void OnPropertyChanged(string property)
@@ -383,21 +387,21 @@ namespace DataDumpProcessor
                 TimeStepDistribution = new SeriesCollection<IChartSeries>();
                 TimeStepDistribution.Add(new ColumnSeries { DataSeries = timeDistribution });
 
-                var acc = new Accumulator();
-                var l = new List<double>();
-                foreach (var t in timesteps)
-                {
-                    for (var i = 0; i < t.Value; i++)
-                    {
-                        acc.Add(((double)t.Key) / 10);
-                    }
-                }
+                //var acc = new Accumulator();
+                //var l = new List<double>();
+                //foreach (var t in timesteps)
+                //{
+                //    for (var i = 0; i < t.Value; i++)
+                //    {
+                //        acc.Add(((double)t.Key) / 10);
+                //    }
+                //}
 
-                TimeStepMean = acc.Mean;
-                TimeStepStandardDeviation = Math.Sqrt(acc.Variance);
+                //TimeStepMean = acc.Mean;
+                //TimeStepStandardDeviation = Math.Sqrt(acc.Variance);
 
-                OnPropertyChanged("TimeStepMean");
-                OnPropertyChanged("TimeStepStandardDeviation");
+                //OnPropertyChanged("TimeStepMean");
+                //OnPropertyChanged("TimeStepStandardDeviation");
                 OnPropertyChanged("TimeStepDistribution");
             }
             else if (rawPointEntries != null)

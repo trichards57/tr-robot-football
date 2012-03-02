@@ -6,6 +6,8 @@
 #include "..\..\..\Simulator\Strategy Source\Strategy.h"
 #include "UserData.h"
 
+#define VELOCITY_INPUT 5.0
+
 extern "C" STRATEGY_API void Create(Environment* env)
 {
 	auto userData = new UserData();
@@ -13,7 +15,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 	
 	auto t = time(nullptr);
 	auto currentTime = localtime(&t);
-	userData->outStream << asctime(currentTime) << std::endl;
+	userData->outStream << asctime(currentTime) << "," << VELOCITY_INPUT << std::endl;
 }
 
 extern "C" STRATEGY_API void Destroy(Environment* env)
@@ -28,8 +30,8 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 	case RobotMotion:
 		// We're currently testing the motion of the robot to determine weight
 		auto bot = &env->home[1];
-		bot->velocityLeft = 25.0;
-		bot->velocityRight = 25.0;
+		bot->velocityLeft = VELOCITY_INPUT;
+		bot->velocityRight = VELOCITY_INPUT;
 		LARGE_INTEGER hiResTimer;
 		LARGE_INTEGER hiResTimerFreq;
 		QueryPerformanceCounter(&hiResTimer);

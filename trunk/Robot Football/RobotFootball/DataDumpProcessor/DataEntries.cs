@@ -9,6 +9,7 @@ namespace DataDumpProcessor
     class DataEntries
     {
         public DateTime EntryDate { get; set; }
+        public int Velocity { get; set; }
     }
 
     class RawPointDataEntries : DataEntries

@@ -16,7 +16,7 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <TextBlock VerticalAlignment="Center" Width="100" Text="{Binding DataFilePath}" Grid.Column="0" />
-                    <Button Grid.Column="1">Browse</Button>
+                    <Button Grid.Column="1" Click="BrowseClick">Browse</Button>
                     <Button Grid.Row="1" Click="ReloadFile">Reload</Button>
                 </Grid>
             </Expander>
@@ -51,6 +51,11 @@
                     <RadioButton IsChecked="{Binding VelocityScaleRange}">Velocity</RadioButton>
                     <RadioButton IsChecked="{Binding AccelerationScaleRange}">Acceleration</RadioButton>
                 </StackPanel>
+            </Expander>
+            <Expander Header="Processes">
+              <StackPanel>
+                <Button Click="MatlabPrepare">Prepare for MATLAB</Button>
+              </StackPanel>
             </Expander>
         </StackPanel>
         <Grid>

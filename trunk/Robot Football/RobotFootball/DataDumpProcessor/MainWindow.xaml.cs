@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Win32;
 
 namespace DataDumpProcessor
 {
@@ -22,6 +23,34 @@ namespace DataDumpProcessor
             InitializeComponent();
         }
 
+        private void MatlabPrepare(object sender, RoutedEventArgs e)
+        {
+            using (var dataFile = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "data.csv")))
+            {
+                var writer = new StreamWriter(dataFile);
+
+                writer.WriteLine("time, x position, x velocity");
+
+                foreach (var dat in viewModel.DataEntries.OfType<TimedDataEntries>())
+                {
+                    var baseLine = dat.Points[0];
+                    for (var i = 1; i < dat.Points.Count; i++)
+                    {
+                        var p = dat.Points[i];
+                        writer.WriteLine("{0}, {1}, {2}", p.Time - baseLine.Time, p.Point.X, ((p.Point.X - dat.Points[i - 1].Point.X) / (p.Time - dat.Points[i - 1].Time)) / dat.Velocity);
+                    }
+                }
+            }
+        }
+
+        private void BrowseClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog { Filter = "CSV File|*.csv" };
+            var result = dialog.ShowDialog(this);
+            if (result == true)
+                viewModel.DataFilePath = dialog.FileName;
+        }
+
         private void ReloadFile(object sender, RoutedEventArgs e)
         {
             if (!File.Exists(viewModel.DataFilePath))
@@ -35,9 +64,11 @@ namespace DataDumpProcessor
             DataEntries dataEntries = null;
             DateTime date;
             DateTime entryDate = DateTime.Now;
+            int vel = 0;
             foreach (var l in lines.Where(m => !string.IsNullOrEmpty(m)))
             {
-                if (DateTime.TryParseExact(l, "ddd MMM dd HH:mm:ss yyyy" , Thread.CurrentThread.CurrentCulture.DateTimeFormat, DateTimeStyles.AllowWhiteSpaces, out date))
+                var parts = l.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                if (DateTime.TryParseExact(parts[0], "ddd MMM dd HH:mm:ss yyyy" , Thread.CurrentThread.CurrentCulture.DateTimeFormat, DateTimeStyles.AllowWhiteSpaces, out date))
                 {
                     entryDate = date;
                     dataEntries = null;
@@ -45,18 +76,21 @@ namespace DataDumpProcessor
                 }
                 else
                 {
-                    var parts = l.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                     double time;
                     double x, y;
                     long t1, t2, f1, f2;
                     switch (parts.Length)
                     {
+                        case 1:
+                            int.TryParse(parts[0], out vel);
+                            break;
                         case 2:
                             if (!(double.TryParse(parts[0], out x) && (double.TryParse(parts[1], out y))))
                                 throw new InvalidOperationException();
                             if (dataEntries == null || !(dataEntries is RawPointDataEntries))
                             {
                                 dataEntries = new RawPointDataEntries();
+                                dataEntries.Velocity = vel;
                                 dataEntries.EntryDate = entryDate;
                                 viewModel.DataEntries.Add(dataEntries);
                             }
@@ -69,6 +103,7 @@ namespace DataDumpProcessor
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
                                 dataEntries = new TimedDataEntries();
+                                dataEntries.Velocity = vel;
                                 dataEntries.EntryDate = entryDate;
                                 viewModel.DataEntries.Add(dataEntries);
                             }
@@ -81,6 +116,7 @@ namespace DataDumpProcessor
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
                                 dataEntries = new TimedDataEntries();
+                                dataEntries.Velocity = vel;
                                 dataEntries.EntryDate = entryDate;
                                 viewModel.DataEntries.Add(dataEntries);
                             }
@@ -93,6 +129,7 @@ namespace DataDumpProcessor
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
                                 dataEntries = new TimedDataEntries();
+                                dataEntries.Velocity = vel;
                                 dataEntries.EntryDate = entryDate;
                                 viewModel.DataEntries.Add(dataEntries);
                             }

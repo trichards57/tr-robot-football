@@ -4,7 +4,8 @@
 
 enum ExperimentState
 {
-	RobotMotion
+	RobotMotion,
+	RobotMotionSweep
 };
 
 class UserData
@@ -14,8 +15,11 @@ public:
 	std::vector<double> x;
 	std::vector<double> y;
 	std::fstream outStream;
+	int velocityStartTime;
+	int velocity;
+
 	UserData()
-		: State (RobotMotion), outStream("H:\\DataDump.csv", std::fstream::out | std::fstream::app)
+		: State (RobotMotion), outStream("D:\\Users\\Tony\\Documents\\DataDump.csv", std::fstream::out | std::fstream::app)
 	{ }
 	~UserData()
 	{

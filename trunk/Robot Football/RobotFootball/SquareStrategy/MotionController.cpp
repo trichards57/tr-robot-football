@@ -33,24 +33,38 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 			angle = M_PI_2;
 	}
 	else
+		angle = atan(yDiff/xDiff);
+	
+	
+
+	if (xDiff == 0)
+	{
+		// directly above or below
+		if (fabs(yDiff) == yDiff) // target is below us
+			angle = -M_PI_2;
+		else // target is above us
+			angle = M_PI_2;
+	}
+	else
 	{
 		angle = atan(yDiff/xDiff);
-		if (fabs(xDiff) != xDiff) // target is to the left
+		if (fabs(xDiff) != xDiff) // xDiff is negative, so target is to the left
 			angle = angle + M_PI; // rotate around pi radians to allow for tan function periodicity
-		if (angle > M_PI)
-			angle = angle - 2*M_PI;
-		if (angle < -M_PI)
-			angle = angle + 2*M_PI;
-
-		assert(abs(angle) <= M_PI);
 	}
 
 	auto botAngle = DEGREES_TO_RADIANS(bot->rotation); // Convert the robot angle into radians, which all the C math functions use...
 
-	auto angleDiff = angle - botAngle;
+	// Move target angle into robot frame of reference
+	angle = angle - botAngle;
+	
+	// Normalise between pi and -pi
+	if (angle > M_PI)
+		angle -= 2*M_PI;
+	if (angle < -M_PI)
+		angle += 2*M_PI;
 	
 	// Set up the turn as required
-	auto turnSpeed = angleDiff * angleProportionalTerm;
+	auto turnSpeed = angle * angleProportionalTerm;
 	bot->velocityLeft = -turnSpeed;
 	bot->velocityRight = turnSpeed;
 	

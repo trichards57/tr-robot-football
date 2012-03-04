@@ -10,6 +10,11 @@ MotionController::MotionController(double positionControlScale, double angleCont
 {
 }
 
+void MotionController::Control(std::function<Vector3D(time_t)> controlFunction, time_t timeOffset, Robot* bot)
+{
+	Control(controlFunction(time(nullptr) - timeOffset), bot);
+}
+
 double MotionController::DistanceTo(Vector3D targetPosition, Robot* bot)
 {
 	auto yDiff = targetPosition.y - bot->pos.y;
@@ -35,8 +40,6 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 	else
 		angle = atan(yDiff/xDiff);
 	
-	
-
 	if (xDiff == 0)
 	{
 		// directly above or below

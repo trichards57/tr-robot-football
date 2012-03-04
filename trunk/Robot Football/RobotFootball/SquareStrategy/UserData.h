@@ -6,5 +6,4 @@ class UserData
 {
 public:
 	Vector3D targetPosition;
-	clock_t startTime;
 };

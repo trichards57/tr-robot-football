@@ -6,25 +6,9 @@
 
 #include "UserData.h"
 #include "MotionController.h"
+#include "PathController.h"
 
 #define CM_TO_INCHES(X) (X / 2.54)
-
-clock_t startTime = 0;
-
-extern "C" STRATEGY_API void Create(Environment* env)
-{
-	auto data = new UserData();
-	data->targetPosition.x = (FLEFTX + FRIGHTX)/2;
-	data->targetPosition.y = (FTOP + FBOT)/2;
-	data->startTime = clock();
-	env->userData = data;
-}
-
-extern "C" STRATEGY_API void Destroy(Environment* env)
-{
-		
-}
-
 #define LEFT_X (FLEFTX + CM_TO_INCHES(55))
 #define RIGHT_X (FRIGHTX - CM_TO_INCHES(55))
 #define TOP_Y (FTOP - CM_TO_INCHES(30))
@@ -33,7 +17,86 @@ extern "C" STRATEGY_API void Destroy(Environment* env)
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
 #define PATH_LENGTH 1500
 
-Vector3D Path()
+clock_t startTime = 0;
+PathController controller;
+
+extern "C" STRATEGY_API void Create(Environment* env)
+{
+	auto data = new UserData();
+	data->targetPosition.x = (FLEFTX + FRIGHTX)/2;
+	data->targetPosition.y = (FTOP + FBOT)/2;
+	env->userData = data;
+
+	ControlFunction sec1 = [](time_t t)->Vector3D{
+		Vector3D result;
+		if (t < 5000)
+		{
+			result.x = STRAIGHT_LINE_POS(LEFT_X, RIGHT_X, t, PATH_LENGTH);
+			result.y = TOP_Y;
+		}
+		else
+		{
+			result.x = result.y = -1;
+		}
+		return result;
+	};
+	ControlFunction sec2 = [](time_t t)->Vector3D{
+		Vector3D result;
+		if (t < 5000)
+		{
+			result.x = RIGHT_X;
+			result.y = STRAIGHT_LINE_POS(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
+		}
+		else
+		{
+			result.x = result.y = -1;
+		}
+		return result;
+	};
+	ControlFunction sec3 = [](time_t t)->Vector3D{
+		Vector3D result;
+		if (t < 5000)
+		{
+			result.x = STRAIGHT_LINE_POS(RIGHT_X, LEFT_X, t, PATH_LENGTH);
+			result.y = BOTTOM_Y;
+		}
+		else
+		{
+			result.x = result.y = -1;
+		}
+		return result;
+	};
+	ControlFunction sec4 = [](time_t t)->Vector3D{
+		Vector3D result;
+		if (t < 5000)
+		{
+			result.x = LEFT_X;
+			result.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
+		}
+		else
+		{
+			result.x = result.y = -1;
+		}
+		return result;
+	};
+
+	Path p;
+	p.push_back(sec1);
+	p.push_back(sec2);
+	p.push_back(sec3);
+	p.push_back(sec4);
+
+	controller.RegisterPath(p, 1);
+}
+
+extern "C" STRATEGY_API void Destroy(Environment* env)
+{
+	
+}
+
+
+
+Vector3D OldPath()
 {
 	if (startTime == 0)
 		startTime = clock();
@@ -72,10 +135,5 @@ Vector3D Path()
 
 extern "C" STRATEGY_API void Strategy(Environment* env)
 {
-	auto bot = &(env->home[1]); // Just going to work with the first bot.
-	auto data = (UserData*)env->userData;
-
-	MotionController controller;
-
-	controller.Control(Path(), bot);
+	controller.StepPaths(env, new MotionController());
 }

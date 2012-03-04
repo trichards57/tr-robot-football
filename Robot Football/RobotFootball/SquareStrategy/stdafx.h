@@ -15,5 +15,8 @@
 #include <cmath>
 #include <ctime>
 #include <assert.h>
+#include <functional>
+#include <vector>
+#include <map>
 
 // TODO: reference additional headers your program requires here

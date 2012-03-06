@@ -1,0 +1,8 @@
+digraph G
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{RobotFootballUI.MainWindow\n||+ MainWindow()\l- WindowLoaded()\l- UpdateFieldDisplay()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [color="grey25",fontsize="10",style="solid",label=" field" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node2 [label="{RobotFootballCore.Objects.Field\n|+ BorderWidth\l+ Players\l+ Ball\l+ Size\l+ Width\l+ Height\l|+ Field()\l+ ToBitmap()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_robot_football_core_1_1_objects_1_1_field.html"];
+}

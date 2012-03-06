@@ -30,10 +30,10 @@
     <ClInclude Include="UserData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MotionController.h">
+    <ClInclude Include="PathController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PathController.h">
+    <ClInclude Include="MotionController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

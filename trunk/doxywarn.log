@@ -1,0 +1,207 @@
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:10: warning: Compound RouteFinders::GridSquare is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/MassedPotentialFieldRouteFinder.cs:16: warning: Compound RouteFinders::MassedPotentialFieldRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:10: warning: Compound RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:11: warning: Compound RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:15: warning: Compound RouteFinders::ParallelAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:32: warning: Compound DataDumpProcessor::TimedDataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:10: warning: Compound RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:11: warning: Compound RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:19: warning: Compound MotionPrediction is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/TestBench/Program.cs:14: warning: Compound TestBench::Program is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:14: warning: Compound RouteFinders::HashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PositionedObject.cs:13: warning: Compound RouteFinders::PositionedObject is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:10: warning: Compound RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:15: warning: Compound RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:10: warning: Compound DataDumpProcessor::DataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/PathController.h:16: warning: Compound PathController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:64: warning: Compound DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PotentialFieldRouteFinder.cs:16: warning: Compound RouteFinders::PotentialFieldRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/RouteFinder.cs:12: warning: Compound RobotFootballCore::Interfaces::RouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:17: warning: Compound RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/UserData.h:6: warning: Compound UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:10: warning: Compound UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:15: warning: Compound DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:14: warning: Compound RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/Route.cs:11: warning: Compound RobotFootballCore::RouteObjects::Route is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:16: warning: Compound DataDumpProcessor::RawPointDataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:11: warning: Compound RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:9: warning: Compound MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/IPositionedObject.cs:10: warning: Compound RobotFootballCore::Interfaces::IPositionedObject is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:26: warning: Compound DataDumpProcessor::TimedDataEntry is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/NativeRouteFinder.cs:13: warning: Compound RouteFinders::NativeRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:12: warning: Compound RobotFootballCore::Objects::NativeField is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:14: warning: Member MotionController(double positionControlScale=4, double angleControlScale=5) (function) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:16: warning: Member Control(Vector3D targetPosition, Robot *bot) (function) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:17: warning: Member Control(std::function< Vector3D(clock_t)> controlFunction, clock_t timeOffset, Robot *bot) (function) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:18: warning: Member DistanceTo(Vector3D targetPosition, Robot *bot) (function) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:11: warning: Member positionProportionalTerm (variable) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/MotionController.h:12: warning: Member angleProportionalTerm (variable) of class MotionController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:33: warning: Member InitTimestep(float timestep) (function) of class MotionPrediction is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:34: warning: Member CalculateQuadraticMotion(float readings[3]) (function) of class MotionPrediction is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:21: warning: Member timestepMatrix (variable) of class MotionPrediction is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/PathController.h:23: warning: Member RegisterPath(Path path, int bot) (function) of class PathController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/PathController.h:24: warning: Member StepPaths(Environment *env, MotionController *controller) (function) of class PathController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/PathController.h:18: warning: Member currentPath (variable) of class PathController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/PathController.h:19: warning: Member currentTimeOffset (variable) of class PathController is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:15: warning: Member a (variable) of class QuadraticEquation is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:15: warning: Member b (variable) of class QuadraticEquation is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/MotionPrediction/MotionPrediction.h:15: warning: Member c (variable) of class QuadraticEquation is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:12: warning: Member State (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:13: warning: Member x (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:14: warning: Member y (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:15: warning: Member outStream (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:16: warning: Member velocityStartTime (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/PhysicsStrategy/UserData.h:17: warning: Member velocity (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/SquareStrategy/UserData.h:8: warning: Member targetPosition (variable) of class UserData is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:57: warning: Member ScaleRange (enumeration) of namespace DataDumpProcessor is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:11: warning: Member EntryDate (property) of class DataDumpProcessor::DataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:12: warning: Member Velocity (property) of class DataDumpProcessor::DataEntries is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:17: warning: Member Points (property) of class DataDumpProcessor::RawPointDataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:27: warning: Member Time (property) of class DataDumpProcessor::TimedDataEntry is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:28: warning: Member Point (property) of class DataDumpProcessor::TimedDataEntry is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/DataEntries.cs:33: warning: Member Points (property) of class DataDumpProcessor::TimedDataEntries is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/MainWindow.xaml.cs:27: warning: Member MatlabPrepare(object sender, RoutedEventArgs e) (function) of class DataDumpProcessor::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/MainWindow.xaml.cs:47: warning: Member BrowseClick(object sender, RoutedEventArgs e) (function) of class DataDumpProcessor::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/MainWindow.xaml.cs:55: warning: Member ReloadFile(object sender, RoutedEventArgs e) (function) of class DataDumpProcessor::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/MainWindow.xaml.cs:17: warning: Member viewModel (variable) of class DataDumpProcessor::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:19: warning: Member SeriesViewModel(ChartSeriesCommonBase series) (function) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:28: warning: Member Title (property) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:45: warning: Member Visible (property) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:53: warning: Member PropertyChanged (event) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:48: warning: Member OnPropertyChanged(string property) (function) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:16: warning: Member series (variable) of class DataDumpProcessor::SeriesViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:84: warning: Member MainXAxis (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:93: warning: Member MainYAxis (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:102: warning: Member SecondYAxis (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:125: warning: Member BothScaleRange (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:160: warning: Member VelocityScaleRange (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:176: warning: Member AccelerationScaleRange (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:186: warning: Member DataFilePath (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:431: warning: Member DataEntries (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:444: warning: Member SelectedDataEntries (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:446: warning: Member CurrentDataSeries (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:447: warning: Member TimeStepDistribution (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:449: warning: Member SeriesSettings (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:453: warning: Member TimeStepStandardDeviation (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:454: warning: Member TimeStepMean (property) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:451: warning: Member PropertyChanged (event) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:128: warning: Member OnScaleRangeChanged() (function) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:189: warning: Member OnPropertyChanged(string property) (function) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:195: warning: Member OnSelectedDataEntriesChanged() (function) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:72: warning: Member mainXAxis (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:73: warning: Member mainYAxis (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:74: warning: Member secondYAxis (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:104: warning: Member maxVel (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:104: warning: Member minVel (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:104: warning: Member maxAccel (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:104: warning: Member minAccel (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:106: warning: Member dataFilePath (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:107: warning: Member selectedDataEntries (variable) of class DataDumpProcessor::ViewModel is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/DataDumpProcessor/ViewModel.cs:109: warning: Member scaleRange (variable) of class DataDumpProcessor::ViewModel is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/IPositionedObject.cs:11: warning: Member get (variable) of class RobotFootballCore::Interfaces::IPositionedObject is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/IPositionedObject.cs:12: warning: Member Size (property) of class RobotFootballCore::Interfaces::IPositionedObject is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/RouteFinder.cs:13: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RobotFootballCore::Interfaces::RouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/RouteFinder.cs:18: warning: Member CalculateLength(PointF startPoint, PointF endPoint) (function) of class RobotFootballCore::Interfaces::RouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Interfaces/RouteFinder.cs:15: warning: Member Resolution (property) of class RobotFootballCore::Interfaces::RouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Team.cs:9: warning: Member Team (enumeration) of namespace RobotFootballCore::Objects is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:17: warning: Member DrawToField(Graphics field) (function) of class RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:26: warning: Member Ball(Point position) (function) of class RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:12: warning: Member BallSize (variable) of class RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:14: warning: Member Position (property) of class RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Ball.cs:33: warning: Member Size (property) of class RobotFootballCore::Objects::Ball is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:29: warning: Member Field(int width, int height) (function) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:39: warning: Member ToBitmap() (function) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:18: warning: Member BorderWidth (property) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:20: warning: Member Players (property) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:21: warning: Member Ball (property) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:23: warning: Member Size (property) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:25: warning: Member Width (property) of class RobotFootballCore::Objects::Field is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Field.cs:26: warning: Member Height (property) of class RobotFootballCore::Objects::Field is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:21: warning: Member Player(Point startPosition, Team team) (function) of class RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:28: warning: Member DrawToField(Graphics field) (function) of class RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:12: warning: Member PlayerSize (variable) of class RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:18: warning: Member Position (property) of class RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:38: warning: Member Team (property) of class RobotFootballCore::Objects::Player is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Objects/Player.cs:44: warning: Member Size (property) of class RobotFootballCore::Objects::Player is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:14: warning: Member LineSegment(PointF startPoint, PointF endPoint) (function) of class RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:31: warning: Member Draw(Graphics field) (function) of class RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:36: warning: Member Scale(SizeF scale) (function) of class RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:42: warning: Member ToString() (function) of class RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/LineSegment.cs:28: warning: Member Length (property) of class RobotFootballCore::RouteObjects::LineSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/Route.cs:18: warning: Member Route(Point[] points) (function) of class RobotFootballCore::RouteObjects::Route is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/Route.cs:31: warning: Member Draw(Graphics field) (function) of class RobotFootballCore::RouteObjects::Route is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/Route.cs:48: warning: Member Scale(SizeF scale) (function) of class RobotFootballCore::RouteObjects::Route is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/Route.cs:28: warning: Member Path (property) of class RobotFootballCore::RouteObjects::Route is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:15: warning: Member Draw(Graphics field) (function) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:16: warning: Member Scale(SizeF scale) (function) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:11: warning: Member StartPoint (property) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:12: warning: Member EndPoint (property) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:14: warning: Member Length (property) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:20: warning: Member DrawingPen (property) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/RouteObjects/RouteSegment.cs:18: warning: Member drawingPen (variable) of class RobotFootballCore::RouteObjects::RouteSegment is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:12: warning: Member Scale(this PointF point, SizeF resolution) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:20: warning: Member Scale(this Point point, SizeF resolution) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:28: warning: Member Scale(this Point point, int size) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:36: warning: Member FromIndex(int index, int width) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:41: warning: Member ToIndex(this Point point, int width) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/PointExtensions.cs:46: warning: Member Floor(this PointF point) (function) of class RobotFootballCore::Utilities::PointExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:12: warning: Member Invert(this SizeF size) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:22: warning: Member Invert(this Size size) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:32: warning: Member Scale(this SizeF size, SizeF scale) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:40: warning: Member Scale(this Size size, float scale) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:48: warning: Member Scale(this Size size, SizeF scale) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:56: warning: Member Scale(this SizeF size, float scale) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballCore/Utilities/SizeExtensions.cs:64: warning: Member Ceiling(this SizeF size) (function) of class RobotFootballCore::Utilities::SizeExtensions is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballUI/MainWindow.xaml.cs:36: warning: Member WindowLoaded(object sender, RoutedEventArgs e) (function) of class RobotFootballUI::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballUI/MainWindow.xaml.cs:49: warning: Member UpdateFieldDisplay() (function) of class RobotFootballUI::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/RobotFootballUI/MainWindow.xaml.cs:46: warning: Member field (variable) of class RobotFootballUI::MainWindow is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:24: warning: Member SquareType (enumeration) of namespace RouteFinders is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:68: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:15: warning: Member ObjectClearance (property) of class RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:24: warning: Member InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject) (function) of class RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:151: warning: Member ReconstructPath(Dictionary< GridSquare, GridSquare > cameFrom, GridSquare currentSquare) (function) of class RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/AStarRouteFinder.cs:162: warning: Member CalculateHeuristic(GridSquare square, PointF endPoint) (function) of class RouteFinders::AStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:16: warning: Member KnownScore (property) of class RouteFinders::GridSquare is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:17: warning: Member HeuristicScore (property) of class RouteFinders::GridSquare is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:18: warning: Member TotalScore (property) of class RouteFinders::GridSquare is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:19: warning: Member Type (property) of class RouteFinders::GridSquare is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/GridSquare.cs:20: warning: Member Location (property) of class RouteFinders::GridSquare is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:68: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::HashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:15: warning: Member ObjectClearance (property) of class RouteFinders::HashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:24: warning: Member InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject) (function) of class RouteFinders::HashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:151: warning: Member ReconstructPath(Dictionary< GridSquare, GridSquare > cameFrom, GridSquare currentSquare) (function) of class RouteFinders::HashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/HashSetAStarRouteFinder.cs:162: warning: Member CalculateHeuristic(GridSquare square, PointF endPoint) (function) of class RouteFinders::HashSetAStarRouteFinder is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/MassedPotentialFieldRouteFinder.cs:18: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::MassedPotentialFieldRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/NativeRouteFinder.cs:20: warning: Member AStarFindRoute(Point startPoint, Point endPoint, Size fieldSize, Size resolution, Size movingObjectSize, int objectClearance,[MarshalAs(UnmanagedType.LPArray, SizeParamIndex=7)]PositionedObject[] opponents, int opponentsCount,[In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex=9)]Point[] routeResult, uint routeResultLength, bool useSqrt) (function) of class RouteFinders::NativeRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/NativeRouteFinder.cs:27: warning: Member HashMapAStarFindRoute(Point startPoint, Point endPoint, Size fieldSize, Size resolution, Size movingObjectSize, int objectClearance,[MarshalAs(UnmanagedType.LPArray, SizeParamIndex=7)]PositionedObject[] opponents, int opponentsCount,[In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex=9)]Point[] routeResult, uint routeResultLength, bool useSqrt) (function) of class RouteFinders::NativeRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/NativeRouteFinder.cs:30: warning: Member Init() (function) of class RouteFinders::NativeRouteFinder is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:70: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::ParallelAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:16: warning: Member ObjectClearance (property) of class RouteFinders::ParallelAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:25: warning: Member InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject) (function) of class RouteFinders::ParallelAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:149: warning: Member ReconstructPath(Dictionary< GridSquare, GridSquare > cameFrom, GridSquare currentSquare) (function) of class RouteFinders::ParallelAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelAStarRouteFinder.cs:160: warning: Member CalculateHeuristic(GridSquare square, PointF endPoint) (function) of class RouteFinders::ParallelAStarRouteFinder is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:70: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:16: warning: Member ObjectClearance (property) of class RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:25: warning: Member InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject) (function) of class RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:162: warning: Member ReconstructPath(Dictionary< GridSquare, GridSquare > cameFrom, GridSquare currentSquare) (function) of class RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/ParallelHashSetAStarRouteFinder.cs:173: warning: Member CalculateHeuristic(GridSquare square, PointF endPoint) (function) of class RouteFinders::ParallelHashSetAStarRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PositionedObject.cs:19: warning: Member operator PositionedObject(Player obj) (function) of class RouteFinders::PositionedObject is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PositionedObject.cs:14: warning: Member Size (variable) of class RouteFinders::PositionedObject is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PositionedObject.cs:15: warning: Member Position (variable) of class RouteFinders::PositionedObject is not documented.
+error: Problems running epstopdf. Check your TeX installation!
+H:/tr-robot-football/Robot Football/RobotFootball/AStarRouteFinder/PotentialFieldRouteFinder.cs:18: warning: Member FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject) (function) of class RouteFinders::PotentialFieldRouteFinder is not documented.
+H:/tr-robot-football/Robot Football/RobotFootball/TestBench/Program.cs:16: warning: Member Main(string[] args) (function) of class TestBench::Program is not documented.

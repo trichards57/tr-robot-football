@@ -10,16 +10,51 @@ using System.Collections.Generic;
 
 namespace RouteFinders
 {
+    /// <summary>
+    /// A route finder that determines a route using the A* algorithm
+    /// </summary>
     public class AStarRouteFinder : RouteFinder
     {
+        /// <summary>
+        /// The distance that objects must be cleared by.
+        /// </summary>
         public int ObjectClearance { get; set; }
 
+        /// <summary>
+        /// Initialises a new instance of the AStarRouteFinder class.
+        /// </summary>
+        /// 
+        /// Sets all member values to their defaults of:
+        /// 
+        /// * Resolution = 10 x 10
+        /// 
+        /// * ObjectClearance = 20
         public AStarRouteFinder()
         {
             Resolution = new Size(10, 10);
             ObjectClearance = 20;
         }
 
+        /// <summary>
+        /// Initialises a discrete grid using the information provided.
+        /// </summary>
+        /// <param name="startPoint">The point to start the route at</param>
+        /// <param name="endPoint">The point to end the route at</param>
+        /// <param name="field">The field that needs to be discretised</param>
+        /// <param name="gridSize">The size of the grid to be palced placed over <paramref name="field"/></param>
+        /// <param name="movingObject">The object that will be moving.</param>
+        /// <returns>A GridSquare array, initialised to represent <paramref name="field"/>.</returns>
+        /// 
+        /// Produces a GridSquare array that is set up for use by <see cref="FindPath"/>.
+        /// 
+        /// Uses the ObjectClearance and <paramref name="movingObject" />'s <see cref="IPositionedObject::Size"/> property to determine the 
+        /// apparent size of opponents, and marks the squares that contain them as <see cref="SquareType::Obstacle"/>.
+        /// 
+        /// Marks the square that contains <paramref name="endPoint" /> as <see cref="SquareType::Destination"/>.
+        ///
+        /// Marks the square that contains <paramref name="startPoint" /> as <see cref="SquareType::Origin"/>.
+        /// 
+        /// Works in parallel as far as possible, using the Microsoft Task Parallel Library (http://msdn.microsoft.com/en-us/library/dd460717.aspx).
         private GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
         {
             var playersize = (movingObject.Size + new Size(ObjectClearance, ObjectClearance)).Scale(Resolution).Scale(2.0f).Ceiling();
@@ -64,6 +99,25 @@ namespace RouteFinders
             return grid;
         }
 
+        /// <summary>
+        /// Finds a route using the A* algorithm
+        /// </summary>
+        /// <param name="startPoint">The point to start the algorithm from.</param>
+        /// <param name="endPoint">The point to find a route to.</param>
+        /// <param name="field">The field in which the route must be found.</param>
+        /// <param name="movingObject">The object that will move around the <paramref name="field"/>.</param>
+        /// <returns>
+        /// A Route if a route can be found.
+        /// 
+        /// null otherwise
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the specified resolution is 0 in one or more directions.
+        /// </exception>
+        /// 
+        /// Determines a route from <paramref name="startPoint" /> to <paramref name="endPoint" /> using the A* algorithm.
+        ///
+        /// Algorithm taken from @cite aiModernApproach
         public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
         {
             if (Resolution.Height < 1 || Resolution.Width < 1)
@@ -147,6 +201,14 @@ namespace RouteFinders
             return null;
         }
 
+        /// <summary>
+        /// Reconstructs a path from the given cameFrom information.
+        /// </summary>
+        /// <param name="cameFrom">The list of 'came from' details produced by the A* algorithm</param>
+        /// <param name="currentSquare">The current square to examine</param>
+        /// <returns>The shortest Route to the destination</returns>
+        /// 
+        /// A recursive algorithm that reconstructs the path that has been produced by the A* algorithm
         private Route ReconstructPath(Dictionary<GridSquare, GridSquare> cameFrom, GridSquare currentSquare)
         {
             if (cameFrom.ContainsKey(currentSquare))
@@ -158,6 +220,14 @@ namespace RouteFinders
             return new Route();
         }
 
+        /// <summary>
+        /// Calculates the heuristic score for the given square.
+        /// </summary>
+        /// <param name="square">The square to calculate the heuristic for </param>
+        /// <param name="endPoint">The current point to aim for </param>
+        /// <returns>
+        /// \f$+\infnty
+        /// </returns>
         private float CalculateHeuristic(GridSquare square, PointF endPoint)
         {
             if (square.Type == SquareType.Obstacle)

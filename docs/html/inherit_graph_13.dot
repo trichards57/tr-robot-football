@@ -1,0 +1,19 @@
+digraph G
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="RobotFootballCore.Interfaces.RouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_robot_football_core_1_1_interfaces_1_1_route_finder.html"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="RouteFinders.AStarRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_a_star_route_finder.html"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="RouteFinders.HashSetAStarRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_hash_set_a_star_route_finder.html"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="RouteFinders.MassedPotentialFieldRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_massed_potential_field_route_finder.html"];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="RouteFinders.ParallelAStarRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_parallel_a_star_route_finder.html"];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="RouteFinders.ParallelHashSetAStarRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_parallel_hash_set_a_star_route_finder.html"];
+  Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="RouteFinders.PotentialFieldRouteFinder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route_finders_1_1_potential_field_route_finder.html"];
+}

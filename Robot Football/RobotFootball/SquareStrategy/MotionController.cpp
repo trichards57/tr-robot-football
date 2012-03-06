@@ -2,6 +2,9 @@
 
 #include "MotionController.h"
 
+#define _USE_MATH_DEFINES 
+#include <math.h>
+
 #define DEGREES_TO_RADIANS(X) (X * M_PI / 180)
 #define MAX_WHEEL_SPEED 125
 
@@ -10,9 +13,9 @@ MotionController::MotionController(double positionControlScale, double angleCont
 {
 }
 
-void MotionController::Control(std::function<Vector3D(time_t)> controlFunction, time_t timeOffset, Robot* bot)
+void MotionController::Control(std::function<Vector3D(clock_t)> controlFunction, clock_t timeOffset, Robot* bot)
 {
-	Control(controlFunction(time(nullptr) - timeOffset), bot);
+	Control(controlFunction(clock() - timeOffset), bot);
 }
 
 double MotionController::DistanceTo(Vector3D targetPosition, Robot* bot)
@@ -71,16 +74,24 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 	bot->velocityLeft = -turnSpeed;
 	bot->velocityRight = turnSpeed;
 	
-	// Work out the forwards speed
-	auto distance = sqrt(xDiff*xDiff+yDiff*yDiff);
-	auto vel = distance * positionProportionalTerm;
-	// Ensure we won't muck up the turn by trying to move too fast forwards
-	if (vel + abs(turnSpeed) > MAX_WHEEL_SPEED)
-		vel = MAX_WHEEL_SPEED - abs(bot->velocityLeft);
+	if (angle < DEGREES_TO_RADIANS(30))
+	{
+		// Work out the forwards speed
+		auto distance = sqrt(xDiff*xDiff+yDiff*yDiff);
+		auto vel = distance * positionProportionalTerm;
+		// Ensure we won't muck up the turn by trying to move too fast forwards
+		if (vel + abs(turnSpeed) > MAX_WHEEL_SPEED)
+			vel = MAX_WHEEL_SPEED - abs(bot->velocityLeft);
 	
-	// Apply the speed.
-	bot->velocityLeft += vel;
-	bot->velocityRight += vel;
+		// Apply the speed.
+		bot->velocityLeft += vel;
+		bot->velocityRight += vel;
+	}
+	else
+	{
+		bot->velocityLeft *= 10;
+		bot->velocityRight *= 10;
+	}
 }
 
 MotionController::~MotionController(void)

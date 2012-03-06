@@ -15,10 +15,22 @@
 #define BOTTOM_Y (FBOT + CM_TO_INCHES(30))
 
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
-#define PATH_LENGTH 1500
+#define PATH_LENGTH 4000
 
 clock_t startTime = 0;
 PathController controller;
+
+double CubicPath(double startPoint, double endPoint, clock_t time, clock_t timePeriod)
+{
+	time /= CLOCKS_PER_SEC;
+	timePeriod /= CLOCKS_PER_SEC;
+	// Taken from the Robotics Trajectory Planning Notes
+	auto a0 = startPoint;
+	auto a2 = 3*(endPoint - startPoint)/(timePeriod*timePeriod);
+	auto a3 = -2 * (endPoint - startPoint)/(timePeriod*timePeriod*timePeriod);
+
+	return a0 + a2*time*time + a3*time*time*time;
+}
 
 extern "C" STRATEGY_API void Create(Environment* env)
 {
@@ -27,11 +39,11 @@ extern "C" STRATEGY_API void Create(Environment* env)
 	data->targetPosition.y = (FTOP + FBOT)/2;
 	env->userData = data;
 
-	ControlFunction sec1 = [](time_t t)->Vector3D{
+	ControlFunction sec1 = [](clock_t t)->Vector3D{
 		Vector3D result;
-		if (t < 5000)
+		if (t < PATH_LENGTH)
 		{
-			result.x = STRAIGHT_LINE_POS(LEFT_X, RIGHT_X, t, PATH_LENGTH);
+			result.x = CubicPath(LEFT_X, RIGHT_X, t, PATH_LENGTH);
 			result.y = TOP_Y;
 		}
 		else
@@ -40,12 +52,12 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		}
 		return result;
 	};
-	ControlFunction sec2 = [](time_t t)->Vector3D{
+	ControlFunction sec2 = [](clock_t t)->Vector3D{
 		Vector3D result;
-		if (t < 5000)
+		if (t < PATH_LENGTH)
 		{
 			result.x = RIGHT_X;
-			result.y = STRAIGHT_LINE_POS(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
+			result.y = CubicPath(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
 		}
 		else
 		{
@@ -53,11 +65,11 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		}
 		return result;
 	};
-	ControlFunction sec3 = [](time_t t)->Vector3D{
+	ControlFunction sec3 = [](clock_t t)->Vector3D{
 		Vector3D result;
-		if (t < 5000)
+		if (t < PATH_LENGTH)
 		{
-			result.x = STRAIGHT_LINE_POS(RIGHT_X, LEFT_X, t, PATH_LENGTH);
+			result.x = CubicPath(RIGHT_X, LEFT_X, t, PATH_LENGTH);
 			result.y = BOTTOM_Y;
 		}
 		else
@@ -66,16 +78,17 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		}
 		return result;
 	};
-	ControlFunction sec4 = [](time_t t)->Vector3D{
+	ControlFunction sec4 = [](clock_t t)->Vector3D{
 		Vector3D result;
 		if (t < 5000)
 		{
 			result.x = LEFT_X;
-			result.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
+			result.y = CubicPath(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
 		}
 		else
 		{
-			result.x = result.y = -1;
+			result.x = LEFT_X;
+			result.y = TOP_Y;
 		}
 		return result;
 	};

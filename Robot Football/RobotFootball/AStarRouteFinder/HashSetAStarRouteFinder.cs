@@ -10,60 +10,11 @@ using System.Collections.Generic;
 
 namespace RouteFinders
 {
-    public class HashSetAStarRouteFinder : RouteFinder
+    /// <summary>
+    /// A route finder that determines a route by using the A* algorithm, using a HashSet to speed up searches in the open and closed sets.
+    /// </summary>
+    public class HashSetAStarRouteFinder : AStarRouteFinder
     {
-        public int ObjectClearance { get; set; }
-
-        public HashSetAStarRouteFinder()
-        {
-            Resolution = new Size(10, 10);
-            ObjectClearance = 20;
-        }
-
-        private GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
-        {
-            var playersize = (movingObject.Size + new Size(ObjectClearance, ObjectClearance)).Scale(Resolution).Scale(2.0f).Ceiling();
-            var clearance = Math.Max(playersize.Width, playersize.Height); // The amount to increase an obstacle's size by to allow for the player's size
-
-            var grid = new GridSquare[gridSize.Height * gridSize.Width];
-            // Initialize the grid
-            Parallel.For(0, grid.Length, i => { 
-                grid[i] = new GridSquare();
-                grid[i].Location = PointExtensions.FromIndex(i, gridSize.Width); 
-            });
-
-            Parallel.ForEach(from p in field.Players where p.Team == Team.Opposition select p, player =>
-            {
-                var centerGridPoint = player.Position.Scale(Resolution).Floor();
-                
-                var minX = Math.Max(0, centerGridPoint.X - playersize.Width - clearance);
-                var maxX = Math.Min(centerGridPoint.X + playersize.Width + clearance, gridSize.Width);
-                var minY = Math.Max(0, centerGridPoint.Y - playersize.Height - clearance);
-                var maxY = Math.Min(centerGridPoint.Y + playersize.Height + clearance, gridSize.Height);
-
-                for (var i = minX; i < maxX; i++)
-                {
-                    for (var j = minY; j < maxY; j++)
-                    {
-                        if (i < 0 || j < 0)
-                            continue;
-
-                        var gridPoint = new Point(i, j);
-                        grid[gridPoint.ToIndex(gridSize.Width)].Type = SquareType.Obstacle;
-                    }
-                }
-            });
-
-            var gridEndPoint = endPoint.Scale(Resolution).Floor();
-
-            grid[gridEndPoint.ToIndex(gridSize.Width)].Type = SquareType.Destination;
-
-            var gridStartPoint = startPoint.Scale(Resolution).Floor();
-            grid[gridStartPoint.ToIndex(gridSize.Width)].Type = SquareType.Origin;
-
-            return grid;
-        }
-
         public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
         {
             if (Resolution.Height < 1 || Resolution.Width < 1)
@@ -145,27 +96,6 @@ namespace RouteFinders
             }
 
             return null;
-        }
-
-        private Route ReconstructPath(Dictionary<GridSquare, GridSquare> cameFrom, GridSquare currentSquare)
-        {
-            if (cameFrom.ContainsKey(currentSquare))
-            {
-                var path = ReconstructPath(cameFrom, cameFrom[currentSquare]);
-                path.Path.Add(new LineSegment(cameFrom[currentSquare].Location, currentSquare.Location));
-                return path;
-            }
-            return new Route();
-        }
-
-        private float CalculateHeuristic(GridSquare square, PointF endPoint)
-        {
-            if (square.Type == SquareType.Obstacle)
-                return float.PositiveInfinity;
-            else
-                return CalculateLength(square.Location, endPoint);
-        }
-
-        
+        }        
     }
 }

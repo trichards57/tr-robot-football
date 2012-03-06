@@ -55,7 +55,7 @@ namespace RouteFinders
         /// Marks the square that contains <paramref name="startPoint" /> as <see cref="SquareType::Origin"/>.
         /// 
         /// Works in parallel as far as possible, using the Microsoft Task Parallel Library (http://msdn.microsoft.com/en-us/library/dd460717.aspx).
-        private GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
+        protected GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
         {
             var playersize = (movingObject.Size + new Size(ObjectClearance, ObjectClearance)).Scale(Resolution).Scale(2.0f).Ceiling();
             var clearance = Math.Max(playersize.Width, playersize.Height); // The amount to increase an obstacle's size by to allow for the player's size
@@ -209,7 +209,7 @@ namespace RouteFinders
         /// <returns>The shortest Route to the destination</returns>
         /// 
         /// A recursive algorithm that reconstructs the path that has been produced by the A* algorithm
-        private Route ReconstructPath(Dictionary<GridSquare, GridSquare> cameFrom, GridSquare currentSquare)
+        protected Route ReconstructPath(Dictionary<GridSquare, GridSquare> cameFrom, GridSquare currentSquare)
         {
             if (cameFrom.ContainsKey(currentSquare))
             {
@@ -226,9 +226,11 @@ namespace RouteFinders
         /// <param name="square">The square to calculate the heuristic for </param>
         /// <param name="endPoint">The current point to aim for </param>
         /// <returns>
-        /// \f$+\infnty
+        /// \f$+\infty\f$ if the square is an obstacle
+        /// 
+        /// CalculateLength(square.Location, endPoint) otherwise
         /// </returns>
-        private float CalculateHeuristic(GridSquare square, PointF endPoint)
+        protected float CalculateHeuristic(GridSquare square, PointF endPoint)
         {
             if (square.Type == SquareType.Obstacle)
                 return float.PositiveInfinity;

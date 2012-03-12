@@ -68,16 +68,31 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 		angle -= 2*M_PI;
 	if (angle < -M_PI)
 		angle += 2*M_PI;
+
+	auto distance = sqrt(xDiff*xDiff+yDiff*yDiff);
+
+	if (fabs(angle) > M_PI/2)
+		// Target is behind is, will be quicker to go backwards
+	{
+		distance = -distance;
+		// Rotate target angle around 180 degrees
+		angle += M_PI;
+		// Normalise between pi and -pi
+		if (angle > M_PI)
+			angle -= 2*M_PI;
+		if (angle < -M_PI)
+			angle += 2*M_PI;
+	}
+
 	
 	// Set up the turn as required
 	auto turnSpeed = angle * angleProportionalTerm;
 	bot->velocityLeft = -turnSpeed;
 	bot->velocityRight = turnSpeed;
 	
-	if (angle < DEGREES_TO_RADIANS(30))
+	if (fabs(angle) < DEGREES_TO_RADIANS(20))
 	{
 		// Work out the forwards speed
-		auto distance = sqrt(xDiff*xDiff+yDiff*yDiff);
 		auto vel = distance * positionProportionalTerm;
 		// Ensure we won't muck up the turn by trying to move too fast forwards
 		if (vel + abs(turnSpeed) > MAX_WHEEL_SPEED)
@@ -89,8 +104,8 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 	}
 	else
 	{
-		bot->velocityLeft *= 10;
-		bot->velocityRight *= 10;
+		/*bot->velocityLeft *= 10;
+		bot->velocityRight *= 10;*/
 	}
 }
 

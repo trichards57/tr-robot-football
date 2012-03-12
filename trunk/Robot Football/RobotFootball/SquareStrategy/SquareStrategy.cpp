@@ -43,7 +43,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		Vector3D result;
 		if (t < PATH_LENGTH)
 		{
-			result.x = CubicPath(LEFT_X, RIGHT_X, t, PATH_LENGTH);
+			result.x = STRAIGHT_LINE_POS(LEFT_X, RIGHT_X, t, PATH_LENGTH);
 			result.y = TOP_Y;
 		}
 		else
@@ -57,7 +57,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		if (t < PATH_LENGTH)
 		{
 			result.x = RIGHT_X;
-			result.y = CubicPath(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
+			result.y = STRAIGHT_LINE_POS(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
 		}
 		else
 		{
@@ -69,7 +69,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		Vector3D result;
 		if (t < PATH_LENGTH)
 		{
-			result.x = CubicPath(RIGHT_X, LEFT_X, t, PATH_LENGTH);
+			result.x = STRAIGHT_LINE_POS(RIGHT_X, LEFT_X, t, PATH_LENGTH);
 			result.y = BOTTOM_Y;
 		}
 		else
@@ -83,7 +83,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		if (t < 5000)
 		{
 			result.x = LEFT_X;
-			result.y = CubicPath(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
+			result.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
 		}
 		else
 		{
@@ -105,45 +105,6 @@ extern "C" STRATEGY_API void Create(Environment* env)
 extern "C" STRATEGY_API void Destroy(Environment* env)
 {
 	
-}
-
-
-
-Vector3D OldPath()
-{
-	if (startTime == 0)
-		startTime = clock();
-
-	auto time = clock() - startTime;
-
-	Vector3D currentTarget;
-
-	if (time < PATH_LENGTH)
-	{
-		currentTarget.x = STRAIGHT_LINE_POS(LEFT_X, RIGHT_X, time, PATH_LENGTH);
-		currentTarget.y = TOP_Y;
-	}
-	else if (time < PATH_LENGTH * 2)
-	{
-		currentTarget.x = RIGHT_X;
-		currentTarget.y = STRAIGHT_LINE_POS(TOP_Y, BOTTOM_Y, time - PATH_LENGTH, PATH_LENGTH);
-	}
-	else if (time < PATH_LENGTH * 3)
-	{
-		currentTarget.x = STRAIGHT_LINE_POS(RIGHT_X, LEFT_X, time - PATH_LENGTH * 2, PATH_LENGTH);
-		currentTarget.y = BOTTOM_Y;
-	}
-	else if (time < PATH_LENGTH * 4)
-	{
-		currentTarget.x = LEFT_X;
-		currentTarget.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, time - PATH_LENGTH * 3, PATH_LENGTH);
-	}
-	else
-	{
-		currentTarget.x = LEFT_X;
-		currentTarget.y = TOP_Y;
-	}
-	return currentTarget;
 }
 
 extern "C" STRATEGY_API void Strategy(Environment* env)

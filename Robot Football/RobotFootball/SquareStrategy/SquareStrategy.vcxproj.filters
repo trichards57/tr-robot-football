@@ -36,6 +36,9 @@
     <ClInclude Include="MotionController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\InterceptStrategy\VelocityController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PathController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\InterceptStrategy\VelocityController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

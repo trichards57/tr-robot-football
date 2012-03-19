@@ -15,10 +15,12 @@
 #define BOTTOM_Y (FBOT + CM_TO_INCHES(30))
 
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
-#define PATH_LENGTH 4000
+#define PATH_LENGTH 3000
 
 clock_t startTime = 0;
 PathController controller;
+Vector3D lastPositions[5];
+clock_t lastTime = 0;
 
 double CubicPath(double startPoint, double endPoint, clock_t time, clock_t timePeriod)
 {
@@ -80,7 +82,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 	};
 	ControlFunction sec4 = [](clock_t t)->Vector3D{
 		Vector3D result;
-		if (t < 5000)
+		if (t < PATH_LENGTH)
 		{
 			result.x = LEFT_X;
 			result.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
@@ -109,5 +111,22 @@ extern "C" STRATEGY_API void Destroy(Environment* env)
 
 extern "C" STRATEGY_API void Strategy(Environment* env)
 {
-	controller.StepPaths(env, new MotionController());
+	auto currentTime = clock();
+	Vector3D velocities[5];
+	
+	for (int i = 0; i < 5; i++)
+	{
+		velocities[i].x = (env->home[i].pos.x - lastPositions[i].x) / (currentTime - lastTime);
+		velocities[i].y = (env->home[i].pos.y - lastPositions[i].y) / (currentTime - lastTime);
+		velocities[i].z = 0;
+	}
+
+	controller.StepPaths(env, new MotionController(), velocities);
+
+	lastTime = currentTime;
+	for (int i = 0; i < 5; i++)
+	{
+		lastPositions[i].x = env->home[i].pos.x;
+		lastPositions[i].y = env->home[i].pos.y;
+	}
 }

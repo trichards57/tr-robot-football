@@ -48,7 +48,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>STRATEGY_EXPORTS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUARESTRATEGY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STRATEGY_EXPORTS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUARESTRATEGY_EXPORTS;%(PreprocessorDefinitions);LOG</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Simulator\Strategy Source\Strategy.h" />
+    <ClInclude Include="..\InterceptStrategy\VelocityController.h" />
     <ClInclude Include="MotionController.h" />
     <ClInclude Include="PathController.h" />
     <ClInclude Include="stdafx.h" />
@@ -86,6 +87,7 @@
     <ClInclude Include="UserData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\InterceptStrategy\VelocityController.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

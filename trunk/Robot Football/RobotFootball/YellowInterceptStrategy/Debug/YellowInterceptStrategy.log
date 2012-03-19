@@ -1,0 +1,18 @@
+﻿Build started 19/03/2012 16:56:50.
+     1>Project "H:\tr-robot-football\Robot Football\RobotFootball\YellowInterceptStrategy\YellowInterceptStrategy.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Debug\YellowInterceptStrategy.unsuccessfulbuild".
+       ClCompile:
+         All outputs are up-to-date.
+         c:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D STRATEGY_EXPORTS /D HOLDSTILLSTRATEGY_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /D YELLOW /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"StdAfx.h" /Fp"Debug\YellowInterceptStrategy.pch" /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\InterceptStrategy\VelocityController.cpp
+         VelocityController.cpp
+     1>h:\tr-robot-football\robot football\robotfootball\interceptstrategy\velocitycontroller.cpp(38): error C2065: 'M_PI_2' : undeclared identifier
+     1>h:\tr-robot-football\robot football\robotfootball\interceptstrategy\velocitycontroller.cpp(40): error C2065: 'M_PI_2' : undeclared identifier
+     1>h:\tr-robot-football\robot football\robotfootball\interceptstrategy\velocitycontroller.cpp(46): error C2065: 'M_PI' : undeclared identifier
+     1>h:\tr-robot-football\robot football\robotfootball\interceptstrategy\velocitycontroller.cpp(49): error C2065: 'M_PI' : undeclared identifier
+     1>h:\tr-robot-football\robot football\robotfootball\interceptstrategy\velocitycontroller.cpp(49): fatal error C1903: unable to recover from previous error(s); stopping compilation
+     1>Done Building Project "H:\tr-robot-football\Robot Football\RobotFootball\YellowInterceptStrategy\YellowInterceptStrategy.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:03.03

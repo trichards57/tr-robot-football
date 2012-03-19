@@ -8,7 +8,7 @@ void PathController::RegisterPath(Path path, int bot)
 	currentTimeOffset[bot] = 0;
 }
 
-bool PathController::StepPaths(Environment* env, MotionController* controller)
+bool PathController::StepPaths(Environment* env, MotionController* controller, Vector3D* velocities)
 {
 	auto currentTime = clock();
 	for (auto i = currentPath.begin(); i != currentPath.end(); i++)
@@ -32,7 +32,7 @@ bool PathController::StepPaths(Environment* env, MotionController* controller)
 		}
 		if (nextPoint.x > -1 && nextPoint.y > -1)
 		{
-			controller->Control(nextPoint, &(env->home[i->first]));
+			controller->Control(nextPoint, velocities[i->first], &(env->home[i->first]));
 		}
 		else
 		{

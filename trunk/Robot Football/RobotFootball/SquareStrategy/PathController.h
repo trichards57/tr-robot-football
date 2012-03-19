@@ -21,6 +21,6 @@ public:
 	PathController(void);
 	~PathController(void);
 	void RegisterPath(Path path, int bot);
-	bool StepPaths(Environment* env, MotionController* controller);
+	bool StepPaths(Environment* env, MotionController* controller, Vector3D* velocities);
 };
 

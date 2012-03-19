@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "MotionController.h"
+#include "..\InterceptStrategy\VelocityController.h"
 
 #define _USE_MATH_DEFINES 
 #include <math.h>
@@ -13,11 +14,6 @@ MotionController::MotionController(double positionControlScale, double angleCont
 {
 }
 
-void MotionController::Control(std::function<Vector3D(clock_t)> controlFunction, clock_t timeOffset, Robot* bot)
-{
-	Control(controlFunction(clock() - timeOffset), bot);
-}
-
 double MotionController::DistanceTo(Vector3D targetPosition, Robot* bot)
 {
 	auto yDiff = targetPosition.y - bot->pos.y;
@@ -25,24 +21,18 @@ double MotionController::DistanceTo(Vector3D targetPosition, Robot* bot)
 	return sqrt(xDiff*xDiff+yDiff*yDiff);
 }
 
-void MotionController::Control(Vector3D targetPosition, Robot* bot)
+void MotionController::Control(Vector3D targetPosition, Vector3D currentVelocity, Robot* bot)
 {
+#ifdef LOG
+	std::fstream logFile("c:\\strategy\\MotionControllerLog.csv", std::fstream::out | std::fstream::app);
+	logFile << clock() << "," << targetPosition.x << "," << targetPosition.y << "," << bot->pos.x << "," << bot->pos.y << "," << bot->rotation << ",";
+#endif
+
 	auto yDiff = targetPosition.y - bot->pos.y;
 	auto xDiff = targetPosition.x - bot->pos.x;
 
 	double angle;
 
-	if (xDiff == 0)
-	{
-		// directly above or below
-		if (fabs(yDiff) == yDiff) // target is below us
-			angle = -M_PI_2;
-		else // target is above us
-			angle = M_PI_2;
-	}
-	else
-		angle = atan(yDiff/xDiff);
-	
 	if (xDiff == 0)
 	{
 		// directly above or below
@@ -71,42 +61,18 @@ void MotionController::Control(Vector3D targetPosition, Robot* bot)
 
 	auto distance = sqrt(xDiff*xDiff+yDiff*yDiff);
 
-	if (fabs(angle) > M_PI/2)
-		// Target is behind is, will be quicker to go backwards
-	{
-		distance = -distance;
-		// Rotate target angle around 180 degrees
-		angle += M_PI;
-		// Normalise between pi and -pi
-		if (angle > M_PI)
-			angle -= 2*M_PI;
-		if (angle < -M_PI)
-			angle += 2*M_PI;
-	}
+	auto vel = distance * positionProportionalTerm;
 
-	
-	// Set up the turn as required
-	auto turnSpeed = angle * angleProportionalTerm;
-	bot->velocityLeft = -turnSpeed;
-	bot->velocityRight = turnSpeed;
-	
-	if (fabs(angle) < DEGREES_TO_RADIANS(20))
-	{
-		// Work out the forwards speed
-		auto vel = distance * positionProportionalTerm;
-		// Ensure we won't muck up the turn by trying to move too fast forwards
-		if (vel + abs(turnSpeed) > MAX_WHEEL_SPEED)
-			vel = MAX_WHEEL_SPEED - abs(bot->velocityLeft);
-	
-		// Apply the speed.
-		bot->velocityLeft += vel;
-		bot->velocityRight += vel;
-	}
-	else
-	{
-		/*bot->velocityLeft *= 10;
-		bot->velocityRight *= 10;*/
-	}
+	Vector3D desiredVelocity;
+	desiredVelocity.x = vel * cos(angle);
+	desiredVelocity.y = vel * sin(angle);
+
+	VelocityController control;
+	control.Control(desiredVelocity, currentVelocity, bot);
+#ifdef LOG
+	logFile << bot->velocityLeft << "," << bot->velocityRight << std::endl;
+	logFile.close();
+#endif
 }
 
 MotionController::~MotionController(void)

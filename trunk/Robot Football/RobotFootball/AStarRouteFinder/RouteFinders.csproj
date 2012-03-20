@@ -49,8 +49,6 @@
   <ItemGroup>
     <Compile Include="AStarRouteFinder.cs" />
     <Compile Include="MassedPotentialFieldRouteFinder.cs" />
-    <Compile Include="ParallelHashSetAStarRouteFinder.cs" />
-    <Compile Include="HashSetAStarRouteFinder.cs" />
     <Compile Include="GridSquare.cs" />
     <Compile Include="NativeRouteFinder.cs" />
     <Compile Include="ParallelAStarRouteFinder.cs" />

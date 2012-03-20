@@ -11,10 +11,10 @@ namespace DataDumpProcessor
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
 
-        private ViewModel viewModel = new ViewModel();
+        private readonly ViewModel viewModel = new ViewModel();
 
         public MainWindow()
         {
@@ -62,23 +62,21 @@ namespace DataDumpProcessor
             var lines = File.ReadAllLines(viewModel.DataFilePath);
             viewModel.DataEntries.Clear();
             DataEntries dataEntries = null;
-            DateTime date;
-            DateTime entryDate = DateTime.Now;
-            int vel = 0;
-            foreach (var l in lines.Where(m => !string.IsNullOrEmpty(m)))
+            var entryDate = DateTime.Now;
+            var vel = 0;
+            foreach (var parts in lines.Where(m => !string.IsNullOrEmpty(m)).Select(l => l.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)))
             {
-                var parts = l.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                DateTime date;
                 if (DateTime.TryParseExact(parts[0], "ddd MMM dd HH:mm:ss yyyy" , Thread.CurrentThread.CurrentCulture.DateTimeFormat, DateTimeStyles.AllowWhiteSpaces, out date))
                 {
                     entryDate = date;
                     dataEntries = null;
-                    continue;
                 }
                 else
                 {
                     double time;
                     double x, y;
-                    long t1, t2, f1, f2;
+                    long t1, t2;
                     switch (parts.Length)
                     {
                         case 1:
@@ -89,9 +87,7 @@ namespace DataDumpProcessor
                                 throw new InvalidOperationException();
                             if (dataEntries == null || !(dataEntries is RawPointDataEntries))
                             {
-                                dataEntries = new RawPointDataEntries();
-                                dataEntries.Velocity = vel;
-                                dataEntries.EntryDate = entryDate;
+                                dataEntries = new RawPointDataEntries {Velocity = vel, EntryDate = entryDate};
                                 viewModel.DataEntries.Add(dataEntries);
                             }
                             
@@ -102,9 +98,7 @@ namespace DataDumpProcessor
                                 throw new InvalidOperationException();
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
-                                dataEntries = new TimedDataEntries();
-                                dataEntries.Velocity = vel;
-                                dataEntries.EntryDate = entryDate;
+                                dataEntries = new TimedDataEntries {Velocity = vel, EntryDate = entryDate};
                                 viewModel.DataEntries.Add(dataEntries);
                             }
 
@@ -115,22 +109,20 @@ namespace DataDumpProcessor
                                 throw new InvalidOperationException();
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
-                                dataEntries = new TimedDataEntries();
-                                dataEntries.Velocity = vel;
-                                dataEntries.EntryDate = entryDate;
+                                dataEntries = new TimedDataEntries {Velocity = vel, EntryDate = entryDate};
                                 viewModel.DataEntries.Add(dataEntries);
                             }
                             time = (t1 << 32) + t2;
                             ((TimedDataEntries)dataEntries).Points.Add(new TimedDataEntry { Point = new Point(x, y), Time = time });
                             break;
                         case 6:
+                            long f1;
+                            long f2;
                             if (!(long.TryParse(parts[0], out f1) && long.TryParse(parts[1], out f2) && long.TryParse(parts[2], out t1) && long.TryParse(parts[3], out t2) && double.TryParse(parts[4], out x) && double.TryParse(parts[5], out y)))
                                 throw new InvalidOperationException();
                             if (dataEntries == null || !(dataEntries is TimedDataEntries))
                             {
-                                dataEntries = new TimedDataEntries();
-                                dataEntries.Velocity = vel;
-                                dataEntries.EntryDate = entryDate;
+                                dataEntries = new TimedDataEntries {Velocity = vel, EntryDate = entryDate};
                                 viewModel.DataEntries.Add(dataEntries);
                             }
                             var freq = (f1 << 32) + f2;

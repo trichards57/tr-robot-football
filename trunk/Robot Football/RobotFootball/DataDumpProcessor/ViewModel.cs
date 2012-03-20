@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
-using Visiblox.Charts;
+using System.Linq;
 using System.Windows;
-//using MathNet.Numerics;
-//using MathNet.Numerics.Statistics;
+using Visiblox.Charts;
 
 namespace DataDumpProcessor
 {
     class SeriesViewModel : INotifyPropertyChanged
     {
-        private ChartSeriesCommonBase series;
+        private readonly ChartSeriesCommonBase series;
 
         public SeriesViewModel(ChartSeriesCommonBase series)
         {
@@ -35,10 +32,7 @@ namespace DataDumpProcessor
             }
             set
             {
-                if (value == true)
-                    series.Visibility = Visibility.Visible;
-                else
-                    series.Visibility = Visibility.Hidden;
+                series.Visibility = value ? Visibility.Visible : Visibility.Hidden;
 
                 OnPropertyChanged("Visible");
             }
@@ -116,11 +110,9 @@ namespace DataDumpProcessor
             }
             set
             {
-                if (value && scaleRange != ScaleRange.Both)
-                {
-                    scaleRange = ScaleRange.Both;
-                    OnScaleRangeChanged();
-                }
+                if (!value || scaleRange == ScaleRange.Both) return;
+                scaleRange = ScaleRange.Both;
+                OnScaleRangeChanged();
             }
         }
 
@@ -151,11 +143,9 @@ namespace DataDumpProcessor
             }
             set
             {
-                if (value && scaleRange != ScaleRange.Velocity)
-                {
-                    scaleRange = ScaleRange.Velocity;
-                    OnScaleRangeChanged();
-                }
+                if (!value || scaleRange == ScaleRange.Velocity) return;
+                scaleRange = ScaleRange.Velocity;
+                OnScaleRangeChanged();
             }
         }
 
@@ -167,11 +157,9 @@ namespace DataDumpProcessor
             }
             set
             {
-                if (value && scaleRange != ScaleRange.Acceleration)
-                {
-                    scaleRange = ScaleRange.Acceleration;
-                    OnScaleRangeChanged();
-                }
+                if (!value || scaleRange == ScaleRange.Acceleration) return;
+                scaleRange = ScaleRange.Acceleration;
+                OnScaleRangeChanged();
             }
         }
 
@@ -203,17 +191,17 @@ namespace DataDumpProcessor
             SeriesSettings.Clear();
             if (timedPointEntries != null)
             {
-                var s1 = -0.36438081475160222;
-                var b11 = 0.64308220852957476;
-                var b12 = 0.61792290676387107;
-                var b21 = 0.53696045764116318;
-                var b22 = 0.61773371771257013;
-                var b31 = 0.64307849607020995;
-                var b32 = 0.41066147232228034;
-                var a21 = -0.41403357712344141;
-                var a22 = -0.34184464084699628;
-                var a31 = 0.6223866646485583;
-                var a32 = 0.30662550664896931;
+                const double a21 = -0.41403357712344141;
+                const double a22 = -0.34184464084699628;
+                const double a31 = 0.6223866646485583;
+                const double a32 = 0.30662550664896931;
+                const double b11 = 0.64308220852957476;
+                const double b12 = 0.61792290676387107;
+                const double b21 = 0.53696045764116318;
+                const double b22 = 0.61773371771257013;
+                const double b31 = 0.64307849607020995;
+                const double b32 = 0.41066147232228034;
+                const double s1 = -0.36438081475160222;
 
                 var xSeries = new DataSeries<double, double>("X Coordinates");
                 var ySeries = new DataSeries<double, double>("Y Coordinates");
@@ -227,17 +215,17 @@ namespace DataDumpProcessor
 
                 var filterMidValue = new List<double>();
 
-                double lastX, lastY, lastXVel, lastYVel, lastTotalVel;
+                double lastY, lastXVel, lastYVel, lastTotalVel;
                 maxVel = maxAccel = double.MinValue;
                 minVel = minAccel = double.MaxValue;
-                double lastTime = 0;
-                bool firstVel = true;
-                bool firstPlace = true;
-                lastX = lastY = lastXVel = lastYVel = lastTotalVel = 0;
+                var lastTime = 0.0;
+                var firstVel = true;
+                var firstPlace = true;
+                var lastX = lastY = lastXVel = lastYVel = lastTotalVel = 0;
 
                 foreach (var p in timedPointEntries.Points.OrderBy(t => t.Time))
                 {
-                    double timeStep = double.NaN;
+                    var timeStep = double.NaN;
                     if (firstPlace)
                     {
                         lastX = p.Point.X;
@@ -332,29 +320,27 @@ namespace DataDumpProcessor
                     xSeries.Add(new DataPoint<double, double>(p.Time, p.Point.X));
                     ySeries.Add(new DataPoint<double, double>(p.Time, p.Point.Y));
 
-                    if (!double.IsNaN(timeStep))
-                    {
-                        if (timeStep < 5) // If an apparently large timestep, it's probably already in ms
-                            timeStep *= 1000;
-                        if (timeStep > 40000) // If a VERY large timestep, it's probably in us
-                            timeStep /= 1000;
-                        var mSec = (int)(Math.Round(timeStep, 1)*10);
-                        if (timesteps.ContainsKey(mSec))
-                            timesteps[mSec] += 1;
-                        else
-                            timesteps[mSec] = 1;
-                    }
+                    if (double.IsNaN(timeStep)) continue;
+                    if (timeStep < 5) // If an apparently large time step, it's probably already in ms
+                        timeStep *= 1000;
+                    if (timeStep > 40000) // If a VERY large time step, it's probably in us
+                        timeStep /= 1000;
+                    var mSec = (int)(Math.Round(timeStep, 1)*10);
+                    if (timesteps.ContainsKey(mSec))
+                        timesteps[mSec] += 1;
+                    else
+                        timesteps[mSec] = 1;
                 }
 
                 var xLineSeries = new LineSeries { DataSeries = xSeries, XAxis = mainXAxis, YAxis = mainYAxis };
                 var yLineSeries = new LineSeries { DataSeries = ySeries, XAxis = mainXAxis, YAxis = mainYAxis };
-                var xVelLineSeries = new LineSeries { DataSeries = xVelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var fVelLineSeries = new LineSeries { DataSeries = fVelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var yVelLineSeries = new LineSeries { DataSeries = yVelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var totalVelLineSeries = new LineSeries { DataSeries = totalVelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var xAccelLineSeries = new LineSeries { DataSeries = xAccelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var yAccelLineSeries = new LineSeries { DataSeries = yAccelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-                var totalAccelLineSeries = new LineSeries { DataSeries = totalAccelSeries, Visibility = System.Windows.Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var xVelLineSeries = new LineSeries { DataSeries = xVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var fVelLineSeries = new LineSeries { DataSeries = fVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var yVelLineSeries = new LineSeries { DataSeries = yVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var totalVelLineSeries = new LineSeries { DataSeries = totalVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var xAccelLineSeries = new LineSeries { DataSeries = xAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var yAccelLineSeries = new LineSeries { DataSeries = yAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
+                var totalAccelLineSeries = new LineSeries { DataSeries = totalAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
 
 
                 series.Add(xLineSeries);
@@ -384,31 +370,16 @@ namespace DataDumpProcessor
                 {
                     timeDistribution.Add(new DataPoint<double, long>(((double)(t.Key)/10), t.Value));
                 }
-                TimeStepDistribution = new SeriesCollection<IChartSeries>();
-                TimeStepDistribution.Add(new ColumnSeries { DataSeries = timeDistribution });
+                TimeStepDistribution = new SeriesCollection<IChartSeries>
+                                           {new ColumnSeries {DataSeries = timeDistribution}};
 
-                //var acc = new Accumulator();
-                //var l = new List<double>();
-                //foreach (var t in timesteps)
-                //{
-                //    for (var i = 0; i < t.Value; i++)
-                //    {
-                //        acc.Add(((double)t.Key) / 10);
-                //    }
-                //}
-
-                //TimeStepMean = acc.Mean;
-                //TimeStepStandardDeviation = Math.Sqrt(acc.Variance);
-
-                //OnPropertyChanged("TimeStepMean");
-                //OnPropertyChanged("TimeStepStandardDeviation");
                 OnPropertyChanged("TimeStepDistribution");
             }
             else if (rawPointEntries != null)
             {
                 var xSeries = new DataSeries<long, double>("X Coordinates");
                 var ySeries = new DataSeries<long, double>("Y Coordinates");
-                int i = 0;
+                var i = 0;
                 foreach (var p in rawPointEntries.Points)
                 {
                     xSeries.Add(new DataPoint<long, double>(i, p.X));
@@ -449,8 +420,5 @@ namespace DataDumpProcessor
         public ObservableCollection<SeriesViewModel> SeriesSettings { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public double TimeStepStandardDeviation { get; private set; }
-        public double TimeStepMean { get; private set; }
     }
 }

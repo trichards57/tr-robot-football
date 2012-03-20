@@ -44,9 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\RouteFinder.cs" />
     <Compile Include="Objects\Ball.cs" />
     <Compile Include="Objects\Field.cs" />
-    <Compile Include="Interfaces\RouteFinder.cs" />
     <Compile Include="Objects\Player.cs" />
     <Compile Include="Interfaces\IPositionedObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -7,30 +7,32 @@
 #define MOTIONPREDICTION_API __declspec(dllimport)
 #endif
 
-/// <summary>
-/// Represents a quadratic equation of the form ax^2+bx+c
-/// </summary>
+/// @brief Represents a quadratic equation of the form ax^2+bx+c
 struct QuadraticEquation {
 public:
-	double a,b,c;
+	/// @brief a coefficient of the equation
+	double a;
+	/// @brief b coefficient of the equation
+	double b;
+	/// @brief c coefficient of the equation
+	double c;
 };
 
 // This class is exported from the MotionPrediction.dll
+
+/// @brief Class to handle prediction of motion
 class MOTIONPREDICTION_API MotionPrediction {
 private:
+	/// @brief The pre-calculated timestep matrix
 	float* timestepMatrix;
 public:
-	/// <summary>
-	/// Invert a 4x4 matrix stored as an array in <paramref name="src" />.
-	/// </summary>
-	/// Uses Cramer's rule and the processor's Streaming SIMD instructions to efficiently invert a 4x4 matrix.
-	///
-	/// Returns the inverted matrix back in to <paramref name="src" />.
-	///
-	/// Taken from the @cite IntelMatrixInvertDoc
+	/// @brief Invert a 4x4 matrix stored as an array in src.
 	void InvertMatrix(float* src);
 public:
+	/// @brief Initializes the timestep matrix
 	void InitTimestep(float timestep);
+	/// @brief Fits the readings to a quadratic equation
 	QuadraticEquation CalculateQuadraticMotion(float readings[3]);
+	/// @brief Initializes a new instance of the MotionPrediction class.
 	MotionPrediction() : timestepMatrix(nullptr) {}
 };

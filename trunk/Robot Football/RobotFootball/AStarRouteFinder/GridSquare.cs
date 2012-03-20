@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace RouteFinders
 {
     /// <summary>
-    /// A square in a discretised environment
+    /// A square in a discretized environment
     /// </summary>
     /// Represents a discrete square in an environment, as required by some algorithms such as A*.
-    class GridSquare
+    public class GridSquare
     {
         /// <summary>
-        /// Initialises a new instance of the GridSquare class.
+        /// Initializes a new instance of the GridSquare class.
         /// </summary>
         /// Sets KnownScore to it's default value of float.MaxValue.
         public GridSquare()

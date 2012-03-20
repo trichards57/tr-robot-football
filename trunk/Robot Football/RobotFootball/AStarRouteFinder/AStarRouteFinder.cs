@@ -11,17 +11,31 @@ using System.Collections.Generic;
 namespace RouteFinders
 {
     /// <summary>
+    /// A route finder that determines a route using the A* algorithm using a basic List to hold the squares.
+    /// </summary>
+    public class ListAStarRouteFinder : AStarRouteFinder<List<GridSquare>>
+    {
+    }
+
+    /// <summary>
+    /// A route finder that determines a route by using the A* algorithm, using a HashSet to speed up searches in the open and closed sets.
+    /// </summary>
+    public class HashSetAStarRouteFinder : AStarRouteFinder<HashSet<GridSquare>>
+    {
+    }
+
+    /// <summary>
     /// A route finder that determines a route using the A* algorithm
     /// </summary>
-    public class AStarRouteFinder : RouteFinder
+    public class AStarRouteFinder<TStorageClass> : RouteFinder where TStorageClass : ICollection<GridSquare>, new()
     {
         /// <summary>
         /// The distance that objects must be cleared by.
         /// </summary>
-        public int ObjectClearance { get; set; }
+        private int ObjectClearance { get; set; }
 
         /// <summary>
-        /// Initialises a new instance of the AStarRouteFinder class.
+        /// Initializes a new instance of the AStarRouteFinder class.
         /// </summary>
         /// 
         /// Sets all member values to their defaults of:
@@ -29,30 +43,30 @@ namespace RouteFinders
         /// * Resolution = 10 x 10
         /// 
         /// * ObjectClearance = 20
-        public AStarRouteFinder()
+        protected AStarRouteFinder()
         {
             Resolution = new Size(10, 10);
             ObjectClearance = 20;
         }
 
         /// <summary>
-        /// Initialises a discrete grid using the information provided.
+        /// Initializes a discrete grid using the information provided.
         /// </summary>
         /// <param name="startPoint">The point to start the route at</param>
         /// <param name="endPoint">The point to end the route at</param>
         /// <param name="field">The field that needs to be discretised</param>
         /// <param name="gridSize">The size of the grid to be palced placed over <paramref name="field"/></param>
         /// <param name="movingObject">The object that will be moving.</param>
-        /// <returns>A GridSquare array, initialised to represent <paramref name="field"/>.</returns>
+        /// <returns>A GridSquare array, initialized to represent <paramref name="field"/>.</returns>
         /// 
         /// Produces a GridSquare array that is set up for use by <see cref="FindPath"/>.
         /// 
-        /// Uses the ObjectClearance and <paramref name="movingObject" />'s <see cref="IPositionedObject::Size"/> property to determine the 
-        /// apparent size of opponents, and marks the squares that contain them as <see cref="SquareType::Obstacle"/>.
+        /// Uses the ObjectClearance and <paramref name="movingObject" />'s <see cref="IPositionedObject.Size"/> property to determine the 
+        /// apparent size of opponents, and marks the squares that contain them as <see cref="SquareType.Obstacle"/>.
         /// 
-        /// Marks the square that contains <paramref name="endPoint" /> as <see cref="SquareType::Destination"/>.
+        /// Marks the square that contains <paramref name="endPoint" /> as <see cref="SquareType.Destination"/>.
         ///
-        /// Marks the square that contains <paramref name="startPoint" /> as <see cref="SquareType::Origin"/>.
+        /// Marks the square that contains <paramref name="startPoint" /> as <see cref="SquareType.Origin"/>.
         /// 
         /// Works in parallel as far as possible, using the Microsoft Task Parallel Library (http://msdn.microsoft.com/en-us/library/dd460717.aspx).
         protected GridSquare[] InitGrid(PointF startPoint, PointF endPoint, Field field, Size gridSize, IPositionedObject movingObject)
@@ -62,9 +76,12 @@ namespace RouteFinders
 
             var grid = new GridSquare[gridSize.Height * gridSize.Width];
             // Initialize the grid
-            Parallel.For(0, grid.Length, i => { 
-                grid[i] = new GridSquare();
-                grid[i].Location = PointExtensions.FromIndex(i, gridSize.Width); 
+            Parallel.For(0, grid.Length, i => {
+                                                  grid[i] = new GridSquare
+                                                                {
+                                                                    Location = PointExtensions.FromIndex(i, gridSize.Width)
+                                                                };
+
             });
 
             Parallel.ForEach(from p in field.Players where p.Team == Team.Opposition select p, player =>
@@ -118,7 +135,7 @@ namespace RouteFinders
         /// Determines a route from <paramref name="startPoint" /> to <paramref name="endPoint" /> using the A* algorithm.
         ///
         /// Algorithm taken from @cite aiModernApproach
-        public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
+        public virtual Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
         {
             if (Resolution.Height < 1 || Resolution.Width < 1)
                 throw new InvalidOperationException("Resolution must be greater than or equal to 1 pixel by 1 pixel");
@@ -129,8 +146,11 @@ namespace RouteFinders
 
             var startPoints = from g in grid where g.Type == SquareType.Origin select g;
 
-            var closedSet = new List<GridSquare>(); // The already checked points
-            var openSet = new List<GridSquare>(from g in grid where g.Type == SquareType.Origin select g); // The points to check
+            var closedSet = new TStorageClass(); // The already checked points
+            var openSet = new TStorageClass();
+
+            foreach (var f in from g in grid where g.Type == SquareType.Origin select g) // The points to check
+                openSet.Add(f);
             var cameFrom = new Dictionary<GridSquare, GridSquare>(); // A list of route data already calculated
 
             // Initialise the origin points
@@ -153,7 +173,7 @@ namespace RouteFinders
 
                 var index = square.Location.ToIndex(gridSize.Width);
 
-                // Calculate the neighbouring indexes and discard the ones out of range.
+                // Calculate the neighboring indexes and discard the ones out of range.
                 var neighbourIndexes = new[] { index + 1, 
                                                index - 1, 
                                                index + gridSize.Width, 
@@ -173,7 +193,7 @@ namespace RouteFinders
                     // Work out the distance to the origin
                     var tentativeKnownScore = square.KnownScore + CalculateLength(square.Location, neighbour.Location);
 
-                    bool tentativeIsBetter = false;
+                    bool tentativeIsBetter;
 
                     if (!openSet.Contains(neighbour))
                     {
@@ -232,12 +252,7 @@ namespace RouteFinders
         /// </returns>
         protected float CalculateHeuristic(GridSquare square, PointF endPoint)
         {
-            if (square.Type == SquareType.Obstacle)
-                return float.PositiveInfinity;
-            else
-                return CalculateLength(square.Location, endPoint);
+            return square.Type == SquareType.Obstacle ? float.PositiveInfinity : CalculateLength(square.Location, endPoint);
         }
-
-        
     }
 }

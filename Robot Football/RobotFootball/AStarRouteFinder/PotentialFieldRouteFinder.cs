@@ -1,25 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RobotFootballCore.Interfaces;
-using RobotFootballCore.RouteObjects;
 using System.Drawing;
-using RobotFootballCore.Objects;
-using RobotFootballCore.Utilities;
-using System.Threading.Tasks;
+using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
+using RobotFootballCore.Interfaces;
+using RobotFootballCore.Objects;
+using RobotFootballCore.RouteObjects;
 
 namespace RouteFinders
 {
-    public class PotentialFieldRouteFinder : RouteFinder
+    /// <summary>
+    /// A route finder that uses a Potential Field algorithm to find a route
+    /// </summary>
+    public sealed class PotentialFieldRouteFinder : RouteFinder
     {
-        public override Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject)
+        /// <summary>
+        /// Finds a route using a Potential Field algorithm
+        /// </summary>
+        /// <param name="startPoint">The point to start the algorithm from.</param>
+        /// <param name="endPoint">The point to find a route to.</param>
+        /// <param name="field">The field in which the route must be found.</param>
+        /// <returns>
+        /// A Route if a route can be found.
+        /// 
+        /// Otherwise, the route that has been found so far.
+        /// </returns>
+        /// Determines a route from <paramref name="startPoint" /> to <paramref name="endPoint" /> using a Potential Field algorithm.
+        /// 
+        /// Algorithm taken from @cite intelligentAlgorithmPathPlanning
+        public static Route FindPath(PointF startPoint, PointF endPoint, Field field)
         {
-            var attractiveConstant = 1;
-            var repulsiveConstant = -50000000;
-            var repulsiveDistance = 150;
-            var timestep = 0.05;
+            const int attractiveConstant = 1;
+            const int repulsiveConstant = -50000000;
+            const int repulsiveDistance = 150;
+            const double timestep = 0.05;
 
             var currentVelocity = new Vector(2, 0);
             var currentPosition = new Vector(new double[] { startPoint.X, startPoint.Y });
@@ -33,23 +46,14 @@ namespace RouteFinders
                 var attractForce = attractiveConstant * distance;
                 var repulseForce = new Vector(new[] { 0.0, 0.0 });
 
-                //var distance = new SizeF(currentPosition.X - endPoint.X, currentPosition.Y - endPoint.Y).Scale(-1);
-                
-                //var attractForce = distance.Scale(attractiveConstant);
-
-                //SizeF repulsiveForce = SizeF.Empty;
-
-                foreach (var p in field.Players.Where(p => p.Team == Team.Opposition))
-                {
-                    var playerPos = new Vector(new double[] { p.Position.X, p.Position.Y });
-                    var opDistance = playerPos - currentPosition;
-                    var distMag = opDistance.Norm();
-                    if (distMag > repulsiveDistance)
-                        continue;
-                    var directionVector = opDistance.Normalize();
-                    var force = repulsiveConstant * directionVector / (distMag * distMag);
-                    repulseForce += force;
-                }
+                var position = currentPosition;
+                repulseForce = (from p in field.Players.Where(p => p.Team == Team.Opposition) 
+                                select new Vector(new double[] {p.Position.X, p.Position.Y}) 
+                                into playerPos select playerPos - position 
+                                into opDistance let distMag = opDistance.Norm() 
+                                where distMag <= repulsiveDistance 
+                                let directionVector = opDistance.Normalize() 
+                                select repulsiveConstant*directionVector/(distMag*distMag)).Aggregate(repulseForce, (current, force) => current + force);
 
                 var totalForce = attractForce + repulseForce;
 

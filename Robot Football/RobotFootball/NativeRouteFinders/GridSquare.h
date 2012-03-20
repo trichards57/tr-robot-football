@@ -22,7 +22,7 @@ namespace NativeRouteFinders
 		Destination
 	};
 
-	/// @brief A square in a discretised environment
+	/// @brief A square in a discretized environment
 	///
 	/// Represents a discrete square in an environment, as required by some algorithms such as A*.
 	class GridSquare

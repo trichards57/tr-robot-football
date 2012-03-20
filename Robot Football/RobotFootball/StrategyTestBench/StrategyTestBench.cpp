@@ -15,6 +15,8 @@
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
 #define PATH_LENGTH 1500
 
+using namespace Strategies;
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	ControlFunction sec1 = [](time_t t)->Vector3D{

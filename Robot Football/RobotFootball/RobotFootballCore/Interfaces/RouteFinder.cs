@@ -1,20 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RobotFootballCore.RouteObjects;
+using System;
 using System.Drawing;
-using RobotFootballCore.Objects;
 
 namespace RobotFootballCore.Interfaces
 {
+    /// <summary>
+    /// Base class for all route finders.
+    /// </summary>
     public abstract class RouteFinder
     {
-        public abstract Route FindPath(PointF startPoint, PointF endPoint, Field field, IPositionedObject movingObject);
+        /// <summary>
+        /// The resolution to use for algorithms that discretize the field to find a route.
+        /// </summary>
+        protected Size Resolution { get; set; }
 
-        public Size Resolution { get; set; }
-
-        protected float CalculateLength(PointF startPoint, PointF endPoint)
+        /// <summary>
+        /// Calculates the Euclidean distance between two points.
+        /// </summary>
+        /// <param name="startPoint">The start point</param>
+        /// <param name="endPoint">The end point</param>
+        /// <returns>A float that represents the distance between the two points</returns>
+        protected static float CalculateLength(PointF startPoint, PointF endPoint)
         {
             var xLength = startPoint.X - endPoint.X;
             var yLength = startPoint.Y - endPoint.Y;

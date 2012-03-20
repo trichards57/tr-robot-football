@@ -4,6 +4,12 @@
 #include "stdafx.h"
 #include "MotionPrediction.h"
 
+/// @param src The matrix to invert, and then to place the inverted matrix back in to.
+///
+/// Uses Cramer's rule and the processor's Streaming SIMD instructions to efficiently invert a 4x4 matrix.
+/// Returns the inverted matrix back in to src.
+///
+/// Taken from the @cite IntelMatrixInvertDoc
 void MotionPrediction::InvertMatrix(float* src)
 {
 	__m128 minor0, minor1, minor2, minor3;

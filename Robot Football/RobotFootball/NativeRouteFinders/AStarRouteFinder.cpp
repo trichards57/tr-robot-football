@@ -6,7 +6,7 @@
 
 namespace NativeRouteFinders
 {
-	/// @brief Initialises a given grid using the information provided.
+	/// @brief Initializes a given grid using the information provided.
 	void InitGrid(POINT startPoint, POINT endPoint, SIZE fieldSize, SIZE resolution, SIZE gridSize, 
 				  GridSquare** grid, int objectClearance, SIZE movingObjectSize, 
 				  PositionedObject* opponents, int opponentsCount);
@@ -18,9 +18,9 @@ namespace NativeRouteFinders
 	/// @brief Calculates the length from one point to another
 	float CalculateLength(POINT startPoint, POINT endPoint, bool useSqrt);
 
-	/// @brief Initialises the Native A* Route Finder
+	/// @brief Initializes the Native A* Route Finder
 	///
-	/// This function is used by managed software to initialise the DLL for time-testing processes.
+	/// This function is used by managed software to initialize the DLL for time-testing processes.
 	/// It is used to ensure that the late-bound DLL has been loaded, so that the loading time does
 	/// not register in the time tests.
 	///
@@ -35,7 +35,7 @@ namespace NativeRouteFinders
 	/// @param startPoint The point to start the algorithm from.
 	/// @param endPoint The point to find a route to
 	/// @param fieldSize The size of the field that will be searched.
-	/// @param resolution The size of each square in the field, once it has been discretised
+	/// @param resolution The size of each square in the field, once it has been discretized
 	/// @param movingObjectSize The size of the object that will follow the route
 	/// @param objectClearance The distance that obstacles must be cleared by
 	/// @param opponents The opponents that act as obstacles
@@ -45,11 +45,11 @@ namespace NativeRouteFinders
 	/// @param useSqrt If false, all distance algorithms skip the square root step of the calculation
 	///
 	/// @return ERROR_SUCCESS if a route has been found and placed in routeResult
-	/// @return E_INVALIDARG if the specified resultion is 0
+	/// @return E_INVALIDARG if the specified resolution is 0
 	/// @return E_FAIL if no route has been found
 	/// @return ERROR_INSUFFICIENT_BUFFER if the find route is too long for the given buffer
 	///
-	/// @bug Does not currently detect when the 'neighbouring' squares have actually wrapped onto the next line
+	/// @bug Does not currently detect when the 'neighboring squares have actually wrapped onto the next line
 	///
 	/// Determines a route from startPoint to endPoint using the A* algorithm.
 	///

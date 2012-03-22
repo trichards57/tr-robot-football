@@ -6,7 +6,7 @@
 #include "..\SquareStrategy\PathController.h"
 #include "..\SquareStrategy\MotionController.h"
 
-using namespace Strategies;
+//using namespace Strategies;
 
 extern "C" STRATEGY_API void Create(Environment* env)
 {

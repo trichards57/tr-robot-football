@@ -5,10 +5,23 @@ using System.Windows;
 namespace DataDumpProcessor
 {
     /// <summary>
-    /// A basic set of data entry
+    /// Base class to allow all DataEntries(of T) to be stored in a single collection, regardless of the type of T
     /// </summary>
-    class DataEntries
+    abstract class DataEntries
     {
+    }
+
+    /// <summary>
+    /// A generic set of data entries
+    /// </summary>
+    /// <typeparam name="T">The data type of the entries</typeparam>
+    class DataEntries<T> : DataEntries
+    {
+        /// <summary>
+        /// The data points recorded
+        /// </summary>
+        public List<T> Points { get; private set; }
+
         /// <summary>
         /// The date and time the entry was made
         /// </summary>
@@ -17,22 +30,13 @@ namespace DataDumpProcessor
         /// The demand velocity of the system
         /// </summary>
         public int Velocity { get; set; }
-    }
-    /// <summary>
-    /// A set of data points
-    /// </summary>
-    class RawPointDataEntries : DataEntries
-    {
+
         /// <summary>
-        /// The data points
+        /// Initializes a new instance of the DataEntries class
         /// </summary>
-        public List<Point> Points { get; private set; }
-        /// <summary>
-        /// Initializes a new instance of the RawPointDataEntries class
-        /// </summary>
-        public RawPointDataEntries()
+        public DataEntries()
         {
-            Points = new List<Point>();
+            Points = new List<T>();
         }
     }
 
@@ -49,18 +53,5 @@ namespace DataDumpProcessor
         /// The data point
         /// </summary>
         public Point Point { get; set; }
-    }
-
-    /// <summary>
-    /// A set of data points that includes the time of recording
-    /// </summary>
-    class TimedDataEntries : DataEntries
-    {
-        public List<TimedDataEntry> Points { get; private set; }
-
-        public TimedDataEntries()
-        {
-            Points = new List<TimedDataEntry>();
-        }
     }
 }

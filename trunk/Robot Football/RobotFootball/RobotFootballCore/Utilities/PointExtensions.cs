@@ -68,9 +68,9 @@ namespace RobotFootballCore.Utilities
         /// Converts an array index into a set of coordinates, using the width of the field. Works using
         /// equations:
         ///
-        /// \f$ x = index \mod width \f$
+        /// \f$ x = index \% width \f$
         ///
-        /// \f$ y = index \div width \f$
+        /// \f$ y = index / width \f$
         public static Point FromIndex(int index, int width)
         {
             return new Point(index % width, index / width);

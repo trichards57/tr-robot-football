@@ -65,46 +65,42 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 
 	PotentialFieldGenerator generator;
 
-	if (minDistance > 5)
-	{
-	}
-	else
-	{
-		interceptVector = ballVelocity;
-	}
+	
+	interceptVector = generator.FieldVectorToBall(env->home[1], env);
+	
 
 	VelocityController velControl;
-	velControl.Control(interceptVector, velocities[minDistanceBot], &(env->home[minDistanceBot]), true);
+	velControl.Control(interceptVector, velocities[1], &(env->home[1]), true);
 
 	Vector3D stopVector;
 	stopVector.x = 0;
 	stopVector.y = 0;
 
-	for (int i = 0; i < 5; i++)
-	{
-		if (i != minDistanceBot)
-		{
-			switch (i)
-			{
-			case 0: // Goal Keeper
-				velControl.Control(stopVector, velocities[i], &(env->home[i]));
-				break;
-			case 1: // Defence Top
-				velControl.Control(stopVector, velocities[i], &(env->home[i]));
-				break;
-			case 2: // Defence Bottom
-				velControl.Control(stopVector, velocities[i], &(env->home[i]));
-				break;
-			case 3: // Attack Top
-				velControl.Control(stopVector, velocities[i], &(env->home[i]));
-				break;
-			case 5: // Attack Bottom
-				velControl.Control(stopVector, velocities[i], &(env->home[i]));
-				break;
-			}
-			
-		}
-	}
+	//for (int i = 0; i < 5; i++)
+	//{
+	//	if (i != minDistanceBot)
+	//	{
+	//		switch (i)
+	//		{
+	//		case 0: // Goal Keeper
+	//			velControl.Control(stopVector, velocities[i], &(env->home[i]));
+	//			break;
+	//		case 1: // Defence Top
+	//			velControl.Control(stopVector, velocities[i], &(env->home[i]));
+	//			break;
+	//		case 2: // Defence Bottom
+	//			velControl.Control(stopVector, velocities[i], &(env->home[i]));
+	//			break;
+	//		case 3: // Attack Top
+	//			velControl.Control(stopVector, velocities[i], &(env->home[i]));
+	//			break;
+	//		case 5: // Attack Bottom
+	//			velControl.Control(stopVector, velocities[i], &(env->home[i]));
+	//			break;
+	//		}
+	//		
+	//	}
+	//}
 
 	lastTime = currentTime;
 	for (int i = 0; i < 5; i++)

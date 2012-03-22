@@ -9,9 +9,9 @@ namespace NativeRouteFinders
 	/// Converts an array index into a set of coordinates, using the width of the field. Works using
     /// equations:
 	///
-	/// \f$ x = index \mod width \f$
-	///
-	/// \f$ y = index \div width \f$
+	/// \f$ x = index \% width \f$
+    ///
+    /// \f$ y = index / width \f$
 	///
 	/// @returns A POINT structure containing x and y as LONGs
 	POINT PointFromIndex(int index, int width)

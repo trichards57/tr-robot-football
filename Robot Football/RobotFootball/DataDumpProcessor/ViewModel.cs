@@ -8,14 +8,28 @@ using Visiblox.Charts;
 
 namespace DataDumpProcessor
 {
+    /// <summary>
+    /// The view model used to display data series
+    /// </summary>
     class SeriesViewModel : INotifyPropertyChanged
     {
+        /// <summary>
+        /// The chart series to display
+        /// </summary>
         private readonly ChartSeriesCommonBase series;
 
+        /// <summary>
+        /// Initializes a new instance of the SeriesViewModel class
+        /// </summary>
+        /// <param name="series">The series to display</param>
         public SeriesViewModel(ChartSeriesCommonBase series)
         {
             this.series = series;
         }
+
+        /// <summary>
+        /// Gets or sets the title of the data series.
+        /// </summary>
         public string Title
         {
             get
@@ -24,6 +38,9 @@ namespace DataDumpProcessor
             }
         }
 
+        /// <summary>
+        /// Gets or sets the visibility of the data series.
+        /// </summary>
         public bool Visible
         {
             get
@@ -38,24 +55,49 @@ namespace DataDumpProcessor
             }
         }
 
+        /// <summary>
+        /// Invoked whenever a property on this view model changes.
+        /// </summary>
+        /// <param name="property">The name of the property that has changed.</param>
         private void OnPropertyChanged(string property)
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
 
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
+    /// <summary>
+    /// Represents the range the secondary scale should use
+    /// </summary>
     public enum ScaleRange
     {
+        /// <summary>
+        /// Represents a range large enough to show both sets of data
+        /// </summary>
         Both = 0,
+        /// <summary>
+        /// Represents a range large enough to show the velocity data
+        /// </summary>
         Velocity,
+        /// <summary>
+        /// Represents a range large enough to show the acceleration data
+        /// </summary>
         Acceleration
     }
 
+    /// <summary>
+    /// The view model used to display data in the main window
+    /// </summary>
     class ViewModel : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Initializes a new instance of the ViewModel class
+        /// </summary>
         public ViewModel()
         {
             DataFilePath = @"H:\DataDump.csv";
@@ -63,10 +105,22 @@ namespace DataDumpProcessor
             SeriesSettings = new ObservableCollection<SeriesViewModel>();
         }
 
+        /// <summary>
+        /// The main x-axis used by the main graph
+        /// </summary>
         private IAxis mainXAxis = new LinearAxis();
+        /// <summary>
+        /// The main y-axis used by the main graph
+        /// </summary>
         private IAxis mainYAxis = new LinearAxis();
+        /// <summary>
+        /// The secondary y-axis used by the main graph
+        /// </summary>
         private IAxis secondYAxis = new LinearAxis();
 
+        /// <summary>
+        /// Gets or sets the main x-axis used by the main graph
+        /// </summary>
         public IAxis MainXAxis
         {
             get { return mainXAxis; }
@@ -76,6 +130,9 @@ namespace DataDumpProcessor
                 OnPropertyChanged("MainXAxis");
             }
         }
+        /// <summary>
+        /// Gets or sets the main y-axis used by the main graph
+        /// </summary>
         public IAxis MainYAxis
         {
             get { return mainYAxis; }
@@ -85,6 +142,9 @@ namespace DataDumpProcessor
                 OnPropertyChanged("MainYAxis");
             }
         }
+        /// <summary>
+        /// Gets or sets the secondary y-axis used by the main graph
+        /// </summary>
         public IAxis SecondYAxis
         {
             get { return secondYAxis; }
@@ -94,14 +154,37 @@ namespace DataDumpProcessor
                 OnPropertyChanged("SecondYAxis");
             }
         }
-
-        private double maxVel, minVel, maxAccel, minAccel;
-
+        /// <summary>
+        /// The maximum velocity found
+        /// </summary>
+        private double maxVel;
+        /// <summary>
+        /// The minimum velocity found
+        /// </summary>
+        private double minVel;
+        /// <summary>
+        /// The maximum acceleration found
+        /// </summary>
+        private double maxAccel; 
+        /// <summary>
+        /// The minimum acceleration found
+        /// </summary>
+        private double minAccel;
+        /// <summary>
+        /// The path to the current data file
+        /// </summary>
         private string dataFilePath;
+        /// <summary>
+        /// The selected data entries
+        /// </summary>
         private DataEntries selectedDataEntries;
-
+        /// <summary>
+        /// The range to use for the secondary y-axis
+        /// </summary>
         private ScaleRange scaleRange;
-
+        /// <summary>
+        /// Gets or sets if the graph should use a secondary axis large enough for both the acceleration and the velocity readings
+        /// </summary>
         public bool BothScaleRange
         {
             get
@@ -115,7 +198,12 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
-
+        /// <summary>
+        /// Invoked whenever the BothScaleRange, VelocityScaleRange or AccelerationScaleRange changes
+        /// </summary>
+        /// <remarks>
+        /// Invokes OnPropertyChanged for all three properties, regardless of which one changed.
+        /// </remarks>
         private void OnScaleRangeChanged()
         {
             switch (scaleRange)
@@ -134,7 +222,9 @@ namespace DataDumpProcessor
             OnPropertyChanged("VelocityScaleRange");
             OnPropertyChanged("AccelerationScaleRange");
         }
-
+        /// <summary>
+        /// Gets or sets if the graph should use a secondary axis large enough for the velocity readings
+        /// </summary>
         public bool VelocityScaleRange
         {
             get
@@ -148,7 +238,9 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
-
+        /// <summary>
+        /// Gets or sets if the graph should use a secondary axis large enough for the acceleration readings
+        /// </summary>
         public bool AccelerationScaleRange
         {
             get
@@ -162,7 +254,9 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
-
+        /// <summary>
+        /// Gets or sets the path to the current data file
+        /// </summary>
         public string DataFilePath
         {
             get { return dataFilePath; }
@@ -172,13 +266,24 @@ namespace DataDumpProcessor
                 OnPropertyChanged("DataFilePath");
             }
         }
-
+        /// <summary>
+        /// Invoked whenever a property in the view model changes.
+        /// </summary>
+        /// <param name="property">The property that changed</param>
         private void OnPropertyChanged(string property)
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
-
+        /// <summary>
+        /// Invoked whenever the SelectedDataEntries property changes
+        /// </summary>
+        /// 
+        /// Invoked whenever the SelectedDataEntries property is changed.  Clears away the current SeriesSettings, as well as all the current data series.
+        /// Recalculates velocity and acceleration graphs based on the current data.  Recalculates the filtered data for data
+        /// series that contain time information. Adds all the newly created graphs to the available graph collections, defaulting all but the basic
+        /// data to not visible. Triggers the secondary axis scale to be reset to match the current data, based on the selected scale range. Determines
+        /// the distribution of timesteps recorded.
         private void OnSelectedDataEntriesChanged()
         {
             OnPropertyChanged("SelectedDataEntries");
@@ -186,11 +291,14 @@ namespace DataDumpProcessor
             var timesteps = new Dictionary<int, long>();
 
             var series = new SeriesCollection<IChartSeries>();
-            var rawPointEntries = SelectedDataEntries as RawPointDataEntries;
-            var timedPointEntries = SelectedDataEntries as TimedDataEntries;
+            // Identify if the selected series has time information attached.
+            var rawPointEntries = SelectedDataEntries as DataEntries<Point>;
+            var timedPointEntries = SelectedDataEntries as DataEntries<TimedDataEntry>;
+            // Clear the current series settings
             SeriesSettings.Clear();
             if (timedPointEntries != null)
             {
+                // IIR filter coefficients, produced using MATLAB
                 const double a21 = -0.41403357712344141;
                 const double a22 = -0.34184464084699628;
                 const double a31 = 0.6223866646485583;
@@ -203,6 +311,7 @@ namespace DataDumpProcessor
                 const double b32 = 0.41066147232228034;
                 const double s1 = -0.36438081475160222;
 
+                // Create the new data series
                 var xSeries = new DataSeries<double, double>("X Coordinates");
                 var ySeries = new DataSeries<double, double>("Y Coordinates");
                 var xVelSeries = new DataSeries<double, double>("X Velocity");
@@ -215,6 +324,7 @@ namespace DataDumpProcessor
 
                 var filterMidValue = new List<double>();
 
+                // Set up the variables to identify the data series range
                 double lastY, lastXVel, lastYVel, lastTotalVel;
                 maxVel = maxAccel = double.MinValue;
                 minVel = minAccel = double.MaxValue;
@@ -228,6 +338,7 @@ namespace DataDumpProcessor
                     var timeStep = double.NaN;
                     if (firstPlace)
                     {
+                        // First entry. Cannot calculate the current velocity
                         lastX = p.Point.X;
                         lastY = p.Point.Y;
                         lastTime = p.Time;
@@ -235,15 +346,20 @@ namespace DataDumpProcessor
                     }
                     else if (firstVel)
                     {
+                        // Second entry. Can calculate the current velocity, but not the acceleration
+
+                        // Calculate the velocity
                         timeStep = (p.Time - lastTime);
                         var xVel = (p.Point.X - lastX) / timeStep;
                         var yVel = (p.Point.Y - lastY) / timeStep;
                         var totalVel = Math.Sqrt(xVel * xVel + yVel * yVel);
 
+                        // Begin the IIR filter
                         var fVel = xVel * s1 * b11;
                         filterMidValue.Add(fVel);
                         fVel *= b12;
 
+                        // Check the velocity range
                         if (maxVel < Math.Max(Math.Max(xVel, yVel), totalVel))
                             maxVel = Math.Max(Math.Max(xVel, yVel), totalVel);
                         if (minVel > Math.Min(Math.Min(xVel, yVel), totalVel))
@@ -264,11 +380,15 @@ namespace DataDumpProcessor
                     }
                     else
                     {
+                        // Every other entry. Can calculate both velocity and acceleration.
+
+                        // Calculate the velocity
                         timeStep = (p.Time - lastTime);
                         var xVel = (p.Point.X - lastX) / timeStep;
                         var yVel = (p.Point.Y - lastY) / timeStep;
                         var totalVel = Math.Sqrt(xVel * xVel + yVel * yVel);
 
+                        // Continue the IIR filter
                         var fVel = xVel * s1;
                         fVel -= a21 * xVelSeries[xVelSeries.Count - 1].Y;
                         if (xVelSeries.Count > 2)
@@ -290,10 +410,12 @@ namespace DataDumpProcessor
                         fVel /= 1.4;
                         fVelSeries.Add(new DataPoint<double,double>(p.Time, fVel));
 
+                        // Calculate the acceleration
                         var xAccel = (xVel - lastXVel) / timeStep;
                         var yAccel = (yVel - lastYVel) / timeStep;
                         var totalAccel = (totalVel - lastTotalVel) / timeStep;
 
+                        // Check the velocity and acceleration ranges
                         if (maxVel < Math.Max(Math.Max(xVel, yVel), Math.Max(totalVel, fVel)))
                             maxVel = Math.Max(Math.Max(xVel, yVel), Math.Max(totalVel, fVel));
                         if (minVel > Math.Min(Math.Min(xVel, yVel), Math.Min(totalVel, fVel)))
@@ -325,15 +447,19 @@ namespace DataDumpProcessor
                         timeStep *= 1000;
                     if (timeStep > 40000) // If a VERY large time step, it's probably in us
                         timeStep /= 1000;
-                    var mSec = (int)(Math.Round(timeStep, 1)*10);
+                    var mSec = (int)(Math.Round(timeStep, 1)*10); // Round of the timestep to an integer
+
+                    // Record the timestep distribution
                     if (timesteps.ContainsKey(mSec))
                         timesteps[mSec] += 1;
                     else
                         timesteps[mSec] = 1;
                 }
 
+                // Set up all the LineSeries for the calculated data sets
                 var xLineSeries = new LineSeries { DataSeries = xSeries, XAxis = mainXAxis, YAxis = mainYAxis };
                 var yLineSeries = new LineSeries { DataSeries = ySeries, XAxis = mainXAxis, YAxis = mainYAxis };
+                // Set all the non-basic line series to hidden
                 var xVelLineSeries = new LineSeries { DataSeries = xVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var fVelLineSeries = new LineSeries { DataSeries = fVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var yVelLineSeries = new LineSeries { DataSeries = yVelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
@@ -341,7 +467,6 @@ namespace DataDumpProcessor
                 var xAccelLineSeries = new LineSeries { DataSeries = xAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var yAccelLineSeries = new LineSeries { DataSeries = yAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var totalAccelLineSeries = new LineSeries { DataSeries = totalAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-
 
                 series.Add(xLineSeries);
                 series.Add(yLineSeries);
@@ -353,6 +478,7 @@ namespace DataDumpProcessor
                 series.Add(yAccelLineSeries);
                 series.Add(totalAccelLineSeries);
 
+                // Add the series to the SeriesSettings list to allow the visibility to be controlled with data binding
                 SeriesSettings.Add(new SeriesViewModel(xLineSeries));
                 SeriesSettings.Add(new SeriesViewModel(yLineSeries));
                 SeriesSettings.Add(new SeriesViewModel(xVelLineSeries));
@@ -363,8 +489,10 @@ namespace DataDumpProcessor
                 SeriesSettings.Add(new SeriesViewModel(yAccelLineSeries));
                 SeriesSettings.Add(new SeriesViewModel(totalAccelLineSeries));
 
+                // Set up the secondary axis range
                 SecondYAxis.Range = new DoubleRange(Math.Min(minVel, minAccel), Math.Max(maxVel, maxAccel));
 
+                // Create the timestep distribution graph
                 var timeDistribution = new DataSeries<double, long>("Time Steps");
                 foreach (var t in timesteps.OrderBy(u => u.Key))
                 {
@@ -377,6 +505,7 @@ namespace DataDumpProcessor
             }
             else if (rawPointEntries != null)
             {
+                // Data entries with no time data. Can't do anything beyond plot the points
                 var xSeries = new DataSeries<long, double>("X Coordinates");
                 var ySeries = new DataSeries<long, double>("Y Coordinates");
                 var i = 0;
@@ -399,8 +528,14 @@ namespace DataDumpProcessor
             OnScaleRangeChanged();
         }
 
+        /// <summary>
+        /// Gets the data entries available to be viewed.
+        /// </summary>
         public ObservableCollection<DataEntries> DataEntries { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the currently selected data entry
+        /// </summary>
         public DataEntries SelectedDataEntries
         {
             get
@@ -414,11 +549,21 @@ namespace DataDumpProcessor
             }
         }
 
+        /// <summary>
+        /// Gets the current set of data series
+        /// </summary>
         public SeriesCollection<IChartSeries> CurrentDataSeries { get; private set; }
+        /// <summary>
+        /// Gets the timestep distribution data series
+        /// </summary>
         public SeriesCollection<IChartSeries> TimeStepDistribution { get; private set; }
-
+        /// <summary>
+        /// Gets the settings for the data series
+        /// </summary>
         public ObservableCollection<SeriesViewModel> SeriesSettings { get; private set; }
-
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

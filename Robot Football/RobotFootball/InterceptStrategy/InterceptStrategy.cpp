@@ -1,7 +1,8 @@
 // InterceptStrategy.cpp : Defines the exported functions for the DLL application.
 //
 
-#include "stdafx.h"
+#include "stdafx.h"	
+
 #include "..\..\..\Simulator\Strategy Source\Strategy.h"
 #include "..\SquareStrategy\PathController.h"
 #include "..\SquareStrategy\MotionController.h"
@@ -19,9 +20,11 @@ Vector3D lastPositions[5];
 Vector3D ballVelocity;
 clock_t lastTime = 0;
 
+PotentialFieldGenerator generator;
+
+
 extern "C" STRATEGY_API void Create(Environment* env)
 {
-
 }
 
 extern "C" STRATEGY_API void Destroy(Environment* env)
@@ -63,7 +66,7 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 
 	Vector3D interceptVector;
 
-	PotentialFieldGenerator generator;
+	
 
 	
 	interceptVector = generator.FieldVectorToBall(env->home[1], env);

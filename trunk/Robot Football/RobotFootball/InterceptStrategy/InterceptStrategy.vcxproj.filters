@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+    <None Include="..\..\..\Simulator\field_kernel.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

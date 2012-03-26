@@ -3,21 +3,93 @@
 
 #include "..\SquareStrategy\MotionController.h"
 
+#define HEIGHT (FTOP - FBOT)
+#define WIDTH (FRIGHTX - FLEFTX)
 #define BALL_WEIGHT 150
 #define OBSTACLE_WEIGHT 1000000
 #define OBSTACLE_EFFECT_RADIUS 10
 #define OBSTACLE_SIGMA 2
-#define GRID_RESOLUTION 0.01
+#define GRID_RESOLUTION 0.1
+#define WORK_GROUP_SIZE 16
 
 using namespace Concurrency;
 
+#ifdef OPENCL
+inline void checkErr(cl_int err, const WCHAR * name)
+{
+	if (err != CL_SUCCESS)
+	{
+		std::cerr << "ERROR: " << name << " (" << err << ")" << std::endl;
+		std::wstring errMsg(L"ERROR: ");
+		errMsg += name;
+		errMsg += L" (";
+		WCHAR buf[5];
+		errMsg += _itow(err, buf, 10);
+		errMsg += L")";
+
+		MessageBox(nullptr, errMsg.c_str(), L"Open CL Error", MB_OK | MB_ICONERROR);
+		exit(EXIT_FAILURE);
+	}
+}
+#endif
+
+
+
 PotentialFieldGenerator::PotentialFieldGenerator(void)
 {
+#ifdef OPENCL
+	cl_int err;
+	cl::vector<cl::Platform> platformList;
+	cl::Platform::get(&platformList);
+	checkErr(platformList.size() != 0 ? CL_SUCCESS : -1, L"cl::Platform::get");
+	std::cerr << "Platform number is: " << platformList.size() << std::endl;
+
+	std::string platformVendor;
+	platformList[0].getInfo((cl_platform_info)CL_PLATFORM_VENDOR, &platformVendor);
+	std::cerr << "Platform is by: " << platformVendor << "\n";
+	cl_context_properties cprops[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[0])(), 0};
+
+	context = cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+	checkErr(err, L"Context::Context()");
+
+	devices = context.getInfo<CL_CONTEXT_DEVICES>();
+	checkErr(devices.size() > 0 ? CL_SUCCESS : -1, L"devices.size() > 0");
+
+	std::ifstream file("field_kernel.cl");
+	checkErr(file.is_open() ? CL_SUCCESS : -1, L"field_kernel.cl");
+
+	std::string prog(std::istreambuf_iterator<char>(file), (std::istreambuf_iterator<char>()));
+
+	cl::Program::Sources source(1, std::make_pair(prog.c_str(), prog.length() + 1));
+	cl::Program program(context, source);
+	err = program.build(devices, "");
+	checkErr(err, L"Program::build()");
+
+	kernel = cl::Kernel(program, "main", &err);
+	checkErr(err, L"Kernel::Kernel()");
+
+	gridWidth = (int)ceil(WIDTH/GRID_RESOLUTION);
+	int remainder = gridWidth % WORK_GROUP_SIZE;
+	gridWidth += WORK_GROUP_SIZE - remainder;
+
+	gridHeight = (int)ceil(HEIGHT/GRID_RESOLUTION);
+	remainder = gridHeight % WORK_GROUP_SIZE;
+	gridHeight += WORK_GROUP_SIZE - remainder;
+
+	length = gridHeight * gridWidth;
+
+	points = new cl_float4[length];
+
+	outCl = cl::Buffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, length * sizeof(cl_float4), points, &err);
+	checkErr(err, L"Buffer::Buffer()");
+#endif
 }
 
 
 PotentialFieldGenerator::~PotentialFieldGenerator(void)
 {
+	taskGroup.wait();
+	delete points;
 }
 
 double FieldAtPoint(Vector3D point, Environment* env)
@@ -29,43 +101,123 @@ double FieldAtPoint(Vector3D point, Environment* env)
 	auto dist = sqrt(xDiff*xDiff + yDiff*yDiff);
 	auto attractField = 0.5 * BALL_WEIGHT * dist;
 
-	combinable<double> repelField;
+	//combinable<double> repelField;
+	double repField = 0;
 	// Repel from friendlies
-	parallel_for(0,5, [env, point, &repelField](int i) 
+	for (int i = 0; i < 5; i++)
 	{
 		auto xDiff = env->home[i].pos.x - point.x;
 		auto yDiff = env->home[i].pos.y - point.y;
 		
 		if (fabs(xDiff) < 2*GRID_RESOLUTION && fabs(yDiff) < 2*GRID_RESOLUTION)
 		{
-			repelField.local() = 0;
-			return; // This is probably the robot being analysed as it is so close. Skip it
+			continue; // This is probably the robot being analysed as it is so close. Skip it
 		}
 		
 		auto force = 0.5 * OBSTACLE_WEIGHT * exp(-((xDiff*xDiff)/(2*OBSTACLE_SIGMA) + (yDiff*yDiff)/(2*OBSTACLE_SIGMA)));
-		repelField.local() = force;
-	});
-	auto repField = repelField.combine(std::plus<double>());
+		repField += force;
+	}
+	//auto repField = repelField.combine(std::plus<double>());
 
-	repelField.clear();
+	//repelField.clear();
 
 	// Repel from opponents
-	parallel_for(0,5, [env, point, &repelField](int i) 
+	for (int i = 0; i < 5; i++)
 	{
 		auto xDiff = env->opponent[i].pos.x - point.x;
 		auto yDiff = env->opponent[i].pos.y - point.y;
 		
 		auto force = 0.5 * OBSTACLE_WEIGHT * exp(-((xDiff*xDiff)/(2*OBSTACLE_SIGMA) + (yDiff*yDiff)/(2*OBSTACLE_SIGMA)));
-		repelField.local() = force;
-	});
+		repField += force;
+	}
 
-	repField += repelField.combine(std::plus<double>());
+	//repField += repelField.combine(std::plus<double>());
 
 	return  repField +attractField;
 }
 
 Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 {
+	auto xWidth = (int)ceil((FRIGHTX - FLEFTX) / GRID_RESOLUTION);
+	auto xHeight = (int)ceil((FTOP - FBOT) / GRID_RESOLUTION);
+
+	auto t1 = clock();
+
+#ifdef OPENCL
+	cl_int err;
+	
+	cl_float4 ball;
+	ball.s[0] = env->currentBall.pos.x; // Ball X
+	ball.s[1] = env->currentBall.pos.y; // Ball Y
+	ball.s[2] = 0;
+	ball.s[3] = BALL_WEIGHT;
+
+	cl_float4 field;
+	field.s[0] = WIDTH;
+	field.s[1] = HEIGHT;
+	field.s[2] = GRID_RESOLUTION;
+
+	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &ball, &err);
+	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer inField(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &field, &err);
+	checkErr(err, L"Buffer::Buffer()");
+
+	err = kernel.setArg(0, inBall);
+	checkErr(err, L"Kernel::setArg()");
+	err = kernel.setArg(1, inField);
+	checkErr(err, L"Kernel::setArg()");
+	err = kernel.setArg(2, outCl);
+	checkErr(err, L"Kernel::setArg()");
+
+	cl::CommandQueue queue(context, devices[0], 0, &err);
+	checkErr(err, L"CommandQueue::CommandQueue()");
+
+	cl::Event event;
+	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &event);
+	checkErr(err, L"CommandQueue::CommandQueue()");
+
+	//event.wait();
+
+	taskGroup.wait();
+
+	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(cl_float4), points);
+	checkErr(err, L"CommandQueue::enqueueReadBuffer()");
+
+	auto p = points;
+
+	taskGroup.run([=](){
+		std::fstream outStream("data.csv", std::fstream::app | std::fstream::out);
+		outStream << std::endl;
+
+		for (int i = 0; i < gridWidth; i++)
+		{
+			for (int j = 0; j < gridHeight; j++)
+			{
+				outStream << p[i + j * gridWidth].s[0] << ",";
+			}
+			outStream << std::endl;
+		}
+
+		outStream.flush();
+		outStream.close();
+	});
+
+#else
+	parallel_for (0,xWidth, [=](int i)
+	{
+		for (int j = 0; j < xHeight; j++)
+		{
+			Vector3D point;
+			point.x = FLEFTX + i * GRID_RESOLUTION;
+			point.y = FBOT + j * GRID_RESOLUTION;
+			points[i + j * xWidth] = FieldAtPoint(point, env);
+		}
+	});
+#endif 
+	auto t2 = clock();
+
+	std::cerr << ((t2 - t1)/CLOCKS_PER_SEC) << std::endl;
+
 	Vector3D upPoint, downPoint, leftPoint, rightPoint;
 
 	upPoint.x = bot.pos.y + GRID_RESOLUTION;

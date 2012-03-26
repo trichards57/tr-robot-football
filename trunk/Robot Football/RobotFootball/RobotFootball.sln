@@ -42,6 +42,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DefenceStrategy", "DefenceS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YellowInterceptStrategy", "YellowInterceptStrategy\YellowInterceptStrategy.vcxproj", "{18D3C3F1-643C-4729-AA15-5A63A40098B2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FieldCalculator", "FieldCalculator\FieldCalculator.vcxproj", "{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -328,6 +330,24 @@ Global
 		{18D3C3F1-643C-4729-AA15-5A63A40098B2}.TestBench|Win32.ActiveCfg = Release|Win32
 		{18D3C3F1-643C-4729-AA15-5A63A40098B2}.TestBench|Win32.Build.0 = Release|Win32
 		{18D3C3F1-643C-4729-AA15-5A63A40098B2}.TestBench|x86.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|Win32.Build.0 = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Debug|x86.ActiveCfg = Debug|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|Any CPU.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|Win32.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|Win32.Build.0 = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.Release|x86.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|Any CPU.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|Mixed Platforms.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|Mixed Platforms.Build.0 = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|Win32.ActiveCfg = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|Win32.Build.0 = Release|Win32
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C}.TestBench|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -340,5 +360,6 @@ Global
 		{75EED251-B3D9-42EB-B07D-8A2E240D5CB1} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
 		{18CF6DD0-3D01-425D-82DB-E0542B51B888} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
 		{18D3C3F1-643C-4729-AA15-5A63A40098B2} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
+		{91FD4C1E-736E-45A2-A002-0DF3FFCA5E1C} = {F080245A-9809-436C-BFBE-07D8E6AA555D}
 	EndGlobalSection
 EndGlobal

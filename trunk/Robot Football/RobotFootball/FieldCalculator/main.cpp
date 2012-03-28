@@ -13,7 +13,7 @@ const std::string hw("Hello World\n");
 
 #define HEIGHT (77.2392 - 6.3730)
 #define WIDTH (93.4259-6.8118)
-#define RESOLUTION 0.1
+#define RESOLUTION 0.1f
 #define WORK_GROUP_SIZE 16
 #define BALL_WEIGHT 150
 
@@ -97,27 +97,21 @@ int main(void)
 	int length = gridHeight * gridWidth;
 
 	cl_float2 ball;
-	ball.s[0] = 35.4331 - 6.8118; // Ball X
-	ball.s[1] = 43.30705 - 6.3730; // Ball Y
+	ball.s[0] = 35.4331f - 6.8118f; // Ball X
+	ball.s[1] = 43.30705f - 6.3730f; // Ball Y
 
-	cl_float4 field;
-	field.s[0] = WIDTH;
-	field.s[1] = HEIGHT;
-	field.s[2] = RESOLUTION;
+	cl_float field;
+	field = RESOLUTION;
 
 	const int repulseCount = 1;
 
-	cl_float2 basicRepulsers[repulseCount];
+	cl_float2 basicRepulsers[10];
 
-	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &ball, &err);
-	checkErr(err, "Buffer::Buffer()");
-	cl::Buffer inField(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &field, &err);
-	checkErr(err, "Buffer::Buffer()");
-	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*repulseCount, &basicRepulsers, &err);
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_float2)*repulseCount, &basicRepulsers, &err);
 	checkErr(err, "Buffer::Buffer()");
 
 	float* outH = new float[length];
-	cl::Buffer outCl(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, length * sizeof(float), outH, &err);
+	cl::Buffer outCl(context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, length * sizeof(float), outH, &err);
 	checkErr(err, "Buffer::Buffer()");
 
 	cl::vector<cl::Device> devices;
@@ -154,18 +148,65 @@ int main(void)
 	err = kernel.setArg(3, outCl);
 	checkErr(err, "Kernel::setArg()");
 
+	cl::Kernel pointsKernel(program, "fieldAtPoints", &err);
+	checkErr(err, "Kernel::Kernel()");
+
+	cl_float2 inputPoints[4];
+	float oPoints[4];
+
+	cl::Buffer outPoints(context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, 4 * sizeof(float), oPoints, &err);
+	checkErr(err, "Buffer::Buffer()");
+
+	cl::Buffer inPoints(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_float2)*4, &inputPoints, &err);
+	checkErr(err, "Buffer::Buffer()");
+
+	err = pointsKernel.setArg(0, sizeof(cl_float2), &ball);
+	checkErr(err, "Kernel::setArg()");
+	err = pointsKernel.setArg(1, inPoints);
+	checkErr(err, "Kernel::setArg()");
+	err = pointsKernel.setArg(2, inRepulsers);
+	checkErr(err, "Kernel::setArg()");
+	err = pointsKernel.setArg(3, outPoints);
+	checkErr(err, "Kernel::setArg()");
+
 	cl::CommandQueue queue(context, devices[0], 0, &err);
 	checkErr(err, "CommandQueue::CommandQueue()");
 
-	cl::Event event;
-	
-	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &event);
+	cl::vector<cl::Event> firstEvents;
+	cl::vector<cl::Event> secondEvents;
+	cl::vector<cl::Event> allEvents;
+
+	cl::Event kernelEvent;
+	cl::Event readEvent1;
+	cl::Event readEvent2;
+	cl::Event pointKernelEvent;
+
+	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &kernelEvent);
 	checkErr(err, "CommandQueue::CommandQueue()");
 
+	firstEvents.push_back(kernelEvent);
+
 	//event.wait();
-	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(float), outH);
-	
+	err = queue.enqueueReadBuffer(outCl, CL_FALSE, 0, length * sizeof(float), outH, &firstEvents, &readEvent1);
+
 	checkErr(err, "CommandQueue::enqueueReadBuffer()");
+
+	err = queue.enqueueNDRangeKernel(pointsKernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &pointKernelEvent);
+	checkErr(err, "CommandQueue::CommandQueue()");
+
+	secondEvents.push_back(pointKernelEvent);
+
+	//event.wait();
+	err = queue.enqueueReadBuffer(outPoints, CL_FALSE, 0, 4 * sizeof(float), oPoints, &secondEvents, &readEvent2);
+	checkErr(err, "CommandQueue::CommandQueue()");
+
+	allEvents.push_back(kernelEvent);
+	allEvents.push_back(readEvent1);
+	allEvents.push_back(readEvent2);
+	allEvents.push_back(pointKernelEvent);
+
+	queue.enqueueWaitForEvents(allEvents);
+	checkErr(err, "CommandQueue::WaitForEvents()");
 
 	return EXIT_SUCCESS;
 }

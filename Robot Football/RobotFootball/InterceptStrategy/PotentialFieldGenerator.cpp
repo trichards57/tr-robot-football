@@ -48,7 +48,7 @@ PotentialFieldGenerator::PotentialFieldGenerator(void)
 	std::cerr << "Platform is by: " << platformVendor << "\n";
 	cl_context_properties cprops[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[0])(), 0};
 
-	context = cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+	context = cl::Context(CL_DEVICE_TYPE_CPU, cprops, NULL, NULL, &err);
 	checkErr(err, L"Context::Context()");
 
 	devices = context.getInfo<CL_CONTEXT_DEVICES>();
@@ -64,15 +64,10 @@ PotentialFieldGenerator::PotentialFieldGenerator(void)
 	err = program.build(devices, "");
 	checkErr(err, L"Program::build()");
 
-	kernel = cl::Kernel(program, "main", &err);
+	kernel = cl::Kernel(program, "fieldAtPoints", &err);
 	checkErr(err, L"Kernel::Kernel()");
 
-	length = 4;
-
-	points = new cl_float4[length];
-
-	outCl = cl::Buffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, length * sizeof(cl_float4), points, &err);
-	checkErr(err, L"Buffer::Buffer()");
+	
 #endif
 }
 
@@ -154,11 +149,8 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 	ball.s[0] = env->currentBall.pos.x - env->fieldBounds.left; // Ball X
 	ball.s[1] = env->currentBall.pos.y - env->fieldBounds.bottom; // Ball Y
 
-	cl_float4 field;
-	field.s[0] = WIDTH;
-	field.s[1] = HEIGHT;
-	field.s[2] = GRID_RESOLUTION;
-	field.s[3] = 0.0;
+	cl_float field;
+	field = GRID_RESOLUTION;
 
 	cl_float2 repulsers[10];
 
@@ -173,37 +165,48 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 		repulsers[i+5].s[1] = env->home->pos.y - env->fieldBounds.bottom;
 	}
 
-	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2), &ball, &err);
-	checkErr(err, L"Buffer::Buffer()");
-	cl::Buffer inField(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &field, &err);
-	checkErr(err, L"Buffer::Buffer()");
-	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
+	float outPoints[4];
+	cl_float2 inPoints[4];
+	
+	inPoints[0].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[0].s[1] = bot.pos.y + GRID_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[1].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[1].s[1] = bot.pos.y - GRID_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[2].s[0] = bot.pos.x - GRID_RESOLUTION - env->fieldBounds.left;
+	inPoints[2].s[1] = bot.pos.y - env->fieldBounds.bottom;
+	inPoints[3].s[0] = bot.pos.x + GRID_RESOLUTION - env->fieldBounds.left;
+	inPoints[3].s[1] = bot.pos.y - env->fieldBounds.bottom;
 
-	err = kernel.setArg(0, inBall);
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
+	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer inPointsBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2) * 4, &inPoints, &err);
+	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer outPointsBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, sizeof(float) * 4, &outPoints, &err);
+	checkErr(err, L"Buffer::Buffer()");
+
+	err = kernel.setArg(0, sizeof(cl_float2), &ball);
 	checkErr(err, L"Kernel::setArg()");
-	err = kernel.setArg(1, inField);
+	err = kernel.setArg(1, inPointsBuffer);
 	checkErr(err, L"Kernel::setArg()");
 	err = kernel.setArg(2, inRepulsers);
 	checkErr(err, L"Kernel::setArg()");
-	err = kernel.setArg(3, 10);
-	checkErr(err, L"Kernel::setArg()");
-	err = kernel.setArg(4, outCl);
+	err = kernel.setArg(3, outPointsBuffer);
 	checkErr(err, L"Kernel::setArg()");
 
 	cl::CommandQueue queue(context, devices[0], 0, &err);
 	checkErr(err, L"CommandQueue::CommandQueue()");
 
 	cl::Event event;
-	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &event);
+	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(4), cl::NDRange(1), NULL, &event);
 	checkErr(err, L"CommandQueue::CommandQueue()");
 
-	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(cl_float4), points);
+	err = queue.enqueueReadBuffer(outPointsBuffer, CL_TRUE, 0, 4 * sizeof(float), outPoints);
 	checkErr(err, L"CommandQueue::enqueueReadBuffer()");
 #endif
 
 	auto t2 = clock();
 
-	std::cerr << ((t2 - t1)/CLOCKS_PER_SEC) << std::endl;
+	/*std::cerr << ((t2 - t1)/CLOCKS_PER_SEC) << std::endl;
 
 	Vector3D upPoint, downPoint, leftPoint, rightPoint;
 
@@ -219,11 +222,11 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 	auto upField = FieldAtPoint(upPoint, env);
 	auto downField = FieldAtPoint(downPoint, env);
 	auto leftField = FieldAtPoint(leftPoint, env);
-	auto rightField = FieldAtPoint(rightPoint, env);
+	auto rightField = FieldAtPoint(rightPoint, env);*/
 
 	Vector3D force;
-	force.x = (leftField - rightField)/(2*GRID_RESOLUTION);
-	force.y = (downField - upField)/(2*GRID_RESOLUTION);
+	force.x = (outPoints[2] - outPoints[3])/(2*GRID_RESOLUTION);
+	force.y = (outPoints[1] - outPoints[0])/(2*GRID_RESOLUTION);
 
 	return force;
 }

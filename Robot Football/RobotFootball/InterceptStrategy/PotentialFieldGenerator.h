@@ -1,6 +1,6 @@
 #pragma once
 
-//#define OPENCL 1
+#define OPENCL 1
 #define DELEGATEOPENCL 1
 
 #include <cstdlib>
@@ -29,7 +29,7 @@ private:
 	cl::Context context;
 	cl::vector<cl::Device> devices;
 	cl::Buffer outCl;
-	cl::CommandQueue* queue;
+	cl::CommandQueue queue;
 	task_group taskGroup;
 #endif
 #ifdef DELEGATEOPENCL

@@ -73,6 +73,7 @@ namespace FieldRenderer
         private int gridHeight;
         private ReadOnlyCollection<ComputePlatform> platformList;
         private ComputeBuffer<byte> outPix;
+        private ComputeKernel pointsKernel;
 
         public MainWindow()
         {
@@ -92,31 +93,18 @@ namespace FieldRenderer
                 new float2((float) currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
                             (float) currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
                     );
-            var field = new float4(FieldWidth, FieldHeight, GridResolution, 0.0f);
 
             var repulsers =
                 currentEnvironment.Opponents.Select(o => o.Position).Concat(
                     currentEnvironment.Home.Select(h => h.Position)).Select(p => new Vector2((float)p.X - currentEnvironment.FieldBounds.Left, (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
 
-            //var inBall = new ComputeBuffer<float>(context,
-            //                                        ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, ball);
-            //var inField = new ComputeBuffer<float>(context,
-            //                                        ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, field);
             var inRepulsers = new ComputeBuffer<Vector2>(context,
                                                          ComputeMemoryFlags.ReadOnly |
                                                          ComputeMemoryFlags.CopyHostPointer, repulsers);
-            try
-            {
-                kernel.SetValueArgument(0, ball);
-                kernel.SetValueArgument(1, field);
-                kernel.SetMemoryArgument(2, inRepulsers);
-                kernel.SetMemoryArgument(3, outCl);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
+            kernel.SetValueArgument(0, ball);
+            kernel.SetValueArgument(1, GridResolution);
+            kernel.SetMemoryArgument(2, inRepulsers);
+            kernel.SetMemoryArgument(3, outCl);
 
             var queue = new ComputeCommandQueue(context, context.Devices[0], ComputeCommandQueueFlags.None);
 
@@ -127,8 +115,30 @@ namespace FieldRenderer
 
             queue.ReadFromBuffer(outCl, ref points, true, null);
 
-            GC.KeepAlive(ball);
-            GC.KeepAlive(field);
+            var inPoints = new[] {new Vector2(1, 1), new Vector2(2, 2), new Vector2(3, 3), new Vector2(4, 4)};
+            var inPointsBuffer = new ComputeBuffer<Vector2>(context,
+                                                    ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer,
+                                                    inPoints);
+
+            var outPoints = new float[4];
+            var outPointsBuffer = new ComputeBuffer<float>(context,
+                                                           ComputeMemoryFlags.WriteOnly |
+                                                           ComputeMemoryFlags.CopyHostPointer, outPoints);
+
+
+            pointsKernel.SetValueArgument(0, ball);
+            pointsKernel.SetMemoryArgument(1, inPointsBuffer);
+            pointsKernel.SetMemoryArgument(2, inRepulsers);
+            pointsKernel.SetMemoryArgument(3, outPointsBuffer);
+
+            queue.Execute(pointsKernel, new long[] { 0 }, new long[] { 4 },
+                          new long[] { 1 }, null);
+            queue.ReadFromBuffer(outPointsBuffer, ref outPoints, true, null);
+
+            var p1 = points[10 + 10 * gridWidth];
+            var p2 = points[20 + 20 * gridWidth];
+            var p3 = points[30 + 30 * gridWidth];
+            var p4 = points[40 + 40 * gridWidth];
 
             var max = new[] {points.AsParallel().Max()};
             var min = new[] {points.AsParallel().Min()};
@@ -153,6 +163,8 @@ namespace FieldRenderer
 
             var info = bitmap.LockBits(new Rectangle(0, 0, gridWidth, gridHeight), ImageLockMode.ReadWrite,
                                        PixelFormat.Format24bppRgb);
+
+
 
             Marshal.Copy(pixels, 0, info.Scan0, pixels.Length);
 
@@ -200,6 +212,7 @@ namespace FieldRenderer
 
             kernel = program.CreateKernel("main");
             colourKernel = program.CreateKernel("colorize");
+            pointsKernel = program.CreateKernel("fieldAtPoints");
 
             gridWidth = (int)Math.Ceiling(FieldWidth / GridResolution);
             var remainder = gridWidth % WorkGroupSize;

@@ -1,6 +1,7 @@
 #pragma once
 
-#define OPENCL 1
+//#define OPENCL 1
+#define DELEGATEOPENCL 1
 
 #include <cstdlib>
 
@@ -8,12 +9,12 @@
 
 using namespace Concurrency;
 
-#ifdef OPENCL
+
 #define __NO_STD_VECTOR
 #include <CL/cl.hpp>
-#endif
 
 #include <iostream>
+#include <conio.h>
 #include "..\..\..\Simulator\Strategy Source\Strategy.h"
 
 class PotentialFieldGenerator
@@ -30,6 +31,9 @@ private:
 	cl::Buffer outCl;
 	cl::CommandQueue* queue;
 	task_group taskGroup;
+#endif
+#ifdef DELEGATEOPENCL
+	HANDLE pipe;
 #endif
 public:
 	PotentialFieldGenerator(void);

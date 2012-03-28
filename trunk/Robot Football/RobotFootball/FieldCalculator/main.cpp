@@ -96,31 +96,35 @@ int main(void)
 
 	int length = gridHeight * gridWidth;
 
-	cl_float4 ball;
+	cl_float2 ball;
 	ball.s[0] = 35.4331 - 6.8118; // Ball X
 	ball.s[1] = 43.30705 - 6.3730; // Ball Y
-	ball.s[2] = 0;
-	ball.s[3] = BALL_WEIGHT;
 
 	cl_float4 field;
 	field.s[0] = WIDTH;
 	field.s[1] = HEIGHT;
 	field.s[2] = RESOLUTION;
 
+	const int repulseCount = 1;
+
+	cl_float2 basicRepulsers[repulseCount];
+
 	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &ball, &err);
 	checkErr(err, "Buffer::Buffer()");
 	cl::Buffer inField(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &field, &err);
 	checkErr(err, "Buffer::Buffer()");
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*repulseCount, &basicRepulsers, &err);
+	checkErr(err, "Buffer::Buffer()");
 
-	cl_float4* outH = new cl_float4[length];
-	cl::Buffer outCl(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, length * sizeof(cl_float4), outH, &err);
+	float* outH = new float[length];
+	cl::Buffer outCl(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, length * sizeof(float), outH, &err);
 	checkErr(err, "Buffer::Buffer()");
 
 	cl::vector<cl::Device> devices;
 	devices = context.getInfo<CL_CONTEXT_DEVICES>();
 	checkErr(devices.size() > 0 ? CL_SUCCESS : -1, "devices.size() > 0");
 
-	std::ifstream file("lesson1_kernels.cl");
+	std::ifstream file("D:\\Users\\Tony\\Documents\\tr-robot-football\\Simulator\\field_kernel.cl");
 	checkErr(file.is_open() ? CL_SUCCESS : -1, "lesson1_kernel.cl");
 
 	std::string prog(std::istreambuf_iterator<char>(file), (std::istreambuf_iterator<char>()));
@@ -129,7 +133,7 @@ int main(void)
 	cl::Program program(context, source);
 	err = program.build(devices, "");
 
-	if (err == CL_BUILD_PROGRAM_FAILURE)
+	//if (err == CL_BUILD_PROGRAM_FAILURE)
 	{
 		std::cout << "Build Status: " << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) << std::endl;
 		std::cout << "Build Options:\t" << program.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(devices[0]) << std::endl;
@@ -138,14 +142,16 @@ int main(void)
 
 	checkErr(err, "Program::build()");
 
-	cl::Kernel kernel(program, "hello", &err);
+	cl::Kernel kernel(program, "main", &err);
 	checkErr(err, "Kernel::Kernel()");
  
-	err = kernel.setArg(0, inBall);
+	err = kernel.setArg(0, sizeof(cl_float2), &ball);
 	checkErr(err, "Kernel::setArg()");
-	err = kernel.setArg(1, inField);
+	err = kernel.setArg(1, field);
 	checkErr(err, "Kernel::setArg()");
-	err = kernel.setArg(2, outCl);
+	err = kernel.setArg(2, inRepulsers);
+	checkErr(err, "Kernel::setArg()");
+	err = kernel.setArg(3, outCl);
 	checkErr(err, "Kernel::setArg()");
 
 	cl::CommandQueue queue(context, devices[0], 0, &err);
@@ -157,7 +163,7 @@ int main(void)
 	checkErr(err, "CommandQueue::CommandQueue()");
 
 	//event.wait();
-	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(cl_float4), outH);
+	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(float), outH);
 	
 	checkErr(err, "CommandQueue::enqueueReadBuffer()");
 

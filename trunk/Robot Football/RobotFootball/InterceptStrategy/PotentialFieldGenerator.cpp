@@ -10,7 +10,7 @@
 #define OBSTACLE_EFFECT_RADIUS 10
 #define OBSTACLE_SIGMA 2
 #define GRID_RESOLUTION 0.1
-#define WORK_GROUP_SIZE 16
+#define WORK_GROUP_SIZE 2
 
 using namespace Concurrency;
 
@@ -32,7 +32,6 @@ inline void checkErr(cl_int err, const WCHAR * name)
 	}
 }
 #endif
-
 
 
 PotentialFieldGenerator::PotentialFieldGenerator(void)
@@ -68,15 +67,7 @@ PotentialFieldGenerator::PotentialFieldGenerator(void)
 	kernel = cl::Kernel(program, "main", &err);
 	checkErr(err, L"Kernel::Kernel()");
 
-	gridWidth = (int)ceil(WIDTH/GRID_RESOLUTION);
-	int remainder = gridWidth % WORK_GROUP_SIZE;
-	gridWidth += WORK_GROUP_SIZE - remainder;
-
-	gridHeight = (int)ceil(HEIGHT/GRID_RESOLUTION);
-	remainder = gridHeight % WORK_GROUP_SIZE;
-	gridHeight += WORK_GROUP_SIZE - remainder;
-
-	length = gridHeight * gridWidth;
+	length = 4;
 
 	points = new cl_float4[length];
 
@@ -88,8 +79,9 @@ PotentialFieldGenerator::PotentialFieldGenerator(void)
 
 PotentialFieldGenerator::~PotentialFieldGenerator(void)
 {
-	taskGroup.wait();
+#ifdef OPENCL
 	delete points;
+#endif
 }
 
 double FieldAtPoint(Vector3D point, Environment* env)
@@ -143,30 +135,59 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 
 	auto t1 = clock();
 
+#ifdef DELEGATEOPENCL
+	auto success = CallNamedPipe(L"\\\\.\\pipe\\fieldRendererPipe", env, sizeof(Environment), nullptr, 0, nullptr, 0);
+	if (success == 0)
+	{
+		auto error = GetLastError();
+		LPVOID lpMsgBuf = nullptr;
+
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)(&lpMsgBuf), 0, NULL);
+
+		LocalFree(lpMsgBuf);
+	}
+#endif
 #ifdef OPENCL
 	cl_int err;
 	
-	cl_float4 ball;
-	ball.s[0] = env->currentBall.pos.x; // Ball X
-	ball.s[1] = env->currentBall.pos.y; // Ball Y
-	ball.s[2] = 0;
-	ball.s[3] = BALL_WEIGHT;
+	cl_float2 ball;
+	ball.s[0] = env->currentBall.pos.x - env->fieldBounds.left; // Ball X
+	ball.s[1] = env->currentBall.pos.y - env->fieldBounds.bottom; // Ball Y
 
 	cl_float4 field;
 	field.s[0] = WIDTH;
 	field.s[1] = HEIGHT;
 	field.s[2] = GRID_RESOLUTION;
+	field.s[3] = 0.0;
 
-	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &ball, &err);
+	cl_float2 repulsers[10];
+
+	for (int i = 0; i < 5; i++)
+	{
+		repulsers[i].s[0] = env->opponent->pos.x - env->fieldBounds.left;
+		repulsers[i].s[0] = env->opponent->pos.y - env->fieldBounds.bottom;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		repulsers[i+5].s[0] = env->home->pos.x - env->fieldBounds.left;
+		repulsers[i+5].s[1] = env->home->pos.y - env->fieldBounds.bottom;
+	}
+
+	cl::Buffer inBall(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2), &ball, &err);
 	checkErr(err, L"Buffer::Buffer()");
 	cl::Buffer inField(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float4), &field, &err);
 	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
 
 	err = kernel.setArg(0, inBall);
 	checkErr(err, L"Kernel::setArg()");
 	err = kernel.setArg(1, inField);
 	checkErr(err, L"Kernel::setArg()");
-	err = kernel.setArg(2, outCl);
+	err = kernel.setArg(2, inRepulsers);
+	checkErr(err, L"Kernel::setArg()");
+	err = kernel.setArg(3, 10);
+	checkErr(err, L"Kernel::setArg()");
+	err = kernel.setArg(4, outCl);
 	checkErr(err, L"Kernel::setArg()");
 
 	cl::CommandQueue queue(context, devices[0], 0, &err);
@@ -176,44 +197,10 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &event);
 	checkErr(err, L"CommandQueue::CommandQueue()");
 
-	//event.wait();
-
-	taskGroup.wait();
-
 	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(cl_float4), points);
 	checkErr(err, L"CommandQueue::enqueueReadBuffer()");
+#endif
 
-	auto p = points;
-
-	taskGroup.run([=](){
-		std::fstream outStream("data.csv", std::fstream::app | std::fstream::out);
-		outStream << std::endl;
-
-		for (int i = 0; i < gridWidth; i++)
-		{
-			for (int j = 0; j < gridHeight; j++)
-			{
-				outStream << p[i + j * gridWidth].s[0] << ",";
-			}
-			outStream << std::endl;
-		}
-
-		outStream.flush();
-		outStream.close();
-	});
-
-#else
-	parallel_for (0,xWidth, [=](int i)
-	{
-		for (int j = 0; j < xHeight; j++)
-		{
-			Vector3D point;
-			point.x = FLEFTX + i * GRID_RESOLUTION;
-			point.y = FBOT + j * GRID_RESOLUTION;
-			points[i + j * xWidth] = FieldAtPoint(point, env);
-		}
-	});
-#endif 
 	auto t2 = clock();
 
 	std::cerr << ((t2 - t1)/CLOCKS_PER_SEC) << std::endl;

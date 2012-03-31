@@ -70,7 +70,7 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 	
 
 	
-	interceptVector = generator.FieldVectorToBall(env->home[1], env);
+	interceptVector = generator.FieldVectorToBall(1, env);
 	
 
 	VelocityController velControl;

@@ -38,6 +38,6 @@ private:
 public:
 	PotentialFieldGenerator(void);
 	~PotentialFieldGenerator(void);
-	Vector3D FieldVectorToBall(Robot bot, Environment *env);
+	Vector3D FieldVectorToBall(int botIndex, Environment *env);
 };
 

@@ -3,8 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525" Loaded="WindowLoaded">
     <DockPanel>
+        <TextBlock Name="FieldVector" DockPanel.Dock="Left" />
         <Viewbox Stretch="Uniform">
-            <Image Name="FieldImage" x:FieldModifier="private" />
+            <StackPanel>
+                <Image Name="FieldImage" x:FieldModifier="private" />
+                <Image Name="GradientImage" />
+                
+            </StackPanel>
         </Viewbox>
     </DockPanel>
 </Window>

@@ -92,6 +92,7 @@
     <Compile Include="Classes\Environment.cs" />
     <Compile Include="Classes\OpponentRobot.cs" />
     <Compile Include="Classes\Robot.cs" />
+    <Compile Include="Classes\StatusReport.cs" />
     <Compile Include="Classes\Vector3D.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

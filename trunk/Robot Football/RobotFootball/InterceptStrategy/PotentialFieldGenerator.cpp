@@ -11,8 +11,25 @@
 #define OBSTACLE_SIGMA 2
 #define GRID_RESOLUTION 0.1
 #define WORK_GROUP_SIZE 2
+#define GRADIENT_RESOLUTION (GRID_RESOLUTION)
 
 using namespace Concurrency;
+
+#pragma pack push 8
+struct StatusReport 
+{
+	Environment environment;
+	Vector3D fieldVector;
+};
+#pragma pack pop
+
+enum SquarePosition
+{
+	Up = 0,
+	Down = 1,
+	Left = 2,
+	Right = 3
+};
 
 #ifdef OPENCL
 inline void checkErr(cl_int err, const WCHAR * name)
@@ -123,25 +140,15 @@ double FieldAtPoint(Vector3D point, Environment* env)
 	return  repField +attractField;
 }
 
-Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
+Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* env)
 {
+	auto bot = env->home[botIndex];
+
 	auto xWidth = (int)ceil((FRIGHTX - FLEFTX) / GRID_RESOLUTION);
 	auto xHeight = (int)ceil((FTOP - FBOT) / GRID_RESOLUTION);
 
 	auto t1 = clock();
 
-#ifdef DELEGATEOPENCL
-	auto success = CallNamedPipe(L"\\\\.\\pipe\\fieldRendererPipe", env, sizeof(Environment), nullptr, 0, nullptr, 0);
-	if (success == 0)
-	{
-		auto error = GetLastError();
-		LPVOID lpMsgBuf = nullptr;
-
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)(&lpMsgBuf), 0, NULL);
-
-		LocalFree(lpMsgBuf);
-	}
-#endif
 #ifdef OPENCL
 	cl_int err;
 	
@@ -152,32 +159,42 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 	cl_float field;
 	field = GRID_RESOLUTION;
 
-	cl_float2 repulsers[10];
+	cl_float2 repulsers[9];
+
+	bool skippedBotPassed = false;
 
 	for (int i = 0; i < 5; i++)
 	{
-		repulsers[i].s[0] = env->opponent->pos.x - env->fieldBounds.left;
-		repulsers[i].s[0] = env->opponent->pos.y - env->fieldBounds.bottom;
+		repulsers[i].s[0] = env->opponent[i].pos.x - env->fieldBounds.left;
+		repulsers[i].s[1] = env->opponent[i].pos.y - env->fieldBounds.bottom;
 	}
 	for (int i = 0; i < 5; i++)
 	{
-		repulsers[i+5].s[0] = env->home->pos.x - env->fieldBounds.left;
-		repulsers[i+5].s[1] = env->home->pos.y - env->fieldBounds.bottom;
+		auto idx = i;
+		if (i == botIndex)
+		{
+			skippedBotPassed = true;
+			continue;
+		}
+		if (skippedBotPassed)
+			idx--;
+		repulsers[idx+5].s[0] = env->home[i].pos.x - env->fieldBounds.left;
+		repulsers[idx+5].s[1] = env->home[i].pos.y - env->fieldBounds.bottom;
 	}
 
 	float outPoints[4];
 	cl_float2 inPoints[4];
 	
-	inPoints[0].s[0] = bot.pos.x - env->fieldBounds.left;
-	inPoints[0].s[1] = bot.pos.y + GRID_RESOLUTION - env->fieldBounds.bottom;
-	inPoints[1].s[0] = bot.pos.x - env->fieldBounds.left;
-	inPoints[1].s[1] = bot.pos.y - GRID_RESOLUTION - env->fieldBounds.bottom;
-	inPoints[2].s[0] = bot.pos.x - GRID_RESOLUTION - env->fieldBounds.left;
-	inPoints[2].s[1] = bot.pos.y - env->fieldBounds.bottom;
-	inPoints[3].s[0] = bot.pos.x + GRID_RESOLUTION - env->fieldBounds.left;
-	inPoints[3].s[1] = bot.pos.y - env->fieldBounds.bottom;
+	inPoints[Up].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[Up].s[1] = bot.pos.y + GRADIENT_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[Down].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[Down].s[1] = bot.pos.y - GRADIENT_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[Left].s[0] = bot.pos.x - GRADIENT_RESOLUTION - env->fieldBounds.left;
+	inPoints[Left].s[1] = bot.pos.y - env->fieldBounds.bottom;
+	inPoints[Right].s[0] = bot.pos.x + GRADIENT_RESOLUTION - env->fieldBounds.left;
+	inPoints[Right].s[1] = bot.pos.y - env->fieldBounds.bottom;
 
-	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*9, &repulsers, &err);
 	checkErr(err, L"Buffer::Buffer()");
 	cl::Buffer inPointsBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2) * 4, &inPoints, &err);
 	checkErr(err, L"Buffer::Buffer()");
@@ -225,8 +242,25 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(Robot bot, Environment* env)
 	auto rightField = FieldAtPoint(rightPoint, env);*/
 
 	Vector3D force;
-	force.x = (outPoints[2] - outPoints[3])/(2*GRID_RESOLUTION);
-	force.y = (outPoints[1] - outPoints[0])/(2*GRID_RESOLUTION);
+	force.x = (outPoints[Left] - outPoints[Right])/(2*GRADIENT_RESOLUTION);
+	force.y = (outPoints[Down] - outPoints[Up])/(2*GRADIENT_RESOLUTION);
+
+#ifdef DELEGATEOPENCL
+	StatusReport rep;
+	rep.environment = *env;
+	rep.fieldVector.x = force.x;
+	rep.fieldVector.y = force.y;
+	auto success = CallNamedPipe(L"\\\\.\\pipe\\fieldRendererPipe", &rep, sizeof(StatusReport), nullptr, 0, nullptr, 0);
+	if (success == 0)
+	{
+		auto error = GetLastError();
+		LPVOID lpMsgBuf = nullptr;
+
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)(&lpMsgBuf), 0, NULL);
+
+		LocalFree(lpMsgBuf);
+	}
+#endif
 
 	return force;
 }

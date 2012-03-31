@@ -5,75 +5,44 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.IO.Pipes;
 using System.Windows.Media.Imaging;
 using Cloo;
+using FieldRenderer.Classes;
 using OpenTK;
 
 namespace FieldRenderer
 {
-    [StructLayout(LayoutKind.Sequential)]
-    struct float2
-    {
-        public float X;
-        public float Y;
-
-        public float2(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct float4
-    {
-        public float X;
-        public float Y;
-        public float Z;
-        public float W;
-
-        public float4(float x, float y, float z, float w)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-            W = w;
-        }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public sealed partial class MainWindow
     {
+        private Classes.Environment currentEnvironment;
+        private Classes.Environment latestEnvironment;
+        private ComputeBuffer<byte> outPix;
+        private ComputeBuffer<float> outCl;
+        private ComputeBuffer<float> outGradient; 
+        private ComputeContext context;
+        private ComputeKernel colourKernel;
+        private ComputeKernel gradientKernel;
+        private ComputeKernel kernel;
+        private NamedPipeServerStream pipeServer;
+        private ReadOnlyCollection<ComputePlatform> platformList;
+        private byte[] pixels;
         private const float FieldHeight = 70.8661f;
         private const float FieldWidth = 86.6141f;
         private const float GridResolution = 0.1f;
         private const int WorkGroupSize = 16;
-        private Classes.Environment latestEnvironment;
-        private Classes.Environment currentEnvironment;
-
-
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-
-        private readonly object latestEnvironmentLocker = new object();
-
-        private NamedPipeServerStream pipeServer;
-        private ComputeContext context;
-        private ComputeKernel kernel;
-        private ComputeKernel colourKernel;
         private float[] points;
-        private byte[] pixels;
-        private ComputeBuffer<float> outCl;
-        private int gridWidth;
+        private float[] gradientPoints;
         private int gridHeight;
-        private ReadOnlyCollection<ComputePlatform> platformList;
-        private ComputeBuffer<byte> outPix;
-        private ComputeKernel pointsKernel;
+        private int gridWidth;
+        private readonly BackgroundWorker worker = new BackgroundWorker();
+        private readonly object latestEnvironmentLocker = new object();
 
         public MainWindow()
         {
@@ -89,88 +58,12 @@ namespace FieldRenderer
                 currentEnvironment = latestEnvironment;
             }
 
-            var ball =
-                new float2((float) currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
-                            (float) currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
-                    );
-
-            var repulsers =
-                currentEnvironment.Opponents.Select(o => o.Position).Concat(
-                    currentEnvironment.Home.Select(h => h.Position)).Select(p => new Vector2((float)p.X - currentEnvironment.FieldBounds.Left, (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
-
-            var inRepulsers = new ComputeBuffer<Vector2>(context,
-                                                         ComputeMemoryFlags.ReadOnly |
-                                                         ComputeMemoryFlags.CopyHostPointer, repulsers);
-            kernel.SetValueArgument(0, ball);
-            kernel.SetValueArgument(1, GridResolution);
-            kernel.SetMemoryArgument(2, inRepulsers);
-            kernel.SetMemoryArgument(3, outCl);
-
             var queue = new ComputeCommandQueue(context, context.Devices[0], ComputeCommandQueueFlags.None);
 
-            queue.Execute(kernel, new long[] {0}, new long[] {gridWidth, gridHeight},
-                          new long[] {WorkGroupSize, WorkGroupSize}, null);
-
-            queue.Finish();
-
-            queue.ReadFromBuffer(outCl, ref points, true, null);
-
-            var inPoints = new[] {new Vector2(1, 1), new Vector2(2, 2), new Vector2(3, 3), new Vector2(4, 4)};
-            var inPointsBuffer = new ComputeBuffer<Vector2>(context,
-                                                    ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer,
-                                                    inPoints);
-
-            var outPoints = new float[4];
-            var outPointsBuffer = new ComputeBuffer<float>(context,
-                                                           ComputeMemoryFlags.WriteOnly |
-                                                           ComputeMemoryFlags.CopyHostPointer, outPoints);
-
-
-            pointsKernel.SetValueArgument(0, ball);
-            pointsKernel.SetMemoryArgument(1, inPointsBuffer);
-            pointsKernel.SetMemoryArgument(2, inRepulsers);
-            pointsKernel.SetMemoryArgument(3, outPointsBuffer);
-
-            queue.Execute(pointsKernel, new long[] { 0 }, new long[] { 4 },
-                          new long[] { 1 }, null);
-            queue.ReadFromBuffer(outPointsBuffer, ref outPoints, true, null);
-
-            var p1 = points[10 + 10 * gridWidth];
-            var p2 = points[20 + 20 * gridWidth];
-            var p3 = points[30 + 30 * gridWidth];
-            var p4 = points[40 + 40 * gridWidth];
-
-            var max = new[] {points.AsParallel().Max()};
-            var min = new[] {points.AsParallel().Min()};
-
-            var inMax = new ComputeBuffer<float>(context,
-                                                   ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, max);
-            var inMin = new ComputeBuffer<float>(context,
-                                                    ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, min);
-
-
-            colourKernel.SetMemoryArgument(0, inMax);
-            colourKernel.SetMemoryArgument(1, inMin);
-            colourKernel.SetMemoryArgument(2, outCl);
-            colourKernel.SetMemoryArgument(3, outPix); 
-                
-            queue.Execute(colourKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
-                          new long[] { WorkGroupSize, WorkGroupSize }, null);
-            queue.ReadFromBuffer(outPix, ref pixels, true, null);
-
-
-            var bitmap = new Bitmap(gridWidth, gridHeight, PixelFormat.Format24bppRgb);
-
-            var info = bitmap.LockBits(new Rectangle(0, 0, gridWidth, gridHeight), ImageLockMode.ReadWrite,
-                                       PixelFormat.Format24bppRgb);
-
-
-
-            Marshal.Copy(pixels, 0, info.Scan0, pixels.Length);
-
-            bitmap.UnlockBits(info);
-
-            bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            ComputeField(queue, points);
+            var bitmap = RenderPoints(queue, points, outCl);
+            ComputeGradient(queue, gradientPoints);
+            var bitmap2 = RenderPoints(queue, gradientPoints, outGradient);
 
             Action refresh = () =>
             {
@@ -186,9 +79,89 @@ namespace FieldRenderer
 
                     FieldImage.Source = writeable;
                 }
+                using (var stream = new MemoryStream())
+                {
+                    bitmap2.Save(stream, ImageFormat.Png);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+
+                    var writeable = new WriteableBitmap(decoder.Frames.Single());
+                    writeable.Freeze();
+
+                    GradientImage.Source = writeable;
+                }
             };
 
             Dispatcher.Invoke(refresh);
+        }
+
+        private Bitmap RenderPoints(ComputeCommandQueue queue, float[] pointsToRender, ComputeBuffer<float> computeBuffer)
+        {
+            var max = pointsToRender.AsParallel().Max();
+            var min = pointsToRender.AsParallel().Min();
+
+            colourKernel.SetValueArgument(0, max);
+            colourKernel.SetValueArgument(1, min);
+            colourKernel.SetMemoryArgument(2, computeBuffer);
+            colourKernel.SetMemoryArgument(3, outPix);
+
+            queue.Execute(colourKernel, new long[] {0}, new long[] {gridWidth, gridHeight},
+                          new long[] {WorkGroupSize, WorkGroupSize}, null);
+            queue.ReadFromBuffer(outPix, ref pixels, true, null);
+
+
+            var bitmap = new Bitmap(gridWidth, gridHeight, PixelFormat.Format24bppRgb);
+
+            var info = bitmap.LockBits(new Rectangle(0, 0, gridWidth, gridHeight), ImageLockMode.ReadWrite,
+                                       PixelFormat.Format24bppRgb);
+
+
+            Marshal.Copy(pixels, 0, info.Scan0, pixels.Length);
+
+            bitmap.UnlockBits(info);
+
+            bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            return bitmap;
+        }
+
+        private void ComputeGradient(ComputeCommandQueue queue, float[] gradPoints)
+        {
+            gradientKernel.SetMemoryArgument(0, outCl);
+            gradientKernel.SetMemoryArgument(1, outGradient);
+
+            queue.Execute(gradientKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+
+            queue.ReadFromBuffer(outGradient, ref gradPoints, true, null);
+        }
+
+        private void ComputeField(ComputeCommandQueue queue, float[] field)
+        {
+            var ball =
+                new Vector2((float) currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
+                            (float) currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
+                    );
+
+            var repulsers =
+                currentEnvironment.Opponents.Select(o => o.Position).Concat(
+                    currentEnvironment.Home.Select(h => h.Position).Where((v, i) => i != 1)).Select(
+                        p =>
+                        new Vector2((float) p.X - currentEnvironment.FieldBounds.Left,
+                                    (float) p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
+
+            var inRepulsers = new ComputeBuffer<Vector2>(context,
+                                                         ComputeMemoryFlags.ReadOnly |
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers);
+            kernel.SetValueArgument(0, ball);
+            kernel.SetValueArgument(1, GridResolution);
+            kernel.SetMemoryArgument(2, inRepulsers);
+            kernel.SetMemoryArgument(3, outCl);
+
+            queue.Execute(kernel, new long[] {0}, new long[] {gridWidth, gridHeight},
+                          new long[] {WorkGroupSize, WorkGroupSize}, null);
+
+            queue.ReadFromBuffer(outCl, ref field, true, null);
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
@@ -212,7 +185,7 @@ namespace FieldRenderer
 
             kernel = program.CreateKernel("main");
             colourKernel = program.CreateKernel("colorize");
-            pointsKernel = program.CreateKernel("fieldAtPoints");
+            gradientKernel = program.CreateKernel("calculateGradient");
 
             gridWidth = (int)Math.Ceiling(FieldWidth / GridResolution);
             var remainder = gridWidth % WorkGroupSize;
@@ -226,11 +199,11 @@ namespace FieldRenderer
 
             points = new float[length];
             pixels = new byte[length*3];
+            gradientPoints = new float[length];
 
-            outCl = new ComputeBuffer<float>(context,
-                                               ComputeMemoryFlags.ReadWrite, points.Length);
+            outCl = new ComputeBuffer<float>(context, ComputeMemoryFlags.ReadWrite, points.Length);
             outPix = new ComputeBuffer<byte>(context, ComputeMemoryFlags.WriteOnly, pixels.Length);
-
+            outGradient = new ComputeBuffer<float>(context, ComputeMemoryFlags.ReadWrite, gradientPoints.Length);
 
 
             pipeServer = new NamedPipeServerStream("fieldRendererPipe", PipeDirection.InOut, 5,
@@ -241,36 +214,59 @@ namespace FieldRenderer
         // Code from http://stackoverflow.com/questions/3278827/how-to-convert-structure-to-byte-array-in-c
         private void EnvironmentReceived(IAsyncResult ar)
         {
-            var environment = new Classes.Environment();
-            var size = Marshal.SizeOf(environment);
+            try
+{
+	var environment = new StatusReport();
+	            var size = Marshal.SizeOf(environment);
+	
+	            pipeServer.EndWaitForConnection(ar);
+	
+	            var bytes = new List<byte>();
+	
+	            var buffer = new byte[size];
+	
+	            pipeServer.Read(buffer, 0, size);
+	
+	            bytes.AddRange(buffer);
+	
+	            var array = bytes.ToArray();
+	
+	            var ptr = Marshal.AllocHGlobal(size);
+	
+	            Marshal.Copy(array, 0, ptr, size);
+	
+	            lock (latestEnvironmentLocker)
+	            {
+	                var report = (StatusReport) Marshal.PtrToStructure(ptr, typeof (StatusReport));
+	                latestEnvironment = report.Environment;
+	                CurrentVector = report.FieldVector;
+	            }
+	
+	            if (!worker.IsBusy)
+	                worker.RunWorkerAsync();
+	
+	            Marshal.FreeHGlobal(ptr);
+	            pipeServer.Disconnect();
+	            pipeServer.BeginWaitForConnection(EnvironmentReceived, null);
+}
+catch (System.Exception ex)
+{
+    throw;
+}
+        }
 
-            pipeServer.EndWaitForConnection(ar);
+        private Vector3D currentVector;
 
-            var bytes = new List<byte>();
-
-            var buffer = new byte[size];
-
-            pipeServer.Read(buffer, 0, size);
-
-            bytes.AddRange(buffer);
-
-            var array = bytes.ToArray();
-
-            var ptr = Marshal.AllocHGlobal(size);
-
-            Marshal.Copy(array, 0, ptr, size);
-
-            lock (latestEnvironmentLocker)
+        internal Vector3D CurrentVector
+        {
+            get { return currentVector; }
+            set
             {
-                latestEnvironment = (Classes.Environment)Marshal.PtrToStructure(ptr, environment.GetType());
+                currentVector = value;
+                Dispatcher.Invoke(new Action(() =>
+                                             FieldVector.Text =
+                                             string.Format("{0},{1}", currentVector.X, currentVector.Y)));
             }
-
-            if (!worker.IsBusy)
-                worker.RunWorkerAsync();
-
-            Marshal.FreeHGlobal(ptr);
-            pipeServer.Disconnect();
-            pipeServer.BeginWaitForConnection(EnvironmentReceived, null);
         }
     }
 }

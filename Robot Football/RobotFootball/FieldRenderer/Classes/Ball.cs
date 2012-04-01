@@ -1,5 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 
+/// @brief The field renderer's data model classes
+/// 
+/// Intended to contain all the classes used to represent data for the field renderer.
 namespace FieldRenderer.Classes
 {
     /// <summary>

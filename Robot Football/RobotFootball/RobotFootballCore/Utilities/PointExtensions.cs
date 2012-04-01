@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
 
+/// @brief Utilities to help simplify functions for the Robot Football UI
+/// 
+/// Intended to contain all the extension classes and other helper functions used by the Robot Football Ui
 namespace RobotFootballCore.Utilities
 {
     /// <summary>

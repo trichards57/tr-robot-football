@@ -5,6 +5,9 @@ using System.Linq;
 using RobotFootballCore.Objects;
 using RouteFinders;
 
+/// @brief The testing classes
+/// 
+/// Intended to contain any classes used purely to test other classes.
 namespace TestBench
 {
     /// <summary>

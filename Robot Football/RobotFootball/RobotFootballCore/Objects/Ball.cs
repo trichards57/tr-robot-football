@@ -1,6 +1,9 @@
 ﻿using System.Drawing;
 using RobotFootballCore.Interfaces;
 
+/// @brief All the objects used by the Robot Football UI
+/// 
+/// Intended to contain all the objects used by the Robot Football UI to represent elements of the game.
 namespace RobotFootballCore.Objects
 {
     /// <summary>

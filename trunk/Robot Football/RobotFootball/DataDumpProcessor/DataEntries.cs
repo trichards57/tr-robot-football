@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Windows;
 
+/// @brief All the data dump processor classes
+/// 
+/// Namespace intended to contain everything to do with the data dump processor.
 namespace DataDumpProcessor
 {
     /// <summary>

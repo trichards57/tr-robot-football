@@ -1,5 +1,11 @@
 ﻿using System.Drawing;
 
+/// @namespace RobotFootballCore
+/// @brief All the classes used by the Robot Football UI
+/// 
+/// Intended to contain all the classes used by the Robot Football UI 
+
+
 namespace RobotFootballCore.Interfaces
 {
     /// <summary>

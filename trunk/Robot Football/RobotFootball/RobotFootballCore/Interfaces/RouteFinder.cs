@@ -1,6 +1,9 @@
 using System;
 using System.Drawing;
 
+/// @brief All the interfaces by the Robot Football UI
+/// 
+/// Intended to contain all the generalising interfaces used by the Robot Football UI
 namespace RobotFootballCore.Interfaces
 {
     /// <summary>

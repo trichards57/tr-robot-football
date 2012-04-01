@@ -2,6 +2,9 @@
 using System.Drawing;
 using RobotFootballCore.Utilities;
 
+/// @brief All the classes used by the route finders in the Robot Football UI
+/// 
+/// Intended to contain all the auxillary classes used by the Robot Football UI
 namespace RobotFootballCore.RouteObjects
 {
     /// <summary>

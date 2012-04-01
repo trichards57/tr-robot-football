@@ -8,6 +8,9 @@ using RobotFootballCore.Utilities;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+/// @brief All the managed route finders
+/// 
+/// Intended to contain all the route finders produced using managed code
 namespace RouteFinders
 {
     /// <summary>

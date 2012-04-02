@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525" Loaded="WindowLoaded">
     <DockPanel>
-        <TextBlock Name="FieldVector" DockPanel.Dock="Left" />
+        <TextBlock Visibility="Collapsed" Name="FieldVector" DockPanel.Dock="Left" Width="250" />
         <Viewbox Stretch="Uniform">
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Image Name="FieldImage" x:FieldModifier="private" />
                 <Image Name="GradientImage" />
                 

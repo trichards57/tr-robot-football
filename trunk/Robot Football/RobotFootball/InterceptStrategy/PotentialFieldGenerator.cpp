@@ -159,7 +159,7 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 	cl_float field;
 	field = GRID_RESOLUTION;
 
-	cl_float2 repulsers[9];
+	cl_float2 repulsers[10];
 
 	bool skippedBotPassed = false;
 
@@ -170,16 +170,8 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 	}
 	for (int i = 0; i < 5; i++)
 	{
-		auto idx = i;
-		if (i == botIndex)
-		{
-			skippedBotPassed = true;
-			continue;
-		}
-		if (skippedBotPassed)
-			idx--;
-		repulsers[idx+5].s[0] = env->home[i].pos.x - env->fieldBounds.left;
-		repulsers[idx+5].s[1] = env->home[i].pos.y - env->fieldBounds.bottom;
+		repulsers[i+5].s[0] = env->home[i].pos.x - env->fieldBounds.left;
+		repulsers[i+5].s[1] = env->home[i].pos.y - env->fieldBounds.bottom;
 	}
 
 	float outPoints[4];
@@ -194,7 +186,7 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 	inPoints[Right].s[0] = bot.pos.x + GRADIENT_RESOLUTION - env->fieldBounds.left;
 	inPoints[Right].s[1] = bot.pos.y - env->fieldBounds.bottom;
 
-	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*9, &repulsers, &err);
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
 	checkErr(err, L"Buffer::Buffer()");
 	cl::Buffer inPointsBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2) * 4, &inPoints, &err);
 	checkErr(err, L"Buffer::Buffer()");

@@ -1,14 +1,14 @@
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
 
-#define BALL_WEIGHT 10
-#define OBSTACLE_WEIGHT 100
+#define BALL_WEIGHT 20
+#define OBSTACLE_WEIGHT 200
 #define OBSTACLE_SIGMA 5
 
 float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers);
 
 __kernel void main(float2 ball, float fieldResolution, __constant float2 *basicRepulsers, __global float * out)
 {
-	float2 gridPos = (int)(get_global_id(0),get_global_id(1));
+	int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
 
 	size_t index = gridPos.x + gridPos.y * get_global_size(0);
 
@@ -35,7 +35,7 @@ float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulser
 
 	float2 diff;
 	
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		diff = basicRepulsers[i] - realPos;
 		// native_exp: proabably less accurate, but uses far fewer GPRs, so runs much faster...
@@ -59,7 +59,7 @@ __kernel void colorize(float max, float min, __global float *in, __global char* 
 
 	// From http://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
 
-	const float value = 1.0f;
+	/*const float value = 1.0f;
 	const float saturation = 1.0f;
 	const float chroma = value * saturation;
 
@@ -106,7 +106,7 @@ __kernel void colorize(float max, float min, __global float *in, __global char* 
 		red = chroma;
 		green = 0;
 		blue = xVal;
-	}
+	}*/
 	
 	/*levelOut[3*index] = (char)floor(blue * 255);
 	levelOut[3*index+1] = (char)floor(green * 255);

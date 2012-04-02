@@ -241,8 +241,8 @@ namespace FieldRenderer
             gradientKernel.SetMemoryArgument(0, outCl);
             gradientKernel.SetMemoryArgument(1, outGradient);
 
-            queue.Execute(gradientKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
-                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+            queue.Execute(gradientKernel, new long[] { 1,1 }, new long[] { gridWidth - 2, gridHeight - 2 },
+                          null, null);
 
             queue.ReadFromBuffer(outGradient, ref gradPoints, true, null);
         }
@@ -264,7 +264,7 @@ namespace FieldRenderer
             // Collect together all the points that will repel the robot
             var repulsers =
                 currentEnvironment.Opponents.Select(o => o.Position).Concat(
-                    currentEnvironment.Home.Select(h => h.Position).Where((v, i) => i != 1)).Select(
+                    currentEnvironment.Home.Select(h => h.Position)).Select(
                         p =>
                         new Vector2((float) p.X - currentEnvironment.FieldBounds.Left,
                                     (float) p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();

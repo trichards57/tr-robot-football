@@ -79,6 +79,13 @@ __kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, __const
 	out[pointId] = fieldAtPoint(fieldPoints[pointId], ball, basicRepulsers);
 }
 
+__kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget, __constant float2 *fieldPoints, __constant float2 *basicRepulsers, __global float * out)
+{
+	size_t pointId = get_global_id(0);
+
+	out[pointId] = possessionFieldAtPoint(fieldPoints[pointId], ball, basicRepulsers, goalTarget);
+}
+
 __kernel void colorize(float max, float min, __global float *in, __global char* levelOut)
 {
 	size_t gridWidth = get_global_size(0);

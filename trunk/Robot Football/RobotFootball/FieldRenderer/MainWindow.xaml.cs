@@ -24,6 +24,8 @@ namespace FieldRenderer
     /// </summary>
     public sealed partial class MainWindow
     {
+        private int fieldType;
+
         /// <summary>
         /// The current environment being rendered
         /// </summary>
@@ -59,6 +61,8 @@ namespace FieldRenderer
         /// The kernel used to produce calculate the field gradient magnitude from field data
         /// </summary>
         private ComputeKernel gradientKernel;
+
+        private ComputeKernel possessionKernel;
         /// <summary>
         /// The kernel used to calculate the field
         /// </summary>
@@ -139,17 +143,29 @@ namespace FieldRenderer
         /// </remarks>
         private void RenderImage(object sender, DoWorkEventArgs doWorkEventArgs)
         {
+            int type;
             // Buffer the environment data
             lock (latestEnvironmentLocker)
             {
                 currentEnvironment = latestEnvironment;
+                type = fieldType;
             }
 
             // Create the computation queue (this can't be saved and reused, not sure why)
             var queue = new ComputeCommandQueue(context, context.Devices[0], ComputeCommandQueueFlags.None);
 
-            // Calculate the potential field
-            ComputeField(queue, points);
+            switch (type)
+            {
+                case 0:
+                    // Calculate the potential field
+                    ComputeField(queue, points);
+                    break;
+                case 1:
+                    ComputePosessionField(queue, points);
+                    break;
+            }
+
+            
             // Draw a picture of it
             var bitmap = RenderPoints(queue, points, outCl);
             // Calculate the field gradients
@@ -191,6 +207,41 @@ namespace FieldRenderer
 
             queue.Finish();
             queue.Dispose();
+        }
+
+        private void ComputePosessionField(ComputeCommandQueue queue, float[] field)
+        {
+            var ball =
+                new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
+                            (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
+                    );
+
+            var goalTarget =
+                new Vector2((97.3632f) - currentEnvironment.FieldBounds.Left,
+                    (33.932f + 49.6801f) / 2.0f - currentEnvironment.FieldBounds.Bottom);
+
+
+            // Collect together all the points that will repel the robot
+            var repulsers =
+                currentEnvironment.Opponents.Select(o => o.Position).Concat(
+                    currentEnvironment.Home.Select(h => h.Position)).Select(
+                        p =>
+                        new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
+                                    (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
+
+            var inRepulsers = new ComputeBuffer<Vector2>(context,
+                                                         ComputeMemoryFlags.ReadOnly |
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers);
+            possessionKernel.SetValueArgument(0, ball);
+            possessionKernel.SetValueArgument(1, goalTarget);
+            possessionKernel.SetValueArgument(2, GridResolution);
+            possessionKernel.SetMemoryArgument(3, inRepulsers);
+            possessionKernel.SetMemoryArgument(4, outCl);
+
+            queue.Execute(possessionKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+
+            queue.ReadFromBuffer(outCl, ref field, true, null);
         }
 
         /// <summary>
@@ -313,6 +364,7 @@ namespace FieldRenderer
             }
 
             kernel = program.CreateKernel("main");
+            possessionKernel = program.CreateKernel("possessionMain");
             colourKernel = program.CreateKernel("colorize");
             gradientKernel = program.CreateKernel("calculateGradient");
 
@@ -373,6 +425,7 @@ namespace FieldRenderer
                 var report = (StatusReport) Marshal.PtrToStructure(ptr, typeof (StatusReport));
                 latestEnvironment = report.Environment;
                 CurrentVector = report.FieldVector;
+                fieldType = report.FieldType;
             }
 	
             if (!worker.IsBusy)

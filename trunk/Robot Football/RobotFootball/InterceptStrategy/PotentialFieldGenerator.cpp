@@ -32,7 +32,6 @@ enum SquarePosition
 	Right = 3
 };
 
-#ifdef OPENCL
 inline void checkErr(cl_int err, const WCHAR * name)
 {
 	if (err != CL_SUCCESS)
@@ -49,12 +48,11 @@ inline void checkErr(cl_int err, const WCHAR * name)
 		exit(EXIT_FAILURE);
 	}
 }
-#endif
 
 
 PotentialFieldGenerator::PotentialFieldGenerator(void)
+	: latchClose(false)
 {
-#ifdef OPENCL
 	cl_int err;
 	cl::vector<cl::Platform> platformList;
 	cl::Platform::get(&platformList);
@@ -84,29 +82,18 @@ PotentialFieldGenerator::PotentialFieldGenerator(void)
 
 	kernel = cl::Kernel(program, "fieldAtPoints", &err);
 	checkErr(err, L"Kernel::Kernel()");
-
-	
-#endif
+	possessionKernel = cl::Kernel(program, "possessionFieldAtPoints", &err);
+	checkErr(err, L"Kernel::Kernel()");	
 }
 
 
 PotentialFieldGenerator::~PotentialFieldGenerator(void)
 {
-#ifdef OPENCL
 	delete points;
-#endif
 }
 
-Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* env)
+Vector3D PotentialFieldGenerator::CalculateMainField(Environment* env, Robot bot)
 {
-	auto bot = env->home[botIndex];
-
-	auto xWidth = (int)ceil((FRIGHTX - FLEFTX) / GRID_RESOLUTION);
-	auto xHeight = (int)ceil((FTOP - FBOT) / GRID_RESOLUTION);
-
-	auto t1 = clock();
-
-#ifdef OPENCL
 	cl_int err;
 	
 	cl_float2 ball;
@@ -117,8 +104,6 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 	field = GRID_RESOLUTION;
 
 	cl_float2 repulsers[10];
-
-	bool skippedBotPassed = false;
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -168,7 +153,8 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 
 	err = queue.enqueueReadBuffer(outPointsBuffer, CL_TRUE, 0, 4 * sizeof(float), outPoints);
 	checkErr(err, L"CommandQueue::enqueueReadBuffer()");
-#endif
+
+	queue.finish();
 
 	auto t2 = clock();
 
@@ -176,11 +162,114 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 	force.x = (outPoints[Left] - outPoints[Right])/(2*GRADIENT_RESOLUTION);
 	force.y = (outPoints[Down] - outPoints[Up])/(2*GRADIENT_RESOLUTION);
 
-#ifdef DELEGATEOPENCL
+	return force;
+}
+
+Vector3D PotentialFieldGenerator::CalculatePossessionField(Environment* env, Robot bot)
+{
+	cl_int err;
+	
+	cl_float2 ball;
+	ball.s[0] = env->currentBall.pos.x - env->fieldBounds.left; // Ball X
+	ball.s[1] = env->currentBall.pos.y - env->fieldBounds.bottom; // Ball Y
+
+	cl_float2 goalTarget;
+	goalTarget.s[0] = GRIGHT - env->fieldBounds.left;
+	goalTarget.s[1] = (GBOTY + GTOPY) / 2 - env->fieldBounds.bottom;
+
+	cl_float field;
+	field = GRID_RESOLUTION;
+
+	cl_float2 repulsers[10];
+
+	for (int i = 0; i < 5; i++)
+	{
+		repulsers[i].s[0] = env->opponent[i].pos.x - env->fieldBounds.left;
+		repulsers[i].s[1] = env->opponent[i].pos.y - env->fieldBounds.bottom;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		repulsers[i+5].s[0] = env->home[i].pos.x - env->fieldBounds.left;
+		repulsers[i+5].s[1] = env->home[i].pos.y - env->fieldBounds.bottom;
+	}
+
+	float outPoints[4];
+	cl_float2 inPoints[4];
+	
+	inPoints[Up].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[Up].s[1] = bot.pos.y + GRADIENT_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[Down].s[0] = bot.pos.x - env->fieldBounds.left;
+	inPoints[Down].s[1] = bot.pos.y - GRADIENT_RESOLUTION - env->fieldBounds.bottom;
+	inPoints[Left].s[0] = bot.pos.x - GRADIENT_RESOLUTION - env->fieldBounds.left;
+	inPoints[Left].s[1] = bot.pos.y - env->fieldBounds.bottom;
+	inPoints[Right].s[0] = bot.pos.x + GRADIENT_RESOLUTION - env->fieldBounds.left;
+	inPoints[Right].s[1] = bot.pos.y - env->fieldBounds.bottom;
+
+	cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
+	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer inPointsBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2) * 4, &inPoints, &err);
+	checkErr(err, L"Buffer::Buffer()");
+	cl::Buffer outPointsBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, sizeof(float) * 4, &outPoints, &err);
+	checkErr(err, L"Buffer::Buffer()");
+
+	err = possessionKernel.setArg(0, sizeof(cl_float2), &ball);
+	checkErr(err, L"Kernel::setArg()");
+	err = possessionKernel.setArg(1, sizeof(cl_float2), &goalTarget);
+	checkErr(err, L"Kernel::setArg()");
+	err = possessionKernel.setArg(2, inPointsBuffer);
+	checkErr(err, L"Kernel::setArg()");
+	err = possessionKernel.setArg(3, inRepulsers);
+	checkErr(err, L"Kernel::setArg()");
+	err = possessionKernel.setArg(4, outPointsBuffer);
+	checkErr(err, L"Kernel::setArg()");
+
+	cl::CommandQueue queue(context, devices[0], 0, &err);
+	checkErr(err, L"CommandQueue::CommandQueue()");
+
+	cl::Event event;
+	err = queue.enqueueNDRangeKernel(possessionKernel, cl::NullRange, cl::NDRange(4), cl::NDRange(1), NULL, &event);
+	checkErr(err, L"CommandQueue::CommandQueue()");
+
+	err = queue.enqueueReadBuffer(outPointsBuffer, CL_TRUE, 0, 4 * sizeof(float), outPoints);
+	checkErr(err, L"CommandQueue::enqueueReadBuffer()");
+
+	queue.finish();
+
+	auto t2 = clock();
+
+	Vector3D force;
+	force.x = (outPoints[Left] - outPoints[Right])/(2*GRADIENT_RESOLUTION);
+	force.y = (outPoints[Down] - outPoints[Up])/(2*GRADIENT_RESOLUTION);
+
+	return force;
+}
+
+Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* env)
+{
+	auto bot = env->home[botIndex];
+
+	auto xWidth = (int)ceil((FRIGHTX - FLEFTX) / GRID_RESOLUTION);
+	auto xHeight = (int)ceil((FTOP - FBOT) / GRID_RESOLUTION);
+
+	auto x = env->currentBall.pos.x - 7 - bot.pos.x;
+	auto y = env->currentBall.pos.y - bot.pos.y;
+	auto dist = sqrt(x*x+y*y);
+
+	Vector3D force;
+
+	if (dist < 1.0)
+		latchClose = true;
+
+	if (!latchClose)
+		force = CalculateMainField(env, bot);
+	else
+		force = CalculatePossessionField(env, bot);
+
 	StatusReport rep;
 	rep.environment = *env;
 	rep.fieldVector.x = force.x;
 	rep.fieldVector.y = force.y;
+	rep.FieldType = !latchClose > 0.2 ? 0 : 1;
 	auto success = CallNamedPipe(L"\\\\.\\pipe\\fieldRendererPipe", &rep, sizeof(StatusReport), nullptr, 0, nullptr, 0);
 	if (success == 0)
 	{
@@ -191,9 +280,6 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 
 		LocalFree(lpMsgBuf);
 	}
-#endif
-
-	queue.finish();
 
 	return force;
 }

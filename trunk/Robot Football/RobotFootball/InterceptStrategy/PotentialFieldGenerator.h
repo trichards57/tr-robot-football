@@ -1,8 +1,5 @@
 #pragma once
 
-#define OPENCL 1
-#define DELEGATEOPENCL 1
-
 #include <cstdlib>
 
 #include <ppl.h>
@@ -20,21 +17,21 @@ using namespace Concurrency;
 class PotentialFieldGenerator
 {
 private:
-#ifdef OPENCL
 	int gridWidth;
 	int gridHeight;
 	int length;
 	cl_float4 * points;
 	cl::Kernel kernel;
+	cl::Kernel possessionKernel;
 	cl::Context context;
 	cl::vector<cl::Device> devices;
 	cl::Buffer outCl;
 	cl::CommandQueue queue;
 	task_group taskGroup;
-#endif
-#ifdef DELEGATEOPENCL
 	HANDLE pipe;
-#endif
+	Vector3D CalculateMainField(Environment* env, Robot bot);
+	Vector3D CalculatePossessionField(Environment* env, Robot bot);
+	bool latchClose;
 public:
 	PotentialFieldGenerator(void);
 	~PotentialFieldGenerator(void);

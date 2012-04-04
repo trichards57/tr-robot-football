@@ -12,5 +12,6 @@ namespace FieldRenderer.Classes
     {
         public Environment Environment;
         public Vector3D FieldVector;
+        public int FieldType;
     }
 }

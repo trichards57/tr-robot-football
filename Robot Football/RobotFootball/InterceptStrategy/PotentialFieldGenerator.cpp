@@ -20,6 +20,7 @@ struct StatusReport
 {
 	Environment environment;
 	Vector3D fieldVector;
+	int FieldType;
 };
 #pragma pack pop
 
@@ -94,50 +95,6 @@ PotentialFieldGenerator::~PotentialFieldGenerator(void)
 #ifdef OPENCL
 	delete points;
 #endif
-}
-
-double FieldAtPoint(Vector3D point, Environment* env)
-{
-	// Attract to the ball
-	auto xDiff = env->currentBall.pos.x - point.x;
-	auto yDiff = env->currentBall.pos.y - point.y;
-
-	auto dist = sqrt(xDiff*xDiff + yDiff*yDiff);
-	auto attractField = 0.5 * BALL_WEIGHT * dist;
-
-	//combinable<double> repelField;
-	double repField = 0;
-	// Repel from friendlies
-	for (int i = 0; i < 5; i++)
-	{
-		auto xDiff = env->home[i].pos.x - point.x;
-		auto yDiff = env->home[i].pos.y - point.y;
-		
-		if (fabs(xDiff) < 2*GRID_RESOLUTION && fabs(yDiff) < 2*GRID_RESOLUTION)
-		{
-			continue; // This is probably the robot being analysed as it is so close. Skip it
-		}
-		
-		auto force = 0.5 * OBSTACLE_WEIGHT * exp(-((xDiff*xDiff)/(2*OBSTACLE_SIGMA) + (yDiff*yDiff)/(2*OBSTACLE_SIGMA)));
-		repField += force;
-	}
-	//auto repField = repelField.combine(std::plus<double>());
-
-	//repelField.clear();
-
-	// Repel from opponents
-	for (int i = 0; i < 5; i++)
-	{
-		auto xDiff = env->opponent[i].pos.x - point.x;
-		auto yDiff = env->opponent[i].pos.y - point.y;
-		
-		auto force = 0.5 * OBSTACLE_WEIGHT * exp(-((xDiff*xDiff)/(2*OBSTACLE_SIGMA) + (yDiff*yDiff)/(2*OBSTACLE_SIGMA)));
-		repField += force;
-	}
-
-	//repField += repelField.combine(std::plus<double>());
-
-	return  repField +attractField;
 }
 
 Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* env)
@@ -215,24 +172,6 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 
 	auto t2 = clock();
 
-	/*std::cerr << ((t2 - t1)/CLOCKS_PER_SEC) << std::endl;
-
-	Vector3D upPoint, downPoint, leftPoint, rightPoint;
-
-	upPoint.x = bot.pos.y + GRID_RESOLUTION;
-	upPoint.y = bot.pos.x;
-	downPoint.x = bot.pos.y - GRID_RESOLUTION;
-	downPoint.y = bot.pos.x;
-	leftPoint.x = bot.pos.x - GRID_RESOLUTION;
-	leftPoint.y = bot.pos.y;
-	rightPoint.x = bot.pos.x + GRID_RESOLUTION;
-	rightPoint.y = bot.pos.y;
-
-	auto upField = FieldAtPoint(upPoint, env);
-	auto downField = FieldAtPoint(downPoint, env);
-	auto leftField = FieldAtPoint(leftPoint, env);
-	auto rightField = FieldAtPoint(rightPoint, env);*/
-
 	Vector3D force;
 	force.x = (outPoints[Left] - outPoints[Right])/(2*GRADIENT_RESOLUTION);
 	force.y = (outPoints[Down] - outPoints[Up])/(2*GRADIENT_RESOLUTION);
@@ -253,6 +192,8 @@ Vector3D PotentialFieldGenerator::FieldVectorToBall(int botIndex, Environment* e
 		LocalFree(lpMsgBuf);
 	}
 #endif
+
+	queue.finish();
 
 	return force;
 }

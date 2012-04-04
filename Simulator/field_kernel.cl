@@ -1,11 +1,63 @@
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
 
-#define BALL_WEIGHT 20
-#define OBSTACLE_WEIGHT 200
+#define BALL_WEIGHT 10
+#define OBSTACLE_WEIGHT 100
 #define OBSTACLE_SIGMA 5
 #define M_PI 3.141593
 
-float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers);
+inline float basicRepel(float2 realPos, float2 repulser)
+{
+	float2 diff = repulser - realPos;
+	// native_exp: proabably less accurate, but uses far fewer GPRs, so runs much faster...
+	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) / (2*OBSTACLE_SIGMA));
+}
+
+float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers)
+{
+	float2 attractBall = ball - (float2)(7,0);
+	float2 repelBall = ball + (float2)(7,0);
+	float dist = distance(attractBall, realPos);
+	float attractField = BALL_WEIGHT * dist;
+
+	float repField = basicRepel(realPos, repelBall);
+	
+	for (int i = 0; i < 10; i++)
+	{
+		repField += basicRepel(realPos, basicRepulsers[i]);
+	}
+
+	return attractField + repField;
+}
+
+float possessionFieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers, float2 goalTarget)
+{
+	float dist = distance(ball, realPos);
+	float attractField = BALL_WEIGHT * dist;
+	dist = distance(goalTarget, realPos);
+	attractField = BALL_WEIGHT * dist;
+
+	float repField = 0;
+	
+	for (int i = 0; i < 10; i++)
+	{
+		repField += basicRepel(realPos, basicRepulsers[i]);
+	}
+
+	return attractField + repField;
+}
+
+__kernel void possessionMain(float2 ball, float2 goalTarget, float fieldResolution, __constant float2 *basicRepulsers, __global float * out)
+{
+	int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
+
+	size_t index = gridPos.x + gridPos.y * get_global_size(0);
+
+	float2 realPos = convert_float2(gridPos) * fieldResolution;
+
+	float res = possessionFieldAtPoint(realPos, ball, basicRepulsers, goalTarget);
+	
+	out[index] = res;
+}
 
 __kernel void main(float2 ball, float fieldResolution, __constant float2 *basicRepulsers, __global float * out)
 {
@@ -25,31 +77,6 @@ __kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, __const
 	size_t pointId = get_global_id(0);
 
 	out[pointId] = fieldAtPoint(fieldPoints[pointId], ball, basicRepulsers);
-}
-
-float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers)
-{
-	float dist = distance(ball, realPos);
-
-	float attractField = 0.5f * BALL_WEIGHT * dist;
-	float repField = 0;
-
-	float2 diff;
-	
-	for (int i = 0; i < 10; i++)
-	{
-		diff = basicRepulsers[i] - realPos;
-		// native_exp: proabably less accurate, but uses far fewer GPRs, so runs much faster...
-		repField += 0.5f * OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) / (2*OBSTACLE_SIGMA));
-	}
-
-	diff = ball - realPos;
-
-	float ballShapedField = 0.5f * 5 * OBSTACLE_WEIGHT * native_exp(-(diff.x*diff.x+diff.y*diff.y-200.0)*(diff.x*diff.x+diff.y*diff.y-200.0)/40000) * fabs(atan2(diff.y, diff.x)/M_PI);
-
-	repField += ballShapedField;
-
-	return attractField + repField;
 }
 
 __kernel void colorize(float max, float min, __global float *in, __global char* levelOut)

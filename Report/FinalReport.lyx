@@ -1,0 +1,495 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+
+\usepackage[cm]{fullpage}\usepackage{acronym}
+
+%opening
+\title{}
+\author{}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding default
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 10
+\spacing double
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref section
+\pdf_pdfusetitle true
+\pdf_quoted_options "linkcolor=black,citecolor=black,filecolor=black,urlcolor=black"
+\papersize a4paper
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 0
+\use_mathdots 0
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 40mm
+\topmargin 25mm
+\rightmargin 10mm
+\bottommargin 25mm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Section
+Literature Review
+\end_layout
+
+\begin_layout Section
+Computational Methods
+\end_layout
+
+\begin_layout Subsection
+Potential Field Force Navigation
+\end_layout
+
+\begin_layout Standard
+For this project, it was decided that a potential field force navigation
+ technique would be used to control the individual (as described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "intelligentAlgorithmPathPlanning"
+
+\end_inset
+
+.
+ The field is produced by taking a collection of objects and projecting
+ a field around them of a given shape.
+ This field can either add to or subtract from the total field potential
+ surrounding it.
+ The total field can then be calculated with equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:fieldSummation"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+P(x,y)=\sum_{i=0}^{N-1}p_{i}\left(x,y\right)\label{eq:fieldSummation}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\paragraph_spacing double
+\noindent
+Where:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $P\left(x,y\right)$
+\end_inset
+
+ is the total field potential at point 
+\begin_inset Formula $\left(x,y\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $p_{i}\left(x,y\right)$
+\end_inset
+
+ is the potential produced by object 
+\begin_inset Formula $i$
+\end_inset
+
+ at a point.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $N$
+\end_inset
+
+ is the number of field producing objects.
+\end_layout
+
+\begin_layout Standard
+The direction that the robot will move in is then determined by the gradient
+ of the field at the current point, such that the robot moves down the field
+ potential.
+ The force vector (which controls the velocity of the robot) is given by
+ equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:forceSummation"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\boldsymbol{F}(x,y)=-\left(\frac{{\partial P\left(x,y\right)}}{\partial x}+\frac{{\partial P\left(x,y\right)}}{\partial y}j\right)\label{eq:forceSummation}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If the fields can be differentiated over the entire field, this can be calculate
+d as in equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:forceDifferentiation"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\boldsymbol{F}(x,y)=-\left(\sum_{i=0}^{N-1}\frac{\partial p_{i}\left(x,y\right)}{\partial x}+\frac{\partial p_{i}\left(x,y\right)}{\partial y}j\right)\label{eq:forceDifferentiation}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+However, if one or more of the fields cannot be differentiated, the force
+ vector must be calculated 
+\lang british
+discretely
+\lang english
+.
+ This is achieved using equation .
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\boldsymbol{F}(x,y)=\left(P\left(x-1,y\right)-P\left(x+1,y\right)\right)+\left(P\left(x,y-1\right)-P\left(x,y+1\right)\right)j
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The negative gradient is used to ensure the robot moves towards lower field
+ potentials.
+ The technique would work equally well if it was attracted to higher field
+ potentials, provided all the equations were suitably inverted.
+ 
+\end_layout
+
+\begin_layout Standard
+For the initial control technique, the velocity of the robot will be proportiona
+l to the force vector.
+ Other techniques are discussed by 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "intelligentAlgorithmPathPlanning"
+
+\end_inset
+
+, but will be experimented on later.
+ 
+\end_layout
+
+\begin_layout Standard
+Navigation of the game field can now be achieved by manipulating the attractive
+ and repulsive fields to guide the robot to a target.
+ Computational power allowing, each robot would have a separate field that
+ guides it based on the goals specific to its role.
+ 
+\end_layout
+
+\begin_layout Subsection
+Notation
+\end_layout
+
+\begin_layout Standard
+As the basic fields in use are axisymmetric in shape (or begin that way),
+ the fields are best described using polar coordinates.
+ The coordinates are defined as in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:polarCoordinateFrame"
+
+\end_inset
+
+, and are always centered on the field producing object.
+ This frame of reference can then be translated to the Cartesian coordinates
+ in use elsewhere to allow the total field at a point to be calculated.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:polarCoordinateFrame"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Attractive Fields
+\end_layout
+
+\begin_layout Standard
+Attractive fields are used to designate areas which the robot should be
+ headed for.
+ In order to ensure that the robot always heads towards them, it is important
+ that their effect is felt across the entire field.
+ However, they must not be so strong that they overwhelm the short distance
+ effects of the repulsive fields.
+\end_layout
+
+\begin_layout Subsubsection
+Ball Field
+\end_layout
+
+\begin_layout Standard
+The field suggested by 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "intelligentAlgorithmPathPlanning"
+
+\end_inset
+
+ for the attractive point is described with equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:quadraticBallField"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+P(r,\theta)=\frac{1}{2}k_{attr}r^{2}\label{eq:quadraticBallField}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Where 
+\begin_inset Formula $k_{attr}$
+\end_inset
+
+ is the attractive weight assigned to the ball.
+\end_layout
+
+\begin_layout Standard
+This produces an attractive force that is linearly proportional to the distance
+ to the ball.
+ This is a very useful field for a route finder (as described in the paper),
+ where it is desirable for the the robot to stop when it reaches the destination
+, and so it needs to slow down as it approaches the target.
+ However, in this application it is more useful for the robot to make a
+ rapid approach and not slow down after arrival, as this will hit the ball
+ away from the robot.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to overcome this problem, the field was simplified to equation
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:conicBallField"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+P(r,\theta)=\frac{1}{2}k_{attr}r\label{eq:conicBallField}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This field produces a constant force of 
+\begin_inset Formula $k_{attr}$
+\end_inset
+
+ acting towards the 
+\lang british
+centre
+\lang english
+ of the ball, which will hold the robot against the ball (as far as possible)
+ as the ball and robot move around.
+ It doesn't provide any guidance once the ball has been reached, and so
+ this will need to be provided by an additional field once the intercept
+ is complete.
+\end_layout
+
+\begin_layout Subsection
+Repulsive Fields
+\end_layout
+
+\begin_layout Standard
+Repulsive fields are used to alter the route of the robot to achieve the
+ desired goals.
+ For example, such fields are used to get the robot to avoid collisions,
+ as well as to control where the robot intercepts the ball.
+ These fields typically only act over a short distance, as they should only
+ have an effect when they are required.
+ They also need to be strong enough to overwhelm the attractive fields at
+ short range.
+\end_layout
+
+\begin_layout Subsubsection
+Basic Obstacle Field
+\end_layout
+
+\begin_layout Standard
+One of the rules of the game is that the robot cannot intentionally collide
+ with an opposing robot, unless they are in possession of the ball 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "simurosotSim"
+
+\end_inset
+
+.
+ This means that the robot must actively avoid the other robots.
+ It is also advantagous to be able to avoid the robots own team, as this
+ prevents the robots getting into a position where they cannot move as they
+ are fighting against each other.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Section
+Discussion
+\end_layout
+
+\begin_layout Section
+Future Work
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage cleardoublepage
+\end_inset
+
+ 
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "References/references"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

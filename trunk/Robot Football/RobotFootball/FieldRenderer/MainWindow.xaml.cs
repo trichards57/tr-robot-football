@@ -188,6 +188,9 @@ namespace FieldRenderer
             };
 
             Dispatcher.Invoke(refresh);
+
+            queue.Finish();
+            queue.Dispose();
         }
 
         /// <summary>
@@ -252,8 +255,6 @@ namespace FieldRenderer
         /// </summary>
         /// <param name="queue">The queue to execute the kernel on.</param>
         /// <param name="field">The calculated field points.</param>
-        /// 
-        /// @todo Re-include the skipped robot once the Strategy does the same
         private void ComputeField(ComputeCommandQueue queue, float[] field)
         {
             var ball =

@@ -39,7 +39,7 @@ int main(void)
 	std::cerr << "Platform is by: " << platformVendor << "\n";
 	cl_context_properties cprops[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[0])(), 0};
 
-	cl::Context context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+	cl::Context context(CL_DEVICE_TYPE_CPU, cprops, NULL, NULL, &err);
 	checkErr(err, "Context::Context()");
 
 	int gridWidth = (int)ceil(WIDTH/RESOLUTION);
@@ -128,41 +128,22 @@ int main(void)
 	cl::CommandQueue queue(context, devices[0], 0, &err);
 	checkErr(err, "CommandQueue::CommandQueue()");
 
-	cl::vector<cl::Event> firstEvents;
-	cl::vector<cl::Event> secondEvents;
-	cl::vector<cl::Event> allEvents;
 
-	cl::Event kernelEvent;
-	cl::Event readEvent1;
-	cl::Event readEvent2;
-	cl::Event pointKernelEvent;
-
-	err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &kernelEvent);
+	/*err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE));
 	checkErr(err, "CommandQueue::CommandQueue()");
 
-	firstEvents.push_back(kernelEvent);
+	err = queue.enqueueReadBuffer(outCl, CL_TRUE, 0, length * sizeof(float), outH);
 
-	//event.wait();
-	err = queue.enqueueReadBuffer(outCl, CL_FALSE, 0, length * sizeof(float), outH, &firstEvents, &readEvent1);
+	checkErr(err, "CommandQueue::enqueueReadBuffer()");*/
 
+	err = queue.enqueueNDRangeKernel(pointsKernel, cl::NullRange, cl::NDRange(4), cl::NDRange(4));
+	checkErr(err, "CommandQueue::CommandQueue()");
+
+	err = queue.enqueueReadBuffer(outPoints, CL_TRUE, 0, 4 * sizeof(float), oPoints);
 	checkErr(err, "CommandQueue::enqueueReadBuffer()");
 
-	err = queue.enqueueNDRangeKernel(pointsKernel, cl::NullRange, cl::NDRange(gridWidth, gridHeight), cl::NDRange(WORK_GROUP_SIZE, WORK_GROUP_SIZE), NULL, &pointKernelEvent);
-	checkErr(err, "CommandQueue::CommandQueue()");
-
-	secondEvents.push_back(pointKernelEvent);
-
-	//event.wait();
-	err = queue.enqueueReadBuffer(outPoints, CL_FALSE, 0, 4 * sizeof(float), oPoints, &secondEvents, &readEvent2);
-	checkErr(err, "CommandQueue::CommandQueue()");
-
-	allEvents.push_back(kernelEvent);
-	allEvents.push_back(readEvent1);
-	allEvents.push_back(readEvent2);
-	allEvents.push_back(pointKernelEvent);
-
-	queue.enqueueWaitForEvents(allEvents);
-	checkErr(err, "CommandQueue::WaitForEvents()");
+	queue.finish();
+	checkErr(err, "CommandQueue::Finish()");
 
 	return EXIT_SUCCESS;
 }

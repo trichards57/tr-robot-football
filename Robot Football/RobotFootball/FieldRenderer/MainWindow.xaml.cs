@@ -22,7 +22,7 @@ namespace FieldRenderer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public sealed partial class MainWindow
+    public partial class MainWindow : IDisposable
     {
         private int fieldType;
 
@@ -229,19 +229,21 @@ namespace FieldRenderer
                         new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
                                     (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
 
-            var inRepulsers = new ComputeBuffer<Vector2>(context,
+            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
                                                          ComputeMemoryFlags.ReadOnly |
-                                                         ComputeMemoryFlags.CopyHostPointer, repulsers);
-            possessionKernel.SetValueArgument(0, ball);
-            possessionKernel.SetValueArgument(1, goalTarget);
-            possessionKernel.SetValueArgument(2, GridResolution);
-            possessionKernel.SetMemoryArgument(3, inRepulsers);
-            possessionKernel.SetMemoryArgument(4, outCl);
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
+            {
+                possessionKernel.SetValueArgument(0, ball);
+                possessionKernel.SetValueArgument(1, goalTarget);
+                possessionKernel.SetValueArgument(2, GridResolution);
+                possessionKernel.SetMemoryArgument(3, inRepulsers);
+                possessionKernel.SetMemoryArgument(4, outCl);
 
-            queue.Execute(possessionKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
-                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+                queue.Execute(possessionKernel, new long[] {0}, new long[] {gridWidth, gridHeight},
+                              new long[] {WorkGroupSize, WorkGroupSize}, null);
 
-            queue.ReadFromBuffer(outCl, ref field, true, null);
+                queue.ReadFromBuffer(outCl, ref field, true, null);
+            }
         }
 
         /// <summary>
@@ -321,18 +323,20 @@ namespace FieldRenderer
                         new Vector2((float) p.X - currentEnvironment.FieldBounds.Left,
                                     (float) p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
 
-            var inRepulsers = new ComputeBuffer<Vector2>(context,
+            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
                                                          ComputeMemoryFlags.ReadOnly |
-                                                         ComputeMemoryFlags.CopyHostPointer, repulsers);
-            kernel.SetValueArgument(0, ball);
-            kernel.SetValueArgument(1, GridResolution);
-            kernel.SetMemoryArgument(2, inRepulsers);
-            kernel.SetMemoryArgument(3, outCl);
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
+            {
+                kernel.SetValueArgument(0, ball);
+                kernel.SetValueArgument(1, GridResolution);
+                kernel.SetMemoryArgument(2, inRepulsers);
+                kernel.SetMemoryArgument(3, outCl);
 
-            queue.Execute(kernel, new long[] {0}, new long[] {gridWidth, gridHeight},
-                          new long[] {WorkGroupSize, WorkGroupSize}, null);
+                queue.Execute(kernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
 
-            queue.ReadFromBuffer(outCl, ref field, true, null);
+                queue.ReadFromBuffer(outCl, ref field, true, null);
+            }
         }
 
         /// <summary>
@@ -351,22 +355,25 @@ namespace FieldRenderer
                                          null, IntPtr.Zero);
 
             var code = File.ReadAllText(@"D:\Users\Tony\Documents\tr-robot-football\Simulator\field_kernel.cl");
-            var program = new ComputeProgram(context, code);
-            try
-            {
-                program.Build(context.Devices, null, null, IntPtr.Zero);
-            }
-            catch(BuildProgramFailureComputeException)
-            {
-                var s = program.GetBuildLog(context.Devices[0]);
-                MessageBox.Show(s);
-                Close();
-            }
 
-            kernel = program.CreateKernel("main");
-            possessionKernel = program.CreateKernel("possessionMain");
-            colourKernel = program.CreateKernel("colorize");
-            gradientKernel = program.CreateKernel("calculateGradient");
+            using (var program = new ComputeProgram(context, code))
+            {
+                try
+                {
+                    program.Build(context.Devices, null, null, IntPtr.Zero);
+                }
+                catch (BuildProgramFailureComputeException)
+                {
+                    var s = program.GetBuildLog(context.Devices[0]);
+                    MessageBox.Show(s);
+                    Close();
+                }
+
+                kernel = program.CreateKernel("main");
+                possessionKernel = program.CreateKernel("possessionMain");
+                colourKernel = program.CreateKernel("colorize");
+                gradientKernel = program.CreateKernel("calculateGradient");
+            }
 
             gridWidth = (int)Math.Ceiling(FieldWidth / GridResolution);
             var remainder = gridWidth % WorkGroupSize;
@@ -403,6 +410,9 @@ namespace FieldRenderer
         {
             var environment = new StatusReport();
             var size = Marshal.SizeOf(environment);
+
+            if (disposed)
+                return;
 	
             pipeServer.EndWaitForConnection(ar);
 	
@@ -440,6 +450,7 @@ namespace FieldRenderer
         /// The field vector reported by the simulator
         /// </summary>
         private Vector3D currentVector;
+        private bool disposed;
 
         /// <summary>
         /// Gets or sets the current vector reported by the simulator.
@@ -457,6 +468,42 @@ namespace FieldRenderer
                                              FieldVector.Text =
                                              string.Format("{0},{1}", currentVector.X, currentVector.Y)));
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+            if (!disposing) return;
+
+            outPix.Dispose();
+            outCl.Dispose();
+            outGradient.Dispose();
+            platformList = null;
+            context.Dispose();
+            colourKernel.Dispose();
+            gradientKernel.Dispose();
+            kernel.Dispose();
+            possessionKernel.Dispose();
+            worker.Dispose();
+            pipeServer.Dispose();
+
+            disposed = true;
+        }
+
+        ~MainWindow()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void WindowClosed(object sender, EventArgs e)
+        {
+            Dispose();
         }
     }
 }

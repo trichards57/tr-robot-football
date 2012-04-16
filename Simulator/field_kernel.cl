@@ -11,6 +11,13 @@ inline float basicRepel(float2 realPos, float2 repulser)
 	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) / (2*OBSTACLE_SIGMA));
 }
 
+inline float stretchedBasicRepel(float2 realPos, float2 repulser)
+{
+	float2 diff = repulser - realPos;
+	// native_exp: proabably less accurate, but uses far fewer GPRs, so runs much faster...
+	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) / (2* OBSTACLE_SIGMA * 6) + (diff.y*diff.y)/ (2*OBSTACLE_SIGMA)) );
+}
+
 float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant float2 *basicRepulsers)
 {
 	float2 posShift = normalize(ballVelocity)*-7;
@@ -20,10 +27,10 @@ float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant 
 	float attractField = BALL_WEIGHT * dist;
 
 	float repField;
-	
+
 	if (length(posShift) > 1.0f)
 		repField += basicRepel(realPos, repelBall);
-	
+
 	for (int i = 0; i < 10; i++)
 	{
 		repField += basicRepel(realPos, basicRepulsers[i]);
@@ -34,16 +41,17 @@ float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant 
 
 float possessionFieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers, float2 goalTarget)
 {
-	float dist = distance(ball, realPos);
+	float2 vectorToGoal = normalize(goalTarget - realPos)*5;
+	float2 attractBall = ball + vectorToGoal;
+
+	float dist = distance(attractBall, realPos);
 	float attractField = BALL_WEIGHT * dist;
-	dist = distance(goalTarget, realPos);
-	attractField += BALL_WEIGHT * dist / 2;
 
 	float repField = 0;
-	
+
 	for (int i = 0; i < 10; i++)
 	{
-		repField += basicRepel(realPos, basicRepulsers[i]);
+		repField += stretchedBasicRepel(realPos, basicRepulsers[i]);
 	}
 
 	return attractField + repField;
@@ -58,7 +66,7 @@ __kernel void possessionMain(float2 ball, float2 goalTarget, float fieldResoluti
 	float2 realPos = convert_float2(gridPos) * fieldResolution;
 
 	float res = possessionFieldAtPoint(realPos, ball, basicRepulsers, goalTarget);
-	
+
 	out[index] = res;
 }
 
@@ -71,7 +79,7 @@ __kernel void main(float2 ball, float fieldResolution, __constant float2 *basicR
 	float2 realPos = convert_float2(gridPos) * fieldResolution;
 
 	float res = fieldAtPoint(realPos, ball, ballVelocity, basicRepulsers);
-	
+
 	out[index] = res;
 }
 

@@ -156,17 +156,26 @@ namespace Strategies
 		cl_int err;
 		cl_float2 ball = Utilities::Vector3DToCLFloat2(Utilities::Subtract(env->currentBall.pos, env->fieldBounds));
 		cl_float2 ballVel;
+		cl_float2 goalTarget;
 		cl_float2 inPoints[4];
 		cl_float2 repulsers[10];
 		float outPoints[4];
 		Vector3D force;
+		Vector3D goalTarg;
+
+		goalTarg.x = GRIGHT;
+		goalTarg.y = (GBOTY + GTOPY) / 2;
 
 		PopulateRepulsers(repulsers, env);
 
 		PopulateInPoints(inPoints, bot.pos, env->fieldBounds);
 
-		ballVel.s[0] = -7;// (float)ballVelocity.x;
-		ballVel.s[1] = 0;//(float)ballVelocity.y;
+		cl_float2 vectorToGoal = Utilities::Vector3DToCLFloat2(Utilities::Subtract(Utilities::Subtract(env->currentBall.pos, goalTarg), env->fieldBounds));
+
+		ballVel = vectorToGoal;
+
+		//ballVel.s[0] =  -7;// (float)ballVelocity.x;
+		//ballVel.s[1] = 0;//(float)ballVelocity.y;
 
 		cl::Buffer inRepulsers(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(cl_float2)*10, &repulsers, &err);
 		CheckError(err, _T("Buffer::Buffer()"));
@@ -256,21 +265,31 @@ namespace Strategies
 		return force;
 	}
 
-	Vector3D PotentialFieldGenerator::FieldVectorToBall(const int botIndex, const Environment* env, const Vector3D ballVelocity)
+	Vector3D PotentialFieldGenerator::FieldVectorToBall(const int botIndex, const Environment* env, const Vector3D ballVelocity, int** fieldState)
 	{
+		if (*fieldState == nullptr)
+			*fieldState = new int();
+
 		const auto ballSpeed = Utilities::Length(ballVelocity);
 		const auto bot = env->home[botIndex];
 		const auto xHeight = (int)ceil((FTOP - FBOT) / GRID_RESOLUTION);
 		const auto xWidth = (int)ceil((FRIGHTX - FLEFTX) / GRID_RESOLUTION);
+		Vector3D goalTarg;
 
-		Vector3D attractPoint = Utilities::Move(env->currentBall.pos, -7, 0);
+		goalTarg.x = GRIGHT;
+		goalTarg.y = (GBOTY + GTOPY) / 2;
+
+		auto vectorToGoal = Utilities::Subtract(Utilities::Subtract(env->currentBall.pos, goalTarg), env->fieldBounds);
+
+		Vector3D attractTarget = Utilities::Subtract(env->currentBall.pos, Utilities::Multiply(Utilities::Divide(vectorToGoal, Utilities::Length(vectorToGoal)), -7));
+
 		Vector3D force;
 		StatusReport rep;
 
-		const auto dist = Utilities::Length(attractPoint, bot.pos);
+		const auto dist = Utilities::Length(attractTarget, bot.pos);
 		const auto ballDist = Utilities::Length(env->currentBall.pos, bot.pos);
 
-		if (ballDist > 20)
+		if (ballDist > 7)
 			fieldType = 0;
 		if (dist < 6 && fieldType == 1)
 			fieldType = 2;
@@ -290,23 +309,25 @@ namespace Strategies
 			break;
 		}
 
+		(**fieldState) = fieldType;
+
 		rep.environment = *env;
 		rep.fieldVector = force;
 		rep.FieldType = fieldType;
 		rep.ballVelocity = ballVelocity;
 
 		auto success = CallNamedPipe(_T("\\\\.\\pipe\\fieldRendererPipe"), &rep, sizeof(StatusReport), nullptr, 0, nullptr, 0);
-		/*if (success == 0)
+		if (success == 0)
 		{
-		LPVOID lpMsgBuf = nullptr;
-		auto error = GetLastError();
+			LPVOID lpMsgBuf = nullptr;
+			auto error = GetLastError();
 
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)(&lpMsgBuf), 0, nullptr);
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)(&lpMsgBuf), 0, nullptr);
 
-		MessageBox(nullptr, (LPTSTR)lpMsgBuf, _T("Named Pipe Error"), MB_OK | MB_ICONERROR);
+			OutputDebugString((LPCWSTR)lpMsgBuf);
 
-		LocalFree(lpMsgBuf);
-		}*/
+			LocalFree(lpMsgBuf);
+		}
 
 		return force;
 	}

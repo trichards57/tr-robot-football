@@ -1,7 +1,4 @@
-%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
 \documentclass[10pt,british,english]{article}
-\usepackage[latin9]{inputenc}
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
 \usepackage{color}
@@ -11,176 +8,135 @@
 \usepackage{amsmath}
 \usepackage{setspace}
 \doublespacing
-\usepackage[unicode=true,pdfusetitle,
- bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
- breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=true]
- {hyperref}
-\hypersetup{
- linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
-\usepackage{breakurl}
+\usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0 1},colorlinks=true]{hyperref}
+\hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
 
-\usepackage[cm]{fullpage}
 \usepackage{acronym}
+
+\acrodef{GPU}{Graphics Processing Unit}
+\acrodef{CPU}{Central Processing Unit}
+\acrodef{SIMD}{Single Instruction Mulitple Data}
+\acrodef{GPR}{General Purpose Register}
+\acrodef{DLL}{Dynamic Link Library}
 
 \begin{document}
 \selectlanguage{british}%
-\begin{abstract}
-TODO : Abstract\tableofcontents{}
 
-\cleardoublepage{}
+\acresetall
+
+\begin{abstract}
+TODO : Abstract
 \end{abstract}
+
+\tableofcontents
+
+\acresetall
+
+\cleardoublepage
 
 \section{Introduction}
 
-
 \section{Literature Review}
-
 
 \section{Computational Methods}
 
+\subsection{Motion Control}
+
+\subsubsection{Uncontrolled Behaviour}
+
+The model used for the robots in the simulator is not documented. It is therefore assumed that the robot's motion is modelled on that produced by an electric motor. The basic behaviour of the system should be described by the model shown in figure \ref{fig:basicMotorModel}, which is sumarised with the transfer function in equation \ref{eq:basicMotorModel} \cite{basicControlNotes}.
+
+\begin{equation}
+ G\left(s\right) = A \cdot \frac{1}{s+B}
+\end{equation}
+
+In order to determine the values of the constants $A$ and $B$, a simple strategy was set up that made fed one of the robots a fixed control signal, which caused it to accelerate in a straight line until it reached a constant speed.  The position at each timestep was recorded, to allow the velocity and acceleration to be calculated.
+
+There are two methods of timing that the system could use:
+\begin{itemize}
+ \item Fixed time-step - Every simulator cycle is assumed to be a constant length
+ \item Real-time - The time-step length is based on the time elapsed since the last time-step.
+\end{itemize}
+
+The real-time length of each time-step was recorded over a period of period of time, and the distribution produced is shown in figure \ref{fig:timestepDistribution}.
+
+  An initial run was set up to examine the behaviour of the system over time, and is shown in figure \ref{fig:initialSpeedTestRun}.
+
+In order to allow more specific control over the motion of the robot, the motion control was implemented using two layers of control.  The first layer
 
 \subsection{Potential Field Force Navigation\label{sub:Potential-Field-Force}}
 
-For this project, it was decided that a potential field force navigation
-technique would be used to control the individual (as described in
-\cite{intelligentAlgorithmPathPlanning}. The field is produced by
-taking a collection of objects and projecting a field around them
-of a given shape. This field can either add to or subtract from the
-total field potential surrounding it. The total field can then be
-calculated with equation \ref{eq:fieldSummation}.
+With this technique, a potential field is used to create a force that guides each robot around the field (as described in \cite{intelligentAlgorithmPathPlanning}. The field is produced by taking a collection of objects and projecting a field around them of a given shape. This field can either add to or subtract from the total field potential surrounding it. The total field can then be calculated with equation \ref{eq:fieldSummation}.
 
 \begin{equation}
 P(x,y)=\sum_{i=0}^{N-1}p_{i}\left(x,y\right)\label{eq:fieldSummation}
 \end{equation}
 
-
-\begin{doublespace}
-\noindent Where:
-\end{doublespace}
+Where:
 
 $P\left(x,y\right)$ is the total field potential at point $\left(x,y\right)$.
 
-$p_{i}\left(x,y\right)$ is the potential produced by object $i$
-at a point.
+$p_{i}\left(x,y\right)$ is the potential produced by object $i$ at a point.
 
 $N$ is the number of field producing objects.
 
-The direction that the robot will move in is then determined by the
-gradient of the field at the current point, such that the robot moves
-down the field potential. The force vector (which controls the velocity
-of the robot) is given by equation \ref{eq:forceSummation}.
+The direction that the robot will move in is then determined by the gradient of the field at the current point, such that the robot moves down the field potential. The force vector (which controls the velocity of the robot) is given by equation \ref{eq:forceSummation}.
 
 \begin{equation}
 \boldsymbol{F}(x,y)=-\left(\frac{{\partial P\left(x,y\right)}}{\partial x}+\frac{{\partial P\left(x,y\right)}}{\partial y}j\right)\label{eq:forceSummation}
 \end{equation}
 
-
-If the fields can be differentiated over the entire field, this can
-be calculated as in equation \ref{eq:forceDifferentiation}.
+If the fields can be differentiated over the entire field, this can be calculated as in equation \ref{eq:forceDifferentiation}.
 
 \begin{equation}
 \boldsymbol{F}(x,y)=-\left(\sum_{i=0}^{N-1}\frac{\partial p_{i}\left(x,y\right)}{\partial x}+\frac{\partial p_{i}\left(x,y\right)}{\partial y}j\right)\label{eq:forceDifferentiation}
 \end{equation}
 
-
-However, if one or more of the fields cannot be differentiated, the
-force vector must be calculated discretely. This is achieved using
-equation .
+However, if one or more of the fields cannot be differentiated, the force vector must be calculated discretely. This is achieved using equation .
 
 \begin{equation}
 \boldsymbol{F}(x,y)=\left(P\left(x-1,y\right)-P\left(x+1,y\right)\right)+\left(P\left(x,y-1\right)-P\left(x,y+1\right)\right)j
 \end{equation}
 
+The negative gradient is used to ensure the robot moves towards lower field potentials. The technique would work equally well if it was attracted to higher field potentials, provided all the equations were suitably inverted.
 
-The negative gradient is used to ensure the robot moves towards lower
-field potentials. The technique would work equally well if it was
-attracted to higher field potentials, provided all the equations were
-suitably inverted. 
+For the initial control technique, the velocity of the robot is proportional to the force vector. Other techniques are discussed by \cite{intelligentAlgorithmPathPlanning}, but will be experimented on later.
 
-For the initial control technique, the velocity of the robot is proportional
-to the force vector. Other techniques are discussed by \cite{intelligentAlgorithmPathPlanning},
-but will be experimented on later. 
-
-Navigation of the game field can now be achieved by manipulating the
-attractive and repulsive fields to guide the robot to a target. Computational
-power allowing, each robot would have a separate field that guides
-it based on the goals specific to its role. 
-
+Navigation of the game field can now be achieved by manipulating the attractive and repulsive fields to guide the robot to a target. Computational power allowing, each robot would have a separate field that guides it based on the goals specific to its role.
 
 \subsection{Potential Field Shapes}
 
-Attractive fields are used to designate areas which the robot should
-be headed for. In order to ensure that the robot always heads towards
-them, it is important that their effect is felt across the entire
-field. However, they must not be so strong that they overwhelm the
-short distance effects of the repulsive fields, but strong enough
-to govern the robot's overall destination.
+Attractive fields are used to designate areas which the robot should be headed for. In order to ensure that the robot always heads towards them, it is important that their effect is felt across the entire field. However, they must not be so strong that they overwhelm the short distance effects of the repulsive fields, but strong enough to govern the robot's overall destination.
 
-Repulsive fields are used to alter the route of the robot when heading
-for these targets. For example, such fields are used to get the robot
-to avoid collisions, as well as to control where the robot intercepts
-the ball. These fields typically only act over a short distance, as
-they should only have an effect when they are required. They need
-to be strong enough to overwhelm the attractive fields at short range.
+Repulsive fields are used to alter the route of the robot when heading for these targets. For example, such fields are used to get the robot to avoid collisions, as well as to control where the robot intercepts the ball. These fields typically only act over a short distance, as they should only have an effect when they are required. They need to be strong enough to overwhelm the attractive fields at short range.
 
-The field shapes experimented with are described in the following
-sections, in order to determine the best combination for each scenario.
-As the basic fields in use are axisymmetric in shape (or begin that
-way), the fields are best described using polar coordinates. The coordinates
-are defined as in figure \ref{fig:polarCoordinateFrame}, and are
-always centred on the field producing object. This frame of reference
-can then be translated to the Cartesian coordinates in use elsewhere
-to allow the total field at a point to be calculated.
-
+The field shapes experimented with are described in the following sections, in order to determine the best combination for each scenario. As the basic fields in use are axisymmetric in shape (or begin that way), the fields are best described using polar coordinates. The coordinates are defined as in figure \ref{fig:polarCoordinateFrame}, and are always centred on the field producing object. This frame of reference can then be translated to the Cartesian coordinates in use elsewhere to allow the total field at a point to be calculated.
 
 \subsubsection{Basic Attractive Field\label{sub:Basic-Attractive-Field}}
 
-The field suggested by \cite{intelligentAlgorithmPathPlanning} for
-the attractive point is described with equation \ref{eq:quadraticBallField}.
+The field suggested by \cite{intelligentAlgorithmPathPlanning} for the attractive point is described with equation \ref{eq:quadraticBallField}.
 
 \begin{equation}
 P(r,\theta)=\frac{1}{2}k_{attr}r^{2}\label{eq:quadraticBallField}
 \end{equation}
 
-
 Where $k_{attr}$ is the attractive weight assigned to the ball.
 
-This produces an attractive force that is linearly proportional to
-the distance to the object (in this case the ball). This is a very
-useful field for a route finder (as described in the paper), where
-it is desirable for the the robot to stop when it reaches the destination,
-and so it needs to slow down as it approaches the target. However,
-in this application it is more useful for the robot to make a rapid
-approach and not slow down after arrival, as this will hit the ball
-away from the robot. 
+This produces an attractive force that is linearly proportional to the distance to the object (in this case the ball). This is a very useful field for a route finder (as described in the paper), where it is desirable for the the robot to stop when it reaches the destination, and so it needs to slow down as it approaches the target. However, in this application it is more useful for the robot to make a rapid approach and not slow down after arrival, as this will hit the ball away from the robot.
 
-In order to overcome this problem, the field was simplified to equation
-\ref{eq:conicBallField}.
+In order to overcome this problem, the field was simplified to equation \ref{eq:conicBallField}.
 
 \begin{equation}
 P(r,\theta)=\frac{1}{2}k_{attr}r\label{eq:conicBallField}
 \end{equation}
 
-
-This field produces a constant force of $k_{attr}$ acting towards
-the centre of the ball, which will hold the robot against the ball
-(as far as possible) as the ball and robot move around. It doesn't
-provide any guidance once the ball has been reached, and so this will
-need to be provided by an additional field once the intercept is complete.
-
+This field produces a constant force of $k_{attr}$ acting towards the centre of the ball, which will hold the robot against the ball (as far as possible) as the ball and robot move around. It doesn't provide any guidance once the ball has been reached, and so this will need to be provided by an additional field once the intercept is complete.
 
 \subsubsection{Basic Repulsive Field\label{sub:Basic-Repulsive-Field}}
 
-One of the rules of the game is that the robot cannot intentionally
-collide with an opposing robot, unless they are in possession of the
-ball \cite{simurosotSim}. This means that the robot must actively
-avoid the other robots. It is also advantageous to be able to avoid
-the robots own team, as this prevents the robots getting into a position
-where they cannot move as they are fighting against each other.
+One of the rules of the game is that the robot cannot intentionally collide with an opposing robot, unless they are in possession of the ball \cite{simurosotSim}. This means that the robot must actively avoid the other robots. It is also advantageous to be able to avoid the robots own team, as this prevents the robots getting into a position where they cannot move as they are fighting against each other.
 
-A apparently simple solution would be to surround all the obstacles
-with a region of potential that is substantially higher than the surrounding
-area, as described by equation \ref{eq:circleRepulseField}.
+A apparently simple solution would be to surround all the obstacles with a region of potential that is substantially higher than the surrounding area, as described by equation \ref{eq:circleRepulseField}.
 
 \begin{equation}
 P\left(r,\theta\right)=\begin{cases}
@@ -189,26 +145,11 @@ k_{repulse} & r<R_{0}\\
 \end{cases}\label{eq:circleRepulseField}
 \end{equation}
 
+Where $k_{repulse}$is the repulsive potential and $R_{0}$is the radius of the circle. This produces a field as illustrated in figure \ref{fig:circleField}.
 
-Where $k_{repulse}$is the repulsive potential and $R_{0}$is the
-radius of the circle. This produces a field as illustrated in figure
-\ref{fig:circleField}.
+In theory, the robot would avoid this circle, as the algorithm should not have the robot move into a region of high potential. However, this does not work, as the controller actually responds to the gradient of the field (shown in figure \ref{fig:circleFieldGradient}). As shown in the figure, this type of field produces very high force, but only in a very small region. Once inside the repulsive circle, the gradient returns again to zero, and so does not effect the motion of the robot. As the robot has inertia, it is very likely that it pass through the region of high force and then leave it before it's velocity has altered sufficiently to avoid the obstacle.
 
-In theory, the robot would avoid this circle, as the algorithm should
-not have the robot move into a region of high potential. However,
-this does not work, as the controller actually responds to the gradient
-of the field (shown in figure \ref{fig:circleFieldGradient}). As
-shown in the figure, this type of field produces very high force,
-but only in a very small region. Once inside the repulsive circle,
-the gradient returns again to zero, and so does not effect the motion
-of the robot. As the robot has inertia, it is very likely that it
-pass through the region of high force and then leave it before it's
-velocity has altered sufficiently to avoid the obstacle.
-
-In order to maximise the repulsive effect of the field, the force
-must be exerted over a large area. This can be achieved with a field
-that gradually builds in strength as it nears the obstacle. The simplest
-example is defined by equation .
+In order to maximise the repulsive effect of the field, the force must be exerted over a large area. This can be achieved with a field that gradually builds in strength as it nears the obstacle. The simplest example is defined by equation .
 
 \[
 P\left(r,\theta\right)=\begin{cases}
@@ -217,145 +158,62 @@ k_{repulse}\cdot r & r<R_{0}\\
 \end{cases}
 \]
 
+This field will create a constant force that acts radially away from the obstacle, much like the attractive force described in section \ref{sub:Basic-Attractive-Field}, but over a restricted area (as illustrated in figure \ref{fig:conicRepelField} and \ref{fig:ConicRepelFieldGradient}). If the target is behind the obstacle, and the force is exactly strong enough, it will cause the robot to stop in the repulsive field. If the force is too small, it will only slow the robot down, and if the force is too strong it will cause the robot to move clear of the field. If the target hasn't moved significantly, the robot will then approach the repulsive field again, only to be repelled once more. This will result in the robot repeatedly 'bouncing' off of the field. The robot will become stuck if the target does not move, but it is thought that the rapidly changing environment the controller will be working in will mean that this is not a significant issue.
 
-This field will create a constant force that acts radially away from
-the obstacle, much like the attractive force described in section
-\ref{sub:Basic-Attractive-Field}, but over a restricted area (as
-illustrated in figure \ref{fig:conicRepelField} and \ref{fig:ConicRepelFieldGradient}).
-If the target is behind the obstacle, and the force is exactly strong
-enough, it will cause the robot to stop in the repulsive field. If
-the force is too small, it will only slow the robot down, and if the
-force is too strong it will cause the robot to move clear of the field.
-If the target hasn't moved significantly, the robot will then approach
-the repulsive field again, only to be repelled once more. This will
-result in the robot repeatedly 'bouncing' off of the field. The robot
-will become stuck if the target does not move, but it is thought that
-the rapidly changing environment the controller will be working in
-will mean that this is not a significant issue.
-
-While the constant force will work, provided it is strong enough,
-the case when it is too strong and causes 'bouncing' is undesirable
-as the motion of the robot will become erratic. A better solution
-would be one where the force gradually increases as it approaches
-the target. It is also desirable to have a field that naturally decays
-to a small level at a distance without relying on conditional operations.
-Two field shapes which meet this specification are a direct inverse
-proportionality, or the Gaussian function (described by equations
-\ref{eq:inverseRepulseField} and \ref{eq:gaussianRepulseField} respectively).
+While the constant force will work, provided it is strong enough, the case when it is too strong and causes 'bouncing' is undesirable as the motion of the robot will become erratic. A better solution would be one where the force gradually increases as it approaches the target. It is also desirable to have a field that naturally decays to a small level at a distance without relying on conditional operations. Two field shapes which meet this specification are a direct inverse proportionality, or the Gaussian function (described by equations \ref{eq:inverseRepulseField} and \ref{eq:gaussianRepulseField} respectively).
 
 \begin{equation}
 P\left(r,\theta\right)=\frac{k_{repulse}}{r}\label{eq:inverseRepulseField}
 \end{equation}
 
-
 \begin{equation}
 P\left(r,\theta\right)=k_{repulse}\cdot e^{\left(\frac{r^{2}}{2\sigma_{repulse}}\right)}\label{eq:gaussianRepulseField}
 \end{equation}
 
-
 Where $\sigma_{repulse}$ controls the width of the field.
 
-For this purpose, the Gaussian function was selected, because it was
-initially believed that a flatter region in the centre of the field
-would be preferable over an infinite field potential (see section
-TODO). This produces a field as shown in figure \ref{fig:gaussianField}.
-As the gradient image shows, this produces a region of rapidly increasing
-force around the object, with no discontinuities that produce disruptive
-motion at the edge of the field.
-
+For this purpose, the Gaussian function was selected, because it was initially believed that a flatter region in the centre of the field would be preferable over an infinite field potential (see section TODO). This produces a field as shown in figure \ref{fig:gaussianField}. As the gradient image shows, this produces a region of rapidly increasing force around the object, with no discontinuities that produce disruptive motion at the edge of the field.
 
 \subsubsection{Shaped Approach Guiding Field\label{sub:Shaped-Approach-Guiding}}
 
-As the robot has no means of holding on to the ball, it is not possible
-for the robots to turn more than a small amount when in possession
-of the ball without losing it. This makes it particularly important
-that the robot approaches the ball from the correct side. This can
-be achieved by positioning a region around the ball that guides the
-robot to the correct position.
+As the robot has no means of holding on to the ball, it is not possible for the robots to turn more than a small amount when in possession of the ball without losing it. This makes it particularly important that the robot approaches the ball from the correct side. This can be achieved by positioning a region around the ball that guides the robot to the correct position.
 
-The initial attempt at this placed a specially shaped field around
-the ball, which was developed by rotating a Gaussian function along
-a circle around the ball, with it's height proportional to the angle
-from the desired access direction. This is described by the equation
-\ref{eq:wrappedGaussian} and shown in figure \ref{fig:wrappedGaussianField}.
+The initial attempt at this placed a specially shaped field around the ball, which was developed by rotating a Gaussian function along a circle around the ball, with it's height proportional to the angle from the desired access direction. This is described by the equation \ref{eq:wrappedGaussian} and shown in figure \ref{fig:wrappedGaussianField}.
 
 \begin{equation}
 P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma_{repulse}}}\cdot\left|\frac{\theta}{\pi}\right|\label{eq:wrappedGaussian}
 \end{equation}
 
-
 \[
 -\pi\leq\theta\leq\pi
 \]
 
+This field initially looked promising, as it contains the desired slope towards a specific approach angle and repels away from every other angle. On testing, however, it was noticed that, because the
+field is at a higher potential than it's surroundings, the edges of the field force the robot radially away from the ball instead of towards the target angle, and so the robot just stops at the edge of the field.
 
-This field initially looked promising, as it contains the desired
-slope towards a specific approach angle and repels away from every
-other angle. On testing, however, it was noticed that, because the
-field is at a higher potential than it's surroundings, the edges of
-the field force the robot radially away from the ball instead of towards
-the target angle, and so the robot just stops at the edge of the field.
-
-The field was then modified to be at a lower potential than it's surroundings,
-as shown in equation \ref{eq:insetWrappedGaussian}.
+The field was then modified to be at a lower potential than it's surroundings, as shown in equation \ref{eq:insetWrappedGaussian}.
 
 \begin{equation}
 P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma_{repulse}}}\cdot\left|\frac{\pi-\theta}{\pi}\right|\label{eq:insetWrappedGaussian}
 \end{equation}
 
+This removed the previous radial force. However, it was determined that a field wide enough to be of any use in directing the robot had to have a radius that caused the field to strongly interfere with motion elsewhere in the playing field. When other robots were introduced into the field, even in their starting positions, the robot was unable to approach the ball without a collision with another player.
 
-This removed the previous radial force. However, it was determined
-that a field wide enough to be of any use in directing the robot had
-to have a radius that caused the field to strongly interfere with
-motion elsewhere in the playing field. When other robots were introduced
-into the field, even in their starting positions, the robot was unable
-to approach the ball without a collision with another player.
-
-Other attempts were made with different shaped fields around the ball
-(for example one field resembled a helter-skelter slide, which produced
-a constant force to guide the ball in when within a certain radial
-region), but all resulted in either an large field that caused too
-much long-distance interference, or forced the robot radially away
-from the robot. While a field could probably be found that achieved
-what was desired, it was determined that the search would be too time-consuming
-with the lack of guiding information.
-
+Other attempts were made with different shaped fields around the ball (for example one field resembled a helter-skelter slide, which produced a constant force to guide the ball in when within a certain radial region), but all resulted in either an large field that caused too much long-distance interference, or forced the robot radially away from the robot. While a field could probably be found that achieved what was desired, it was determined that the search would be too time-consuming with the lack of guiding information.
 
 \subsubsection{Paired Source Approach Guidance Field}
 
-As discussed in section \ref{sub:Shaped-Approach-Guiding}, a field
-was required to guide robot's the approach to ball. As a single field
-did not function as desired, it was decided that a pair of fields
-would be used.
+As discussed in section \ref{sub:Shaped-Approach-Guiding}, a field was required to guide robot's the approach to ball. As a single field did not function as desired, it was decided that a pair of fields would be used.
 
-A basic attractive field (see section \ref{sub:Basic-Attractive-Field})
-was positioned on the desired approach side of the ball (offset by
-a number of inches in the $x$ axis) and a basic repulsive field (see
-section \ref{sub:Basic-Repulsive-Field}) was placed in the symmetrically
-opposite position. This produces the overall field shown in figure
-\ref{fig:pairedApproachField}. 
+A basic attractive field (see section \ref{sub:Basic-Attractive-Field}) was positioned on the desired approach side of the ball (offset by a number of inches in the $x$ axis) and a basic repulsive field (see section \ref{sub:Basic-Repulsive-Field}) was placed in the symmetrically opposite position. This produces the overall field shown in figure \ref{fig:pairedApproachField}.
 
-This technique immediatly showed positive results, with the robot
-moving onto the attractive point while avoiding the ball if it approached
-from the wrong side. This is achieved because the repulsive field
-forces the robot away from any approach vectors which would pass too
-close to the ball when the robot is on the opposite side, and the
-moved attraction point prevents the robot from colliding with the
-ball from the side
+This technique immediatly showed positive results, with the robot moving onto the attractive point while avoiding the ball if it approached from the wrong side. This is achieved because the combination of the field produces a region that the robot will not pass through, because to do so would involve passing through the repulsive region (as shown in figure \ref{fig:pairedSourceApproachFieldNoFlyZone}).  This field configuration breaks down if the repulsive point is too far from the ball or if the robot ends up too near the ball on the wrong side (the region shown in figure \ref{fig:pairedSourceApproachFieldBreakDownZone}), as the repulsive field acts to force the robot towards the ball instead of away from it.  The strategy will need to be designed so that this occurence is dealt with, or prevented from happening altogher.
 
-TODO : Discuss modifying the field to place the sources in the line
-of motion instead of the along the x-axis.
+To ensure that the robot approaches from the correct location, the points must be placed to position the robot along the line that joins the ball and the desired desination (initially, the goal).  This is achieved by providing this vector to the field calculation code, which then sets the point locations appropriately.
 
-TODO : Discuss any other modifications to the process.
+TODO : Consider including a video showing this in action, or perhaps include it in the results section.
 
-TODO : Consider including a video showing this in action, or perhaps
-include it in the results section.
-
-When this field is in use, the robot is not attracted to the actual
-position of the ball, and so this field will not allow the robot to
-guide it to the goal. However, if a new set of field configurations
-are used once this robot is in position, this limitation can be overcome.
-
+When this field is in use, the robot is not attracted to the actual position of the ball, and so this field will not allow the robot to guide it to the goal. However, if a new set of field configurations are used once this robot is in position, this limitation can be overcome.
 
 \subsection{Field Calculations}
 
@@ -363,173 +221,54 @@ TODO : use acronym package
 
 TODO : use siunitx package
 
-In order to determine the direction the robot should move in, the
-field needs to be calculated at four points, as described in section
-\ref{sub:Potential-Field-Force}. Even for the most complex fields
-in use, this is not particularly computationally challenging. However,
-the efficiency of the code could be improved by vectorising the data
-and taking advantage of the Single Instruction Multiple Data (SIMD)
-instructions available on most modern CPUs to calculate all four points
-simultaneously. This would allow the field calculations to take less
-time, resulting in more time available per time-step to perform other
-operations.
+In order to determine the direction the robot should move in, the field needs to be calculated at four points, as described in section \ref{sub:Potential-Field-Force}. Even for the most complex fields in use, this is not particularly computationally challenging. However, the efficiency of the code could be improved by vectorising the data and taking advantage of the \ac{SIMD} instructions available on most modern \acp{CPU} to calculate all four points simultaneously. This would allow the field calculations to take less time, resulting in more time available per time-step to perform other operations.
 
-In addition, it is useful to render the entire field as an image,
-so that it can be considered for immediate debugging purposes. Given
-that the playing field is approximately 88 inches by 72 inches, and
-is being considered at $\frac{1}{10}$inch scale, this gives 633,600
-data points to consider. This size of dataset will require a large
-amount of CPU cycles to calculate, even if the individual data point's
-requirements are relatively modest. With further delays introduced
-by inter-process communication (it is not possible to alter the simulator
-to produce the image locally), as well as other delays and overheads
-introduced by the operating system, it quickly becomes challenging
-to render the field in real-time.
+In addition, it is useful to render the entire field as an image, so that it can be considered for debugging purposes. Given that the playing field is approximately 88 inches by 72 inches, and is being considered at $\frac{1}{10}$inch scale, this gives 633,600 data points to consider. This size of dataset will require a large amount of CPU cycles to calculate, even if the individual data point's requirements are relatively modest. With further delays introduced by inter-process communication (it is not possible to alter the simulator to produce the image locally), as well as other delays and overheads introduced by the operating system, it quickly becomes challenging to render the field in real-time.
 
-The calculation times for both the entire field and a set of four
-points using the OpenCl code on both the CPU and GPU are shown in
-table \ref{tab:Field-Strenth-Calculation}. These clearly show that
-the calculation of the entire field is best done on the GPU, where
-the acceleration from the massively parallel computation structure
-masks the additional overheads. The four points, however, are best
-done on the CPU, where it does not suffer from the significantly larger
-memory transfer times which affect GPU operations.
-
-\begin{table}
-\centering%
-\begin{tabular}{|c|>{\centering}m{2cm}|>{\centering}p{2cm}|>{\centering}p{3cm}|>{\centering}m{2cm}|}
-\hline 
-\multirow{2}{*}{Task} & \multirow{2}{2cm}{\begin{singlespace}
-\centering{}Computation Platform\end{singlespace}
-} & \multirow{2}{2cm}{\begin{singlespace}
-\centering{}Execution Time (us)\end{singlespace}
-} & \multirow{2}{3cm}{\begin{singlespace}
-\centering{}Memory Transfer Time (us)\end{singlespace}
-} & \multirow{2}{2cm}{\begin{singlespace}
-\centering{}Total Time (us)\end{singlespace}
-}\tabularnewline
- &  &  &  & \tabularnewline
-\hline 
-\multirow{2}{*}{Entire field} & \begin{singlespace}
-CPU\end{singlespace}
- & \begin{singlespace}
-23500\end{singlespace}
- & \begin{onehalfspace}
-479\end{onehalfspace}
- & \begin{singlespace}
-24100\end{singlespace}
-\tabularnewline
-\cline{2-5} 
- & \begin{singlespace}
-GPU\end{singlespace}
- & \begin{singlespace}
-2050\end{singlespace}
- & \begin{singlespace}
-2600\end{singlespace}
- & \begin{singlespace}
-8611\end{singlespace}
-\tabularnewline
-\hline 
-\multirow{2}{*}{Four data points} & \begin{singlespace}
-CPU\end{singlespace}
- & \begin{singlespace}
-14.4\end{singlespace}
- & \begin{singlespace}
-0.342\end{singlespace}
- & \begin{singlespace}
-60.0\end{singlespace}
-\tabularnewline
-\cline{2-5} 
- & \begin{singlespace}
-GPU\end{singlespace}
- & \begin{singlespace}
-18.8\end{singlespace}
- & \begin{singlespace}
-1040\end{singlespace}
- & \begin{singlespace}
-4390\end{singlespace}
-\tabularnewline
-\hline 
-\end{tabular}
+The calculation times for both the entire field and a set of four points using the OpenCl code on both the \ac{CPU} and \ac{GPU} are shown in table \ref{tab:Field-Strenth-Calculation}. These clearly show that the calculation of the entire field is best done on the GPU, where the acceleration from the massively parallel computation structure masks the additional overheads. The four points, however, are best done on the \ac{CPU}, where it does not suffer from the significantly larger memory transfer times which affect \ac{GPU} operations.
 
 \begin{singlespace}
-In this test, overheads include transfering the inital data to the
-platform and setting up the platform before the calculation, but not
-one-time-only intialisation done by the platform.
-\end{singlespace}
+\begin{table}
+\centering%
+\begin{tabular}{|c|m{2cm}|p{2cm}|p{3cm}|m{2cm}|}
+\hline
+\multirow{2}{*}{Task} & \multirow{2}{3cm}{Computation Platform} & \multirow{2}{2cm}{Execution Time (us)} & \multirow{2}{3cm}{Memory Transfer Time (us)} & \multirow{2}{2cm}{Total Time (us)} \\
+ &  &  &  & \\
+\hline
+\multirow{2}{*}{Entire field} & CPU & 23500 & 479 & 24100 \\
+\cline{2-5}
+ & GPU & 2050 & 2600 & 8611 \\
+\hline
+\multirow{2}{*}{Four data points} & CPU & 14.4 & 0.342 & 60.0 \\
+\cline{2-5}
+ & GPU & 18.8 & 1040 & 4390 \\
+\hline
+\end{tabular}
 
-\caption{\selectlanguage{english}%
-Field Strenth Calculation Times\label{tab:Field-Strenth-Calculation}\selectlanguage{british}%
-}
+In this test, overheads include transfering the inital data to the platform and setting up the platform before the calculation, but not one-time-only intialisation done by the platform.
+
+\caption{Field Strenth Calculation Times\label{tab:Field-Strenth-Calculation}}
 \end{table}
 
-
+\end{singlespace}
 
 \subsubsection{Design Philosophy}
 
-The code (shown in appendix \ref{sub:OpenCL-Kernels}) is written
-in an attempt to take advantage of the parallel nature of it's execution.
-Each kernel (a high-level function run either on the CPU or GPU) is
-designed to work on an individual data point, and then the kernel
-is called multiple times by the platform, once for each data point.
-As the order of execution cannot be guaranteed, each kernel is written
-such that it doesn't depend on the values produced for other data
-points.
+The code (shown in appendix \ref{sub:OpenCL-Kernels}) is written in an attempt to take advantage of the parallel nature of it's execution. Each kernel (a high-level function run either on the \ac{CPU} or \ac{GPU}) is designed to work on an individual data point, and then the kernel is called multiple times by the platform, once for each data point. As the order of execution cannot be guaranteed, each kernel is written such that it doesn't depend on the values produced for other data points.
 
-To simplify the code, the platform is configured to run the kernel
-over a 2D space that represents the field. Each instance of the kernel
-is then given an ID in each dimension by the computation platform,
-which is used to determine the coordinates of the data point it should
-be working on. This means that each instance can operate in isolation
-without any knowledge of what work has already been done. The results
-are then stored in a shared array (at an index determine by the coordinates)
-which is returned to the host program when the operation has finished.
-Where consecutive functions are required, a series of kernels are
-queued in turn, and the memory is only returned when the queue is
-complete (which represents a significant saving with the GPU code,
-as GPU to host transfers are relatively computationally expensive).
+To simplify the code, the platform is configured to run the kernel over a 2D space that represents the field. Each instance of the kernel is then given an id in each dimension by the computation platform, which is used to determine the coordinates of the data point it should be working on. This means that each instance can operate in isolation without any knowledge of what work has already been done. The results are then stored in a shared array (at an index determine by the coordinates) which is returned to the host program when the operation has finished. Where consecutive functions are required, a series of kernels are queued in turn, and the memory is only returned when the queue is complete (which represents a significant saving with the \ac{GPU} code, as \ac{GPU} to host transfers are relatively computationally expensive).
 
-For the first scenario, where only a limited number of points are
-required, the code is executed on the CPU in parallel, as the advantages
-of using the more powerful GPU are lost in the initial set-up delays
-which are not incurred when working on the CPU. The GPU is then used
-when the entire field is desired, when the accelerated calculations
-justify the set-up costs (see TODO RESULTS for exact calculations).
+\subsubsection{\ac{GPU} Optimisations}
 
+The architecture of a \ac{GPU} presents different optimisation challenges to that of \ac{CPU}. In particular, the number of concurrent operations the \ac{GPU} can process is limited by the resource usage of the code.
 
-\subsubsection{GPU Optimisations}
+In order to calculate the Gaussian function, a function to calculate a power of $e$ is needed. Initially, the built in OpenCL function was used to calculate this. This function is defined by the OpenCL standard to have a specific accuracy, which is constant on any hardware. The implementation of this on the hardware in use proved to use a large number of \acp{GPR}, imposing a limit on the number of concurrent kernel instances that could run and limiting the speed of the code.
 
-The architecture of a GPU presents different optimisation challenges
-to that of CPU. In particular, the number of concurrent operations
-the GPU can process is limited by the resource usage of the code.
+The OpenCL standard also provides for a set of so-called 'native' functions, are produced specifically for the hardware in use, and which are often more efficient than the general implementation (for example, it sometimes maps to a single instruction that performs the function). However, the accuracy of the function is implementation specific, and so could change from computer to computer \cite{openCl11Spec}. In this case, the native exponential function utilitises far fewer \acp{GPR}, removing the resource pressure previously experienced.
 
-In order to calculate the Gaussian function, a function to calculate
-a power of $e$ is needed. Initially, the built in OpenCL function
-was used to calculate this. This function is defined by the OpenCL
-standard to have a specific accuracy, which is constant on any hardware.
-The implementation of this on the hardware in use proved to use a
-large number of General Purpose Registers (GPRs), imposing a limit
-on the number of concurrent kernel instances that could run and limiting
-the speed of the code.
-
-The OpenCL standard also provides for a set of so-called 'native'
-functions, are produced specifically for the hardware in use, and
-which are often more efficient than the general implementation (for
-example, it sometimes maps to a single instruction that performs the
-function). However, the accuracy of the function is implementation
-specific, and so could change from computer to computer \cite{openCl11Spec}.
-In this case, the native exponential function utilitises far fewer
-GPRs, removing the resource pressure previously experienced.
-
-Additionally, the OpenCL specification provides geometric functions
-such as vector distance and vector length to complement it's vector
-data types. These have been used as far as possible, as they can also
-allow the compiler to perform hardware specific optimisations (and
-again they can sometimes map directly to individual instructions on
-the hardware.\cite{openCl11Spec}
+Additionally, the OpenCL specification provides geometric functions such as vector distance and vector length to complement it's vector data types. These have been used as far as possible, as they can also allow the compiler to perform hardware specific optimisations (and again they can sometimes map directly to individual instructions on the hardware.\cite{openCl11Spec}
 
 TODO : discuss any other optimisations
-
 
 \section{Software Produced}
 
@@ -538,76 +277,39 @@ Two peices of software have been produced:
 \item The game playing strategy file
 \item The field renderer
 \end{itemize}
-Only the strategy file is required to play the game, as the field
-renderer is only used to debug the potential fields.
-
+Only the strategy file is required to play the game, as the field renderer is only used to debug the potential fields.
 
 \subsection{Strategy File}
 
-The strategy file is a standard Microsoft Windows DLL file which implements
-three functions defined by the simulator:
+The strategy file is a standard Microsoft Windows \ac{DLL} file which implements three functions defined by the simulator:
 \begin{itemize}
 \item Create - Performs the initial setup for the strategy
 \item Strategy - Called on every simulator cycle to control the robots
 \item Destroy - Intended to perform the clean-up required for the strategy.
-This does not appear to be called by the simulator at this time, and
-so has been left as an empty function.
+This does not appear to be called by the simulator at this time, and so has been left as an empty function.
 \end{itemize}
 TODO : Discuss final strategy implementation
-
 
 \subsection{Field Renderer}
 
 TODO : tie up descriptions to function names
 
-The field renderer provides a near realtime view of the potential
-field and the field gradients at run time to allow easier debugging
-of the field calculations. The program is implemented using the MS
-.Net Framework and the Windows Presentation Foundation. The OpenCL
-code is then executed using the Cloo library, which allows the program's
-managed code to access the unmanaged functions required to use OpenCL.
+The field renderer provides a near realtime view of the potential field and the field gradients at run time to allow easier debugging of the field calculations. The program is implemented using the MS .Net Framework and the Windows Presentation Foundation. The OpenCL code is then executed using the Cloo library, which allows the program's managed code to access the unmanaged functions required to use OpenCL.
 
-The program receives a status from the simulator using a named pipe
-for which it acts as the server. The binary data received is intepretted
-into a structure to match the one used in the strategy file, and is
-stored as the latest environment. This occurs at the end of every
-simulator cycle, and is run in a seperate execution thread to the
-rest of the program. This allows the simulator to continue after transmission
-is complete without waiting for the renderer to work with the environment.
-Every time the status report is received, it triggers a rendering
-cycle, unless a rendering cycle is already underway. If a report arrives
-while a rendering cycle is unfinished, it is discarded. This ensures
-that the rendered images are as up to date as possible.
+The program receives a status from the simulator using a named pipe for which it acts as the server. The binary data received is intepretted into a structure to match the one used in the strategy file, and is stored as the latest environment. This occurs at the end of every simulator cycle, and is run in a seperate execution thread to the rest of the program. This allows the simulator to continue after transmission is complete without waiting for the renderer to work with the environment. Every time the status report is received, it triggers a rendering cycle, unless a rendering cycle is already underway. If a report arrives while a rendering cycle is unfinished, it is discarded. This ensures that the rendered images are as up to date as possible.
 
-The rendering process is also executed in it's own thread, ensuring
-that it does not interfere with the user interface. If this was not
-done, the program would to be unresponsive and the rendered images
-would never be displayed to the user. The process creates a copy of
-the latest status report, which ensures that the process is not effected
-by the concurrently running communication with the simulator. The
-code then performs the same process as the strategy file, using the
-OpenCL field calculation code (this time executed on the GPU) to calculate
-every data point in the field. Further OpenCL code is then used to
-calculate the magnitude of the gradient across the entire field, and
-more is used to transform both sets of data into grayscale bitmaps.
-The produced bitmaps are then passed to the user interface thread,
-which then displays the images to the user.
-
+The rendering process is also executed in it's own thread, ensuring that it does not interfere with the user interface. If this was not done, the program would to be unresponsive and the rendered images would never be displayed to the user. The process creates a copy of the latest status report, which ensures that the process is not effected by the concurrently running communication with the simulator. The code then performs the same process as the strategy file, using the OpenCL field calculation code (this time executed on the \ac{GPU}) to calculate every data point in the field. Further OpenCL code is then used to calculate the magnitude of the gradient across the entire field, and more is used to transform both sets of data into grayscale bitmaps. The produced bitmaps are then passed to the user interface thread, which then displays the images to the user.
 
 \section{Discussion}
-
 
 \section{Future Work}
 
 \appendix
 \cleardoublepage{}
 
-
 \section{Code Listings \label{sec:Code-Listings}}
 
-
 \subsection{OpenCL Kernels\label{sub:OpenCL-Kernels}}
-
 
 \subsection{Intercept Strategy File}
 
@@ -615,6 +317,5 @@ which then displays the images to the user.
 
 \bibliographystyle{plain}
 \bibliography{References/references}
-\selectlanguage{english}%
 
 \end{document}

@@ -48,5 +48,7 @@ namespace Strategies
 		/// <param name="val">The value to divide the components by.</param>
 		/// <returns>The Vector3D with the x and y elements divided by val.</returns>
 		static Vector3D Divide(const Vector3D a, const double val);
+
+		static Vector3D Multiply(const Vector3D a, const double val);
 	};
 }

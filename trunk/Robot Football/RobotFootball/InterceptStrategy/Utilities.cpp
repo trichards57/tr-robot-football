@@ -60,4 +60,14 @@ namespace Strategies
 
 		return out;
 	}
+
+	Vector3D Utilities::Multiply(const Vector3D a, const double val)
+	{
+		Vector3D out;
+
+		out.x = a.x * val;
+		out.y = a.y * val;
+
+		return out;
+	}
 }

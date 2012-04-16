@@ -217,7 +217,14 @@ namespace FieldRenderer
                 new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
                             (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
                     );
-            var ballvel = new Vector2(/*(float)currentBallVelocity.X*/-7, /*(float)currentBallVelocity.Y*/0);
+
+            var goalTarget =
+                new Vector2((97.3632f) - currentEnvironment.FieldBounds.Left,
+                    (33.932f + 49.6801f) / 2.0f - currentEnvironment.FieldBounds.Bottom);
+
+            var ballvel = new Vector2((float)currentEnvironment.CurrentBall.Position.X - goalTarget.X - currentEnvironment.FieldBounds.Left, (float)currentEnvironment.CurrentBall.Position.Y - goalTarget.Y - currentEnvironment.FieldBounds.Bottom);
+
+            //var ballvel = new Vector2(/*(float)currentBallVelocity.X*/-7, /*(float)currentBallVelocity.Y*/0);
 
             // Collect together all the points that will repel the robot
             var repulsers =

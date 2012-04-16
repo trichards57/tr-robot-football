@@ -35,12 +35,21 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 		velocities[i] = Utilities::Divide(Utilities::Subtract(env->home[i].pos, lastPositions[i]), 20);
 	}
 
-	Vector3D interceptVector= generator.FieldVectorToBall(1, env, ballVelocity);
+	auto fieldState = new int*();
+	*fieldState = new int();
+
+	Vector3D interceptVector= generator.FieldVectorToBall(1, env, ballVelocity, fieldState);
+
+	auto len = Utilities::Length(interceptVector);
+
+	auto normalisedVector = Utilities::Divide(interceptVector, len);
+
+	interceptVector = Utilities::Multiply(normalisedVector, 10); // Fix the intercept vector length
 
 	auto distance = Utilities::Length(env->currentBall.pos, env->home[1].pos);
 
 	VelocityController velControl;
-	velControl.Control(interceptVector, velocities[1], &(env->home[1]), true, env->gameState == BLUE_BALL);
+	velControl.Control(interceptVector, velocities[1], &(env->home[1]), true, **fieldState == 2);
 
 	for (int i = 0; i < 5; i++)
 	{

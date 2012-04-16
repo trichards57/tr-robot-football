@@ -63,6 +63,6 @@ namespace Strategies
 		/// + If the robot is far from the ball, it uses CalculateMainField
 		/// + If the robot is near the ball's initial approach point, it uses CalculateFinalApproachField
 		/// + If the robot is in possession of the ball, it uses CalculatePossessionField
-		Vector3D FieldVectorToBall(const int botIndex, const Environment *env, const Vector3D ballVelocity);
+		Vector3D FieldVectorToBall(const int botIndex, const Environment *env, const Vector3D ballVelocity, int** fieldState);
 	};
 }

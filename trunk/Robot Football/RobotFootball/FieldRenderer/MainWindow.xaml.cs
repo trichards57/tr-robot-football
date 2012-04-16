@@ -15,7 +15,7 @@ using FieldRenderer.Classes;
 using OpenTK;
 
 /// @brief All the field rendering classes
-/// 
+///
 /// Intended to contain all the classes related to the field renderer
 namespace FieldRenderer
 {
@@ -24,62 +24,6 @@ namespace FieldRenderer
     /// </summary>
     public partial class MainWindow : IDisposable
     {
-        private int fieldType;
-
-        /// <summary>
-        /// The current environment being rendered
-        /// </summary>
-        private Classes.Environment currentEnvironment;
-        /// <summary>
-        /// The last environment to be received.
-        /// </summary>
-        /// <remarks>
-        /// Must lock <see cref="latestEnvironmentLocker"/> before use.
-        /// </remarks>
-        private Classes.Environment latestEnvironment;
-        /// <summary>
-        /// Buffer to store the pixels output by <see cref="colourKernel"/>
-        /// </summary>
-        private ComputeBuffer<byte> outPix;
-        /// <summary>
-        /// Buffer to store the field data produced by <see cref="kernel"/>
-        /// </summary>
-        private ComputeBuffer<float> outCl;
-        /// <summary>
-        /// Buffer to store the gradient data produced by <see cref="gradientKernel"/>
-        /// </summary>
-        private ComputeBuffer<float> outGradient;
-        /// <summary>
-        /// The ComputeContext used for rendering
-        /// </summary>
-        private ComputeContext context;
-        /// <summary>
-        /// The kernel used to produce an image based on field data
-        /// </summary>
-        private ComputeKernel colourKernel;
-        /// <summary>
-        /// The kernel used to produce calculate the field gradient magnitude from field data
-        /// </summary>
-        private ComputeKernel gradientKernel;
-
-        private ComputeKernel possessionKernel;
-        /// <summary>
-        /// The kernel used to calculate the field
-        /// </summary>
-        private ComputeKernel kernel;
-        /// <summary>
-        /// The named pipe server used to receive the incoming <see cref="Classes.Environment"/>
-        /// </summary>
-        private NamedPipeServerStream pipeServer;
-        /// <summary>
-        /// The list of ComputePlatforms available
-        /// </summary>
-        private ReadOnlyCollection<ComputePlatform> platformList;
-        /// <summary>
-        /// The pixels produced by <see cref="colourKernel"/>
-        /// </summary>
-        /// <seealso cref="outPix"/>
-        private byte[] pixels;
         /// <summary>
         /// The height of the playing field
         /// </summary>
@@ -97,30 +41,111 @@ namespace FieldRenderer
         /// </summary>
         private const int WorkGroupSize = 16;
         /// <summary>
-        /// The field produced by <see cref="kernel"/>
+        /// Object used to synchronise access to <see cref="latestEnvironment"/>
         /// </summary>
-        /// <seealso cref="outCl"/>
-        private float[] points;
-        /// <summary>
-        /// The gradient points produced by <see cref="gradientKernel"/>
-        /// </summary>
-        private float[] gradientPoints;
-        /// <summary>
-        /// The height of the calculation grid
-        /// </summary>
-        private int gridHeight;
-        /// <summary>
-        /// The width of the calculation grid
-        /// </summary>
-        private int gridWidth;
+        private readonly object latestEnvironmentLocker = new object();
         /// <summary>
         /// Used to render a received image
         /// </summary>
         private readonly BackgroundWorker worker = new BackgroundWorker();
+
         /// <summary>
-        /// Object used to synchronise access to <see cref="latestEnvironment"/>
+        /// The kernel used to produce an image based on field data
         /// </summary>
-        private readonly object latestEnvironmentLocker = new object();
+        private ComputeKernel colourKernel;
+
+        /// <summary>
+        /// The ComputeContext used for rendering
+        /// </summary>
+        private ComputeContext context;
+
+        /// <summary>
+        /// The current environment being rendered
+        /// </summary>
+        private Classes.Environment currentEnvironment;
+
+        /// <summary>
+        /// The field vector reported by the simulator
+        /// </summary>
+        private Vector3D currentVector;
+
+        private bool disposed;
+        private int fieldType;
+
+        /// <summary>
+        /// The kernel used to produce calculate the field gradient magnitude from field data
+        /// </summary>
+        private ComputeKernel gradientKernel;
+
+        /// <summary>
+        /// The gradient points produced by <see cref="gradientKernel"/>
+        /// </summary>
+        private float[] gradientPoints;
+
+        /// <summary>
+        /// The height of the calculation grid
+        /// </summary>
+        private int gridHeight;
+
+        /// <summary>
+        /// The width of the calculation grid
+        /// </summary>
+        private int gridWidth;
+
+        /// <summary>
+        /// The kernel used to calculate the field
+        /// </summary>
+        private ComputeKernel kernel;
+
+        /// <summary>
+        /// The last environment to be received.
+        /// </summary>
+        /// <remarks>
+        /// Must lock <see cref="latestEnvironmentLocker"/> before use.
+        /// </remarks>
+        private Classes.Environment latestEnvironment;
+
+        private Vector3D latestBallVelocity;
+        private Vector3D currentBallVelocity;
+
+        /// <summary>
+        /// Buffer to store the field data produced by <see cref="kernel"/>
+        /// </summary>
+        private ComputeBuffer<float> outCl;
+
+        /// <summary>
+        /// Buffer to store the gradient data produced by <see cref="gradientKernel"/>
+        /// </summary>
+        private ComputeBuffer<float> outGradient;
+
+        /// <summary>
+        /// Buffer to store the pixels output by <see cref="colourKernel"/>
+        /// </summary>
+        private ComputeBuffer<byte> outPix;
+
+        /// <summary>
+        /// The named pipe server used to receive the incoming <see cref="Classes.Environment"/>
+        /// </summary>
+        private NamedPipeServerStream pipeServer;
+
+        /// <summary>
+        /// The pixels produced by <see cref="colourKernel"/>
+        /// </summary>
+        /// <seealso cref="outPix"/>
+        private byte[] pixels;
+
+        /// <summary>
+        /// The list of ComputePlatforms available
+        /// </summary>
+        private ReadOnlyCollection<ComputePlatform> platformList;
+
+        /// <summary>
+        /// The field produced by <see cref="kernel"/>
+        /// </summary>
+        /// <seealso cref="outCl"/>
+        private float[] points;
+
+        private ComputeKernel possessionKernel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -130,6 +155,228 @@ namespace FieldRenderer
             worker.WorkerSupportsCancellation = true;
             worker.DoWork += RenderImage;
             InitializeComponent();
+        }
+
+        ~MainWindow()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Gets or sets the current vector reported by the simulator.
+        /// </summary>
+        /// <value>
+        /// The current vector.
+        /// </value>
+        internal Vector3D CurrentVector
+        {
+            get { return currentVector; }
+            set
+            {
+                currentVector = value;
+                Dispatcher.Invoke(new Action(() =>
+                                             FieldVector.Text =
+                                             string.Format("{0},{1}", currentVector.X, currentVector.Y)));
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+            if (!disposing) return;
+
+            outPix.Dispose();
+            outCl.Dispose();
+            outGradient.Dispose();
+            platformList = null;
+            context.Dispose();
+            colourKernel.Dispose();
+            gradientKernel.Dispose();
+            kernel.Dispose();
+            possessionKernel.Dispose();
+            worker.Dispose();
+            pipeServer.Dispose();
+
+            disposed = true;
+        }
+
+        /// <summary>
+        /// Computes the potential field at all points.
+        /// </summary>
+        /// <param name="queue">The queue to execute the kernel on.</param>
+        /// <param name="field">The calculated field points.</param>
+        private void ComputeField(ComputeCommandQueue queue, float[] field)
+        {
+            var ball =
+                new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
+                            (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
+                    );
+            var ballvel = new Vector2(/*(float)currentBallVelocity.X*/-7, /*(float)currentBallVelocity.Y*/0);
+
+            // Collect together all the points that will repel the robot
+            var repulsers =
+                currentEnvironment.Opponents.Select(o => o.Position).Concat(
+                    currentEnvironment.Home.Select(h => h.Position)).Select(
+                        p =>
+                        new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
+                                    (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
+
+            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
+                                                         ComputeMemoryFlags.ReadOnly |
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
+            {
+                kernel.SetValueArgument(0, ball);
+                kernel.SetValueArgument(1, GridResolution);
+                kernel.SetMemoryArgument(2, inRepulsers);
+                kernel.SetMemoryArgument(3, outCl);
+                kernel.SetValueArgument(4, ballvel);
+
+                queue.Execute(kernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+                queue.ReadFromBuffer(outCl, ref field, true, null);
+            }
+        }
+
+        /// <summary>
+        /// Computes the potential field at all points.
+        /// </summary>
+        /// <param name="queue">The queue to execute the kernel on.</param>
+        /// <param name="field">The calculated field points.</param>
+        private void ComputeFinalApproachField(ComputeCommandQueue queue, float[] field)
+        {
+            var ball =
+                new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
+                            (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
+                    );
+            var ballvel = new Vector2(0, 0);
+
+            // Collect together all the points that will repel the robot
+            var repulsers =
+                currentEnvironment.Opponents.Select(o => o.Position).Concat(
+                    currentEnvironment.Home.Select(h => h.Position)).Select(
+                        p =>
+                        new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
+                                    (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
+
+            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
+                                                         ComputeMemoryFlags.ReadOnly |
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
+            {
+                kernel.SetValueArgument(0, ball);
+                kernel.SetValueArgument(1, GridResolution);
+                kernel.SetMemoryArgument(2, inRepulsers);
+                kernel.SetMemoryArgument(3, outCl);
+                kernel.SetValueArgument(4, ballvel);
+
+                queue.Execute(kernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
+                queue.ReadFromBuffer(outCl, ref field, true, null);
+            }
+        }
+
+        /// <summary>
+        /// Computes the gradient of the field at all points.
+        /// </summary>
+        /// <param name="queue">The queue to execute the kernel on.</param>
+        /// <param name="gradPoints">The calculated gradient points.</param>
+        private void ComputeGradient(ComputeCommandQueue queue, float[] gradPoints)
+        {
+            gradientKernel.SetMemoryArgument(0, outCl);
+            gradientKernel.SetMemoryArgument(1, outGradient);
+
+            queue.Execute(gradientKernel, new long[] { 1, 1 }, new long[] { gridWidth - 2, gridHeight - 2 },
+                          null, null);
+
+            queue.ReadFromBuffer(outGradient, ref gradPoints, true, null);
+        }
+
+        private void ComputePosessionField(ComputeCommandQueue queue, float[] field)
+        {
+            var ball =
+                new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
+                            (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
+                    );
+
+            var goalTarget =
+                new Vector2((97.3632f) - currentEnvironment.FieldBounds.Left,
+                    (33.932f + 49.6801f) / 2.0f - currentEnvironment.FieldBounds.Bottom);
+
+            // Collect together all the points that will repel the robot
+            var repulsers =
+                currentEnvironment.Opponents.Select(o => o.Position).Concat(
+                    currentEnvironment.Home.Select(h => h.Position)).Select(
+                        p =>
+                        new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
+                                    (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
+
+            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
+                                                         ComputeMemoryFlags.ReadOnly |
+                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
+            {
+                possessionKernel.SetValueArgument(0, ball);
+                possessionKernel.SetValueArgument(1, goalTarget);
+                possessionKernel.SetValueArgument(2, GridResolution);
+                possessionKernel.SetMemoryArgument(3, inRepulsers);
+                possessionKernel.SetMemoryArgument(4, outCl);
+
+                queue.Execute(possessionKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                              new long[] { WorkGroupSize, WorkGroupSize }, null);
+                queue.ReadFromBuffer(outCl, ref field, true, null);
+            }
+        }
+
+        /// <summary>
+        /// Called whenever a new environment has been received.
+        /// </summary>
+        /// <param name="ar">The results of the aysnchronous operation.</param>
+        /// <remarks>
+        /// Byte Array to Structure code taken from @cite stackOverflowByte (http://stackoverflow.com/questions/3278827/how-to-convert-structure-to-byte-array-in-c)
+        /// </remarks>
+        private void EnvironmentReceived(IAsyncResult ar)
+        {
+            var environment = new StatusReport();
+            var size = Marshal.SizeOf(environment);
+
+            if (disposed)
+                return;
+
+            pipeServer.EndWaitForConnection(ar);
+
+            var bytes = new List<byte>();
+
+            var buffer = new byte[size];
+
+            pipeServer.Read(buffer, 0, size);
+
+            bytes.AddRange(buffer);
+
+            var array = bytes.ToArray();
+
+            var ptr = Marshal.AllocHGlobal(size);
+
+            Marshal.Copy(array, 0, ptr, size);
+
+            lock (latestEnvironmentLocker)
+            {
+                var report = (StatusReport)Marshal.PtrToStructure(ptr, typeof(StatusReport));
+                latestEnvironment = report.Environment;
+                CurrentVector = report.FieldVector;
+                fieldType = report.FieldType;
+                latestBallVelocity = report.BallVelocity;
+            }
+
+            if (!worker.IsBusy)
+                worker.RunWorkerAsync();
+
+            Marshal.FreeHGlobal(ptr);
+            pipeServer.Disconnect();
+            pipeServer.BeginWaitForConnection(EnvironmentReceived, null);
         }
 
         /// <summary>
@@ -148,6 +395,7 @@ namespace FieldRenderer
             lock (latestEnvironmentLocker)
             {
                 currentEnvironment = latestEnvironment;
+                currentBallVelocity = latestBallVelocity;
                 type = fieldType;
             }
 
@@ -161,11 +409,13 @@ namespace FieldRenderer
                     ComputeField(queue, points);
                     break;
                 case 1:
+                    ComputeFinalApproachField(queue, points);
+                    break;
+                case 2:
                     ComputePosessionField(queue, points);
                     break;
             }
 
-            
             // Draw a picture of it
             var bitmap = RenderPoints(queue, points, outCl);
             // Calculate the field gradients
@@ -209,43 +459,6 @@ namespace FieldRenderer
             queue.Dispose();
         }
 
-        private void ComputePosessionField(ComputeCommandQueue queue, float[] field)
-        {
-            var ball =
-                new Vector2((float)currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
-                            (float)currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
-                    );
-
-            var goalTarget =
-                new Vector2((97.3632f) - currentEnvironment.FieldBounds.Left,
-                    (33.932f + 49.6801f) / 2.0f - currentEnvironment.FieldBounds.Bottom);
-
-
-            // Collect together all the points that will repel the robot
-            var repulsers =
-                currentEnvironment.Opponents.Select(o => o.Position).Concat(
-                    currentEnvironment.Home.Select(h => h.Position)).Select(
-                        p =>
-                        new Vector2((float)p.X - currentEnvironment.FieldBounds.Left,
-                                    (float)p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
-
-            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
-                                                         ComputeMemoryFlags.ReadOnly |
-                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
-            {
-                possessionKernel.SetValueArgument(0, ball);
-                possessionKernel.SetValueArgument(1, goalTarget);
-                possessionKernel.SetValueArgument(2, GridResolution);
-                possessionKernel.SetMemoryArgument(3, inRepulsers);
-                possessionKernel.SetMemoryArgument(4, outCl);
-
-                queue.Execute(possessionKernel, new long[] {0}, new long[] {gridWidth, gridHeight},
-                              new long[] {WorkGroupSize, WorkGroupSize}, null);
-
-                queue.ReadFromBuffer(outCl, ref field, true, null);
-            }
-        }
-
         /// <summary>
         /// Renders the provided potential force field or gradient map.
         /// </summary>
@@ -267,8 +480,8 @@ namespace FieldRenderer
             colourKernel.SetMemoryArgument(3, outPix);
 
             // Run the colourKernl
-            queue.Execute(colourKernel, new long[] {0}, new long[] {gridWidth, gridHeight},
-                          new long[] {WorkGroupSize, WorkGroupSize}, null);
+            queue.Execute(colourKernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
+                          new long[] { WorkGroupSize, WorkGroupSize }, null);
             // and read out the data produced
             queue.ReadFromBuffer(outPix, ref pixels, true, null);
 
@@ -278,7 +491,6 @@ namespace FieldRenderer
             var info = bitmap.LockBits(new Rectangle(0, 0, gridWidth, gridHeight), ImageLockMode.ReadWrite,
                                        PixelFormat.Format24bppRgb);
 
-
             Marshal.Copy(pixels, 0, info.Scan0, pixels.Length);
 
             bitmap.UnlockBits(info);
@@ -287,56 +499,9 @@ namespace FieldRenderer
             return bitmap;
         }
 
-        /// <summary>
-        /// Computes the gradient of the field at all points.
-        /// </summary>
-        /// <param name="queue">The queue to execute the kernel on.</param>
-        /// <param name="gradPoints">The calculated gradient points.</param>
-        private void ComputeGradient(ComputeCommandQueue queue, float[] gradPoints)
+        private void WindowClosed(object sender, EventArgs e)
         {
-            gradientKernel.SetMemoryArgument(0, outCl);
-            gradientKernel.SetMemoryArgument(1, outGradient);
-
-            queue.Execute(gradientKernel, new long[] { 1,1 }, new long[] { gridWidth - 2, gridHeight - 2 },
-                          null, null);
-
-            queue.ReadFromBuffer(outGradient, ref gradPoints, true, null);
-        }
-
-        /// <summary>
-        /// Computes the potential field at all points.
-        /// </summary>
-        /// <param name="queue">The queue to execute the kernel on.</param>
-        /// <param name="field">The calculated field points.</param>
-        private void ComputeField(ComputeCommandQueue queue, float[] field)
-        {
-            var ball =
-                new Vector2((float) currentEnvironment.CurrentBall.Position.X - currentEnvironment.FieldBounds.Left,
-                            (float) currentEnvironment.CurrentBall.Position.Y - currentEnvironment.FieldBounds.Bottom
-                    );
-
-            // Collect together all the points that will repel the robot
-            var repulsers =
-                currentEnvironment.Opponents.Select(o => o.Position).Concat(
-                    currentEnvironment.Home.Select(h => h.Position)).Select(
-                        p =>
-                        new Vector2((float) p.X - currentEnvironment.FieldBounds.Left,
-                                    (float) p.Y - currentEnvironment.FieldBounds.Bottom)).ToArray();
-
-            using (var inRepulsers = new ComputeBuffer<Vector2>(context,
-                                                         ComputeMemoryFlags.ReadOnly |
-                                                         ComputeMemoryFlags.CopyHostPointer, repulsers))
-            {
-                kernel.SetValueArgument(0, ball);
-                kernel.SetValueArgument(1, GridResolution);
-                kernel.SetMemoryArgument(2, inRepulsers);
-                kernel.SetMemoryArgument(3, outCl);
-
-                queue.Execute(kernel, new long[] { 0 }, new long[] { gridWidth, gridHeight },
-                          new long[] { WorkGroupSize, WorkGroupSize }, null);
-
-                queue.ReadFromBuffer(outCl, ref field, true, null);
-            }
+            Dispose();
         }
 
         /// <summary>
@@ -386,124 +551,16 @@ namespace FieldRenderer
             var length = gridWidth * gridHeight;
 
             points = new float[length];
-            pixels = new byte[length*3];
+            pixels = new byte[length * 3];
             gradientPoints = new float[length];
 
             outCl = new ComputeBuffer<float>(context, ComputeMemoryFlags.ReadWrite, points.Length);
             outPix = new ComputeBuffer<byte>(context, ComputeMemoryFlags.WriteOnly, pixels.Length);
             outGradient = new ComputeBuffer<float>(context, ComputeMemoryFlags.ReadWrite, gradientPoints.Length);
 
-
             pipeServer = new NamedPipeServerStream("fieldRendererPipe", PipeDirection.InOut, 5,
                                                    PipeTransmissionMode.Message, PipeOptions.Asynchronous);
             pipeServer.BeginWaitForConnection(EnvironmentReceived, null);
-        }
-
-        /// <summary>
-        /// Called whenever a new environment has been received.
-        /// </summary>
-        /// <param name="ar">The results of the aysnchronous operation.</param>
-        /// <remarks>
-        /// Byte Array to Structure code taken from @cite stackOverflowByte (http://stackoverflow.com/questions/3278827/how-to-convert-structure-to-byte-array-in-c)
-        /// </remarks>
-        private void EnvironmentReceived(IAsyncResult ar)
-        {
-            var environment = new StatusReport();
-            var size = Marshal.SizeOf(environment);
-
-            if (disposed)
-                return;
-	
-            pipeServer.EndWaitForConnection(ar);
-	
-            var bytes = new List<byte>();
-	
-            var buffer = new byte[size];
-	
-            pipeServer.Read(buffer, 0, size);
-	
-            bytes.AddRange(buffer);
-	
-            var array = bytes.ToArray();
-	
-            var ptr = Marshal.AllocHGlobal(size);
-	
-            Marshal.Copy(array, 0, ptr, size);
-	
-            lock (latestEnvironmentLocker)
-            {
-                var report = (StatusReport) Marshal.PtrToStructure(ptr, typeof (StatusReport));
-                latestEnvironment = report.Environment;
-                CurrentVector = report.FieldVector;
-                fieldType = report.FieldType;
-            }
-	
-            if (!worker.IsBusy)
-                worker.RunWorkerAsync();
-	
-            Marshal.FreeHGlobal(ptr);
-            pipeServer.Disconnect();
-            pipeServer.BeginWaitForConnection(EnvironmentReceived, null);
-        }
-
-        /// <summary>
-        /// The field vector reported by the simulator
-        /// </summary>
-        private Vector3D currentVector;
-        private bool disposed;
-
-        /// <summary>
-        /// Gets or sets the current vector reported by the simulator.
-        /// </summary>
-        /// <value>
-        /// The current vector.
-        /// </value>
-        internal Vector3D CurrentVector
-        {
-            get { return currentVector; }
-            set
-            {
-                currentVector = value;
-                Dispatcher.Invoke(new Action(() =>
-                                             FieldVector.Text =
-                                             string.Format("{0},{1}", currentVector.X, currentVector.Y)));
-            }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed) return;
-            if (!disposing) return;
-
-            outPix.Dispose();
-            outCl.Dispose();
-            outGradient.Dispose();
-            platformList = null;
-            context.Dispose();
-            colourKernel.Dispose();
-            gradientKernel.Dispose();
-            kernel.Dispose();
-            possessionKernel.Dispose();
-            worker.Dispose();
-            pipeServer.Dispose();
-
-            disposed = true;
-        }
-
-        ~MainWindow()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void WindowClosed(object sender, EventArgs e)
-        {
-            Dispose();
         }
     }
 }

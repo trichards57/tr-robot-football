@@ -3,7 +3,6 @@
 #define BALL_WEIGHT 10
 #define OBSTACLE_WEIGHT 100
 #define OBSTACLE_SIGMA 5
-#define M_PI 3.141593
 
 inline float basicRepel(float2 realPos, float2 repulser)
 {
@@ -12,14 +11,18 @@ inline float basicRepel(float2 realPos, float2 repulser)
 	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) / (2*OBSTACLE_SIGMA));
 }
 
-float fieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers)
+float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant float2 *basicRepulsers)
 {
-	float2 attractBall = ball - (float2)(7,0);
-	float2 repelBall = ball + (float2)(7,0);
+	float2 posShift = normalize(ballVelocity)*-7;
+	float2 attractBall = ball - posShift;
+	float2 repelBall = ball + posShift;
 	float dist = distance(attractBall, realPos);
 	float attractField = BALL_WEIGHT * dist;
 
-	float repField = basicRepel(realPos, repelBall);
+	float repField;
+	
+	if (length(posShift) > 1.0f)
+		repField += basicRepel(realPos, repelBall);
 	
 	for (int i = 0; i < 10; i++)
 	{
@@ -34,7 +37,7 @@ float possessionFieldAtPoint(float2 realPos, float2 ball, __constant float2 *bas
 	float dist = distance(ball, realPos);
 	float attractField = BALL_WEIGHT * dist;
 	dist = distance(goalTarget, realPos);
-	attractField = BALL_WEIGHT * dist;
+	attractField += BALL_WEIGHT * dist / 2;
 
 	float repField = 0;
 	
@@ -59,7 +62,7 @@ __kernel void possessionMain(float2 ball, float2 goalTarget, float fieldResoluti
 	out[index] = res;
 }
 
-__kernel void main(float2 ball, float fieldResolution, __constant float2 *basicRepulsers, __global float * out)
+__kernel void main(float2 ball, float fieldResolution, __constant float2 *basicRepulsers, __global float * out, float2 ballVelocity)
 {
 	int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
 
@@ -67,16 +70,16 @@ __kernel void main(float2 ball, float fieldResolution, __constant float2 *basicR
 
 	float2 realPos = convert_float2(gridPos) * fieldResolution;
 
-	float res = fieldAtPoint(realPos, ball, basicRepulsers);
+	float res = fieldAtPoint(realPos, ball, ballVelocity, basicRepulsers);
 	
 	out[index] = res;
 }
 
-__kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, __constant float2 *basicRepulsers, __global float * out)
+__kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, __constant float2 *basicRepulsers, __global float * out, float2 ballVelocity)
 {
 	size_t pointId = get_global_id(0);
 
-	out[pointId] = fieldAtPoint(fieldPoints[pointId], ball, basicRepulsers);
+	out[pointId] = fieldAtPoint(fieldPoints[pointId], ball, ballVelocity, basicRepulsers);
 }
 
 __kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget, __constant float2 *fieldPoints, __constant float2 *basicRepulsers, __global float * out)
@@ -113,5 +116,4 @@ __kernel void calculateGradient(__global float *in, __global float* out)
 
 	float2 gradient = (float2)(in[leftIndex] - in[rightIndex], in[downIndex] - in[upIndex]);
 	out[index] = length(gradient);
-	
 }

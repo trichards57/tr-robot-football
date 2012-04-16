@@ -11,7 +11,7 @@ namespace DataDumpProcessor
     /// <summary>
     /// The view model used to display data series
     /// </summary>
-    class SeriesViewModel : INotifyPropertyChanged
+    internal class SeriesViewModel : INotifyPropertyChanged
     {
         /// <summary>
         /// The chart series to display
@@ -93,7 +93,7 @@ namespace DataDumpProcessor
     /// <summary>
     /// The view model used to display data in the main window
     /// </summary>
-    class ViewModel : INotifyPropertyChanged
+    internal class ViewModel : INotifyPropertyChanged
     {
         /// <summary>
         /// Initializes a new instance of the ViewModel class
@@ -109,10 +109,12 @@ namespace DataDumpProcessor
         /// The main x-axis used by the main graph
         /// </summary>
         private IAxis mainXAxis = new LinearAxis();
+
         /// <summary>
         /// The main y-axis used by the main graph
         /// </summary>
         private IAxis mainYAxis = new LinearAxis();
+
         /// <summary>
         /// The secondary y-axis used by the main graph
         /// </summary>
@@ -130,6 +132,7 @@ namespace DataDumpProcessor
                 OnPropertyChanged("MainXAxis");
             }
         }
+
         /// <summary>
         /// Gets or sets the main y-axis used by the main graph
         /// </summary>
@@ -142,6 +145,7 @@ namespace DataDumpProcessor
                 OnPropertyChanged("MainYAxis");
             }
         }
+
         /// <summary>
         /// Gets or sets the secondary y-axis used by the main graph
         /// </summary>
@@ -154,34 +158,42 @@ namespace DataDumpProcessor
                 OnPropertyChanged("SecondYAxis");
             }
         }
+
         /// <summary>
         /// The maximum velocity found
         /// </summary>
         private double maxVel;
+
         /// <summary>
         /// The minimum velocity found
         /// </summary>
         private double minVel;
+
         /// <summary>
         /// The maximum acceleration found
         /// </summary>
-        private double maxAccel; 
+        private double maxAccel;
+
         /// <summary>
         /// The minimum acceleration found
         /// </summary>
         private double minAccel;
+
         /// <summary>
         /// The path to the current data file
         /// </summary>
         private string dataFilePath;
+
         /// <summary>
         /// The selected data entries
         /// </summary>
         private DataEntries selectedDataEntries;
+
         /// <summary>
         /// The range to use for the secondary y-axis
         /// </summary>
         private ScaleRange scaleRange;
+
         /// <summary>
         /// Gets or sets if the graph should use a secondary axis large enough for both the acceleration and the velocity readings
         /// </summary>
@@ -198,6 +210,7 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
+
         /// <summary>
         /// Invoked whenever the BothScaleRange, VelocityScaleRange or AccelerationScaleRange changes
         /// </summary>
@@ -222,6 +235,7 @@ namespace DataDumpProcessor
             OnPropertyChanged("VelocityScaleRange");
             OnPropertyChanged("AccelerationScaleRange");
         }
+
         /// <summary>
         /// Gets or sets if the graph should use a secondary axis large enough for the velocity readings
         /// </summary>
@@ -238,6 +252,7 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
+
         /// <summary>
         /// Gets or sets if the graph should use a secondary axis large enough for the acceleration readings
         /// </summary>
@@ -254,18 +269,20 @@ namespace DataDumpProcessor
                 OnScaleRangeChanged();
             }
         }
+
         /// <summary>
         /// Gets or sets the path to the current data file
         /// </summary>
         public string DataFilePath
         {
             get { return dataFilePath; }
-            set 
+            set
             {
                 dataFilePath = value;
                 OnPropertyChanged("DataFilePath");
             }
         }
+
         /// <summary>
         /// Invoked whenever a property in the view model changes.
         /// </summary>
@@ -275,10 +292,11 @@ namespace DataDumpProcessor
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
+
         /// <summary>
         /// Invoked whenever the SelectedDataEntries property changes
         /// </summary>
-        /// 
+        ///
         /// Invoked whenever the SelectedDataEntries property is changed.  Clears away the current SeriesSettings, as well as all the current data series.
         /// Recalculates velocity and acceleration graphs based on the current data.  Recalculates the filtered data for data
         /// series that contain time information. Adds all the newly created graphs to the available graph collections, defaulting all but the basic
@@ -349,7 +367,7 @@ namespace DataDumpProcessor
                         // Second entry. Can calculate the current velocity, but not the acceleration
 
                         // Calculate the velocity
-                        timeStep = (p.Time - lastTime);
+                        timeStep = 20;// (p.Time - lastTime);
                         var xVel = (p.Point.X - lastX) / timeStep;
                         var yVel = (p.Point.Y - lastY) / timeStep;
                         var totalVel = Math.Sqrt(xVel * xVel + yVel * yVel);
@@ -383,7 +401,7 @@ namespace DataDumpProcessor
                         // Every other entry. Can calculate both velocity and acceleration.
 
                         // Calculate the velocity
-                        timeStep = (p.Time - lastTime);
+                        timeStep = 20;// (p.Time - lastTime);
                         var xVel = (p.Point.X - lastX) / timeStep;
                         var yVel = (p.Point.Y - lastY) / timeStep;
                         var totalVel = Math.Sqrt(xVel * xVel + yVel * yVel);
@@ -408,7 +426,7 @@ namespace DataDumpProcessor
                         fVel += b22 * lastFilterMidVal;
                         fVel += b32 * secondLastFilterMidVal;
                         fVel /= 1.4;
-                        fVelSeries.Add(new DataPoint<double,double>(p.Time, fVel));
+                        fVelSeries.Add(new DataPoint<double, double>(p.Time, fVel));
 
                         // Calculate the acceleration
                         var xAccel = (xVel - lastXVel) / timeStep;
@@ -447,7 +465,7 @@ namespace DataDumpProcessor
                         timeStep *= 1000;
                     if (timeStep > 40000) // If a VERY large time step, it's probably in us
                         timeStep /= 1000;
-                    var mSec = (int)(Math.Round(timeStep, 1)*10); // Round of the timestep to an integer
+                    var mSec = (int)(Math.Round(timeStep, 1) * 10); // Round of the timestep to an integer
 
                     // Record the timestep distribution
                     if (timesteps.ContainsKey(mSec))
@@ -467,7 +485,6 @@ namespace DataDumpProcessor
                 var xAccelLineSeries = new LineSeries { DataSeries = xAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var yAccelLineSeries = new LineSeries { DataSeries = yAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
                 var totalAccelLineSeries = new LineSeries { DataSeries = totalAccelSeries, Visibility = Visibility.Hidden, XAxis = mainXAxis, YAxis = secondYAxis };
-
                 series.Add(xLineSeries);
                 series.Add(yLineSeries);
                 series.Add(xVelLineSeries);
@@ -496,11 +513,9 @@ namespace DataDumpProcessor
                 var timeDistribution = new DataSeries<double, long>("Time Steps");
                 foreach (var t in timesteps.OrderBy(u => u.Key))
                 {
-                    timeDistribution.Add(new DataPoint<double, long>(((double)(t.Key)/10), t.Value));
+                    timeDistribution.Add(new DataPoint<double, long>(((double)(t.Key) / 10), t.Value));
                 }
-                TimeStepDistribution = new SeriesCollection<IChartSeries>
-                                           {new ColumnSeries {DataSeries = timeDistribution}};
-
+                TimeStepDistribution = new SeriesCollection<IChartSeries> { new ColumnSeries { DataSeries = timeDistribution } };
                 OnPropertyChanged("TimeStepDistribution");
             }
             else if (rawPointEntries != null)
@@ -518,7 +533,6 @@ namespace DataDumpProcessor
 
                 var xLineSeries = new LineSeries { DataSeries = xSeries };
                 var yLineSeries = new LineSeries { DataSeries = ySeries };
-
                 series.Add(xLineSeries);
                 series.Add(yLineSeries);
             }
@@ -553,14 +567,17 @@ namespace DataDumpProcessor
         /// Gets the current set of data series
         /// </summary>
         public SeriesCollection<IChartSeries> CurrentDataSeries { get; private set; }
+
         /// <summary>
         /// Gets the timestep distribution data series
         /// </summary>
         public SeriesCollection<IChartSeries> TimeStepDistribution { get; private set; }
+
         /// <summary>
         /// Gets the settings for the data series
         /// </summary>
         public ObservableCollection<SeriesViewModel> SeriesSettings { get; private set; }
+
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>

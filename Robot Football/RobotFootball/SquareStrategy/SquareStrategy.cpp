@@ -17,6 +17,8 @@
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
 #define PATH_LENGTH 3000
 
+using namespace Strategies;
+
 clock_t startTime = 0;
 PathController controller;
 Vector3D lastPositions[5];
@@ -106,18 +108,17 @@ extern "C" STRATEGY_API void Create(Environment* env)
 
 extern "C" STRATEGY_API void Destroy(Environment* env)
 {
-	
 }
 
 extern "C" STRATEGY_API void Strategy(Environment* env)
 {
 	auto currentTime = clock();
 	Vector3D velocities[5];
-	
+
 	for (int i = 0; i < 5; i++)
 	{
-		velocities[i].x = (env->home[i].pos.x - lastPositions[i].x) / (currentTime - lastTime);
-		velocities[i].y = (env->home[i].pos.y - lastPositions[i].y) / (currentTime - lastTime);
+		velocities[i].x = (env->home[i].pos.x - lastPositions[i].x) / 20;
+		velocities[i].y = (env->home[i].pos.y - lastPositions[i].y) / 20;
 		velocities[i].z = 0;
 	}
 

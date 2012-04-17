@@ -1,9 +1,9 @@
-﻿using System.IO;
-using System.Windows;
-using System;
-using System.Linq;
+﻿using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
+using System.Windows;
 using Microsoft.Win32;
 
 namespace DataDumpProcessor
@@ -33,7 +33,7 @@ namespace DataDumpProcessor
         /// </summary>
         /// <param name="sender">The object where the event handler is attached.</param>
         /// <param name="e">The event data</param>
-        /// 
+        ///
         /// Prepares all the view model data for use in MATLAB.  Normalises the time entries (so that each run starts at time=0) and calculates the
         /// instantaneous velocity (relative to the input command to the motors).
         /// <remarks>Stores the prepared data file in My Documents, with the name data.csv</remarks>
@@ -54,10 +54,10 @@ namespace DataDumpProcessor
                     for (var i = 1; i < dat.Points.Count; i++)
                     {
                         var p = dat.Points[i];
-                        writer.WriteLine("{0}, {1}, {2}", 
+                        writer.WriteLine("{0}, {1}, {2}",
                             p.Time - baseLine.Time, // Normalise the time
-                            p.Point.X, 
-                            ((p.Point.X - dat.Points[i - 1].Point.X) / (p.Time - dat.Points[i - 1].Time)) / dat.Velocity); // Normalise the velocity 
+                            p.Point.X,
+                            ((p.Point.X - dat.Points[i - 1].Point.X) / (p.Time - dat.Points[i - 1].Time)) / dat.Velocity); // Normalise the velocity
                     }
                 }
             }
@@ -68,7 +68,7 @@ namespace DataDumpProcessor
         /// </summary>
         /// <param name="sender">The object where the event handler is attached.</param>
         /// <param name="e">The event data</param>
-        /// 
+        ///
         /// Allows the user to use any csv file as an input file to the data processing.
         private void BrowseClick(object sender, RoutedEventArgs e)
         {
@@ -83,20 +83,20 @@ namespace DataDumpProcessor
         /// </summary>
         /// <param name="sender">The object where the event handler is attached.</param>
         /// <param name="e">The event data</param>
-        /// 
+        ///
         /// Reloads the selected data file, parsing every entry in the file into a collection of DataEntries.
-        /// Data entries are identified based on the number of columns in the entry.  
-        /// 
+        /// Data entries are identified based on the number of columns in the entry.
+        ///
         /// * The first line that matches the required date and time format identifies the data entry.
-        /// 
+        ///
         /// * A line with two columns is taken as an entry with only point data
-        /// 
+        ///
         /// * A line with three columns is taken as an entry with a time marker and point data
-        /// 
+        ///
         /// * A line with four columns is taken as an entry with a high-resolution time marker and point data
-        /// 
+        ///
         /// * A line with six columns is taken as an entry with a high-resolution time marker, the high-resolution timer frequency and point data
-        /// 
+        ///
         /// * All other lines are ignored
         private void ReloadFile(object sender, RoutedEventArgs e)
         {
@@ -113,8 +113,10 @@ namespace DataDumpProcessor
             var vel = 0;
             foreach (var parts in lines.Where(m => !string.IsNullOrEmpty(m)).Select(l => l.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)))
             {
+                if (parts.Length == 0)
+                    continue;
                 DateTime date;
-                if (DateTime.TryParseExact(parts[0], "ddd MMM dd HH:mm:ss yyyy" , Thread.CurrentThread.CurrentCulture.DateTimeFormat, DateTimeStyles.AllowWhiteSpaces, out date))
+                if (DateTime.TryParseExact(parts[0], "ddd MMM dd HH:mm:ss yyyy", Thread.CurrentThread.CurrentCulture.DateTimeFormat, DateTimeStyles.AllowWhiteSpaces, out date))
                 {
                     entryDate = date;
                     dataEntries = null;

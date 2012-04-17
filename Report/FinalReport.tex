@@ -1,12 +1,13 @@
-\documentclass[10pt,british,english]{article}
+\documentclass[10pt]{article}
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
 \usepackage{color}
-\usepackage{babel}
 \usepackage{array}
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{subfig}
 \doublespacing
 \usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0 1},colorlinks=true]{hyperref}
 \hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
@@ -20,7 +21,6 @@
 \acrodef{DLL}{Dynamic Link Library}
 
 \begin{document}
-\selectlanguage{british}%
 
 \acresetall
 
@@ -42,25 +42,55 @@ TODO : Abstract
 
 \subsection{Motion Control}
 
+\subsubsection{Simulator Characteristics}
+
+There are two methods of timing that the system could use:
+\begin{itemize}
+ \item Fixed time-step - Every simulator cycle is assumed to be a constant length
+ \item Variable time-step - The time-step length is proportional to the wall-time elapsed since the last time-step.
+\end{itemize}
+
+The real-time length of each time-step was recorded over a period of period of time.  If a fixed time-step is used, and the simulator is attempting to run in real-time, the results should show most of the readings at this timestep level, with others longer but none singificantly shorter.  A free running real-time simulator would display a varying timestep depending on the length of the instructions to be executed each cycle, as well as any other activities currently taking place on the computer.  This, however, would not be a conclusive result, as fixed time-step simulator that isn't running in real-time would display similar results.
+
+The distribution produced is shown in figure \ref{fig:timestepDistribution}.  As can be seen, the real time-step length varies between 17.5ms and 26.0ms, with an approximate normal distribution around the mean of 19.17ms.  As discussed previously, it is not possible to use this result to determine the simulator's timestep type. This could result could equally be a variable time-step length which is being effected by other operations on the computer, a real-time fixed time-step simulation that is suffering from clock jitter or a fixed time-step simulation not running in real-time.
+
+\begin{figure}
+ \includegraphics[width=\textwidth]{Images/time-step-length-distribution} \\
+ Mean : 19.17 \\
+ Standard Deviation : 1.258
+
+ \caption{Time-step Frequency Distribution}
+ \label{fig:timestepDistribution}
+\end{figure}
+
+An initial run was set up to examine the behaviour of the system over time, and is shown in figure \ref{fig:initialSpeedTestRun}.  The velocity of the system (which is determined by dividing the distance travelled by the timestep) has been calculated with both the measured timestep, as well as a fixed timestep of 20ms (chosen as a round number approximating the values measured). The actual value of the fixed time-step is not a concern, as it will only have a scaling effect on the velocity, which can be accounted for later.
+
+The calculation with a variable timestep (figure \ref{fig:initialSpeedTestRunVariable}) displays a significant oscilation of the velocity around the expected behaviour.  In contrast, the fixed time-step values almost exactly matches the expected behaviour (figure \ref{fig:initialSpeedTestRunFixed}).  While it is possible that the simulator could be emulating a non-steady output velocity from the motors, it is expected that this would display in both graphs.  This makes it very likely that the time-step used by the simulator has a fixed length.
+
+The anomoly displayed at approximatly 0.6s on figure \ref{fig:initialSpeedTestRunFixed} is also seen in a large number of the other recordings made of this particular scenario.  This is not due to an overly long simulator cycle length, as this would be hidden by the fixed time-step length.  The fact that it is present shows that there were one or more simulator cycles where the system was not updated.  This suggests that it is due to a bug in the simulator, and any controller will need to be able to handle this sort of error with minimum disruption.
+
+\begin{figure}
+ \centering
+ \subfloat[Variable Time-step Length Initial Run Velocity]{\label{fig:initialSpeedTestRunVariable} \includegraphics[width=\textwidth]{Images/variable-time-step-initial-run}} \\
+ \subfloat[Fixed Time-step Length Initial Run Velocity]{\label{fig:initialSpeedTestRunFixed} \includegraphics[width=\textwidth]{Images/fixed-time-step-initial-run}}
+ \caption{Initial Run Velocities}
+ \label{fig:initialSpeedTestRun}
+\end{figure}
+
+Finally, it was observed that the simulation pauses when the simulator loses the user focus.  It then resumes without anomaly when the simulator regains the focus.  As the simulator does not inform this strategies of this, and does not provide the strategies with any timing data, it is unreasonable to believe that real-time values are in use.  Were they used, the strategies would experience control issues caused by the anomalously long time-step if the simulator lost the focus (and so was suspended) for a significant period of time.  For this reason, it was assumed that a fixed time-step length was in use, and the length chosen is 20ms.
+
 \subsubsection{Uncontrolled Behaviour}
 
 The model used for the robots in the simulator is not documented. It is therefore assumed that the robot's motion is modelled on that produced by an electric motor. The basic behaviour of the system should be described by the model shown in figure \ref{fig:basicMotorModel}, which is sumarised with the transfer function in equation \ref{eq:basicMotorModel} \cite{basicControlNotes}.
 
 \begin{equation}
+ \label{eq:basicMotorModel}
  G\left(s\right) = A \cdot \frac{1}{s+B}
 \end{equation}
 
-In order to determine the values of the constants $A$ and $B$, a simple strategy was set up that made fed one of the robots a fixed control signal, which caused it to accelerate in a straight line until it reached a constant speed.  The position at each timestep was recorded, to allow the velocity and acceleration to be calculated.
+In order to determine the values of the constants $A$ and $B$, a simple strategy was set up that fed one of the robots a fixed control signal.  This caused it to accelerate in a straight line until it reached a constant speed.  The position at each timestep was recorded, to allow the velocity and acceleration to be calculated.  This was repeated with a number of different input signals, until the robot could no longer achieve a stead-state speed without colliding with a wall.
 
-There are two methods of timing that the system could use:
-\begin{itemize}
- \item Fixed time-step - Every simulator cycle is assumed to be a constant length
- \item Real-time - The time-step length is based on the time elapsed since the last time-step.
-\end{itemize}
-
-The real-time length of each time-step was recorded over a period of period of time, and the distribution produced is shown in figure \ref{fig:timestepDistribution}.
-
-  An initial run was set up to examine the behaviour of the system over time, and is shown in figure \ref{fig:initialSpeedTestRun}.
+If the model is correct, the steady-state velocity should be directly proportional to the input velocity.  A plot of steady-state velocity against input velocity is shown in figure \ref{fig:inputOutpuVelocityGraph}.  The steady-state velocity was calculated by averaging the final ten samples of each simulation.
 
 In order to allow more specific control over the motion of the robot, the motion control was implemented using two layers of control.  The first layer
 
@@ -223,7 +253,7 @@ TODO : use siunitx package
 
 In order to determine the direction the robot should move in, the field needs to be calculated at four points, as described in section \ref{sub:Potential-Field-Force}. Even for the most complex fields in use, this is not particularly computationally challenging. However, the efficiency of the code could be improved by vectorising the data and taking advantage of the \ac{SIMD} instructions available on most modern \acp{CPU} to calculate all four points simultaneously. This would allow the field calculations to take less time, resulting in more time available per time-step to perform other operations.
 
-In addition, it is useful to render the entire field as an image, so that it can be considered for debugging purposes. Given that the playing field is approximately 88 inches by 72 inches, and is being considered at $\frac{1}{10}$inch scale, this gives 633,600 data points to consider. This size of dataset will require a large amount of CPU cycles to calculate, even if the individual data point's requirements are relatively modest. With further delays introduced by inter-process communication (it is not possible to alter the simulator to produce the image locally), as well as other delays and overheads introduced by the operating system, it quickly becomes challenging to render the field in real-time.
+In addition, it is useful to render the entire field as an image, so that it can be considered for debugging purposes. Given that the playing field is approximately 88 inches by 72 inches, and is being considered at $\frac{1}{10}$inch scale, this gives 633,600 data points to consider. This size of dataset will require a large amount of \ac{CPU} cycles to calculate, even if the individual data point's requirements are relatively modest. With further delays introduced by inter-process communication (it is not possible to alter the simulator to produce the image locally), as well as other delays and overheads introduced by the operating system, it quickly becomes challenging to render the field in real-time.
 
 The calculation times for both the entire field and a set of four points using the OpenCl code on both the \ac{CPU} and \ac{GPU} are shown in table \ref{tab:Field-Strenth-Calculation}. These clearly show that the calculation of the entire field is best done on the GPU, where the acceleration from the massively parallel computation structure masks the additional overheads. The four points, however, are best done on the \ac{CPU}, where it does not suffer from the significantly larger memory transfer times which affect \ac{GPU} operations.
 
@@ -266,7 +296,7 @@ In order to calculate the Gaussian function, a function to calculate a power of 
 
 The OpenCL standard also provides for a set of so-called 'native' functions, are produced specifically for the hardware in use, and which are often more efficient than the general implementation (for example, it sometimes maps to a single instruction that performs the function). However, the accuracy of the function is implementation specific, and so could change from computer to computer \cite{openCl11Spec}. In this case, the native exponential function utilitises far fewer \acp{GPR}, removing the resource pressure previously experienced.
 
-Additionally, the OpenCL specification provides geometric functions such as vector distance and vector length to complement it's vector data types. These have been used as far as possible, as they can also allow the compiler to perform hardware specific optimisations (and again they can sometimes map directly to individual instructions on the hardware.\cite{openCl11Spec}
+Additionally, the OpenCL specification provides geometric functions such as vector distance and vector length to complement it's vector data types. These have been used as far as possible, as they can also allow the compiler to perform hardware specific optimisations (and again they can sometimes map directly to individual instructions on the hardware).\cite{openCl11Spec}
 
 TODO : discuss any other optimisations
 

@@ -48,7 +48,7 @@ namespace DataDumpProcessor
                 // Create the file headers
                 writer.WriteLine("time, x position, x velocity");
 
-                foreach (var dat in viewModel.DataEntries.OfType<DataEntries<TimedDataEntry>>())
+                foreach (var dat in viewModel.DataEntries.OfType<DataEntries<TimedDataEntry>>().Where(d => d.Velocity != -1))
                 {
                     var baseLine = dat.Points[0];
                     for (var i = 1; i < dat.Points.Count; i++)

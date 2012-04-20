@@ -1,0 +1,19 @@
+﻿<Window x:Class="FieldImager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+            <Button Click="CircularFieldClick" >Draw Circular Field</Button>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+            <Button>Save Image</Button>
+        </StackPanel>
+        <Viewbox VerticalAlignment="Center" Margin="10">
+            <StackPanel Orientation="Horizontal">
+                <Image Name="MagnitudeImage" />
+                <Image Name="GradientImage" />
+            </StackPanel>
+        </Viewbox>
+    </DockPanel>
+</Window>

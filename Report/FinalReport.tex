@@ -7,9 +7,9 @@
 \usepackage{setspace}
 \usepackage{graphicx}
 \usepackage{subfig}
-\usepackage{siunitx}
+%\usepackage{siunitx}
 \usepackage{amsmath}
-\doublespacing 
+\doublespacing
 \usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0
 1},colorlinks=true]{hyperref}
 \hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
@@ -50,9 +50,9 @@ TODO : Abstract
 
 There are two methods of timing that the system could use:
 \begin{itemize}
- \item Fixed time-step - Every simulator cycle is assumed to be a constant 
+ \item Fixed time-step - Every simulator cycle is assumed to be a constant
  length
- \item Variable time-step - The time-step length is proportional to the 
+ \item Variable time-step - The time-step length is proportional to the
  wall-time elapsed since the last time-step.
 \end{itemize}
 
@@ -105,7 +105,7 @@ time-step used by the simulator has a fixed length.
 The anomoly displayed at approximatly \SI{0.6}{\second} on figure
 \ref{fig:initialSpeedTestRunFixed} is also seen in a large number of the other
 recordings made of this particular scenario.  This is not due to an overly long
-simulator cycle length, as this would be hidden by the fixed time-step length. 
+simulator cycle length, as this would be hidden by the fixed time-step length.
 The fact that it is present shows that there were one or more simulator cycles
 where the system was not updated.  This suggests that it is due to a bug in the
 simulator, and any controller will need to be able to handle this sort of error
@@ -123,7 +123,7 @@ with minimum disruption.
  \caption{Initial Run Velocities}
  \label{fig:initialSpeedTestRun}
 \end{figure}
- 
+
 Finally, it was observed that the simulation pauses when the simulator loses the
 user focus.  It then resumes without anomaly when the simulator regains the
 focus.  As the simulator does not inform this strategies of this, and does not
@@ -138,7 +138,7 @@ chosen is \SI{20}{\milli\second}.
 
 The model used for the robots in the simulator is not documented. It is
 therefore assumed that the robot's motion is modelled on that produced by an
-electric motor. The basic behaviour of the system should be described by the 
+electric motor. The basic behaviour of the system should be described by the
 transfer function in equation \ref{eq:basicMotorModel} \cite{basicControlNotes}.
 
 \begin{equation}
@@ -207,7 +207,7 @@ required.
  \includegraphics[width=0.8\textwidth]{Images/input-signal-vs-output-speed}
  \caption{Input Control Signal vs Output Velocity}
  \label{fig:inputOutputVelocityGraph}
- 
+
  Line of best fit: $y=0.7564x$ \\
  Quality of fit: $R^2 = 0.9998$
 \end{figure}
@@ -217,7 +217,7 @@ required.
  \includegraphics[width=0.8\textwidth]{Images/best-fit-model}
  \caption{Curve Fitting Toolbox Best Fit}
  \label{fig:bestFit}
- 
+
  Line of best fit : $y=0.7432 e^{-0.0001886x}-0.7248 e^{-2.863x}$ \\
  Quality of fit : $R^2 = 0.976$
 \end{figure}
@@ -227,7 +227,7 @@ required.
  \includegraphics[width=0.8\textwidth]{Images/approximate-fit-model}
  \caption{Approximated Curve Fit}
  \label{fig:approximateFit}
- 
+
  Line of best fit : $y=0.7432 \left(1-e^{-2.863x}\right)$
 \end{figure}
 
@@ -236,7 +236,7 @@ required.
  \includegraphics[width=0.8\textwidth]{Images/approximate-fit-model-time-shift}
  \caption{Approximated Curve Fit with Corrected Data}
  \label{fig:approximateFitTimeShiftRemoved}
- 
+
  Line of best fit : $y=0.7432 \left(1-e^{-2.863x}\right)$
 \end{figure}
 
@@ -250,7 +250,7 @@ control position.
 Both layers are simple proportional controllers, with the velocity control
 receiving velocity feedback and the position control receiving position
 feedback.  The overall control design is shown in figure
-\ref{fig:overalController}.  
+\ref{fig:overalController}.
 
 The gains were tuned using the MATLAB controller design tools.  The velocity
 controller were handled first, to ensure that it would stand alone, and then
@@ -314,14 +314,17 @@ If the fields can be differentiated over the entire field, this can be
 calculated as in equation \ref{eq:forceDifferentiation}.
 
 \begin{equation}
-\boldsymbol{F}(x,y)=-\left(\sum_{i=0}^{N-1}\frac{\partial p_{i}\left(x,y\right)}{\partial x}+\frac{\partial p_{i}\left(x,y\right)}{\partial y}j\right)\label{eq:forceDifferentiation}
+\boldsymbol{F}(x,y)=-\left(\sum_{i=0}^{N-1}\frac{\partial p_{i}\left(x,y\right)}{\partial x}+\frac{\partial p_{i}\left(x,y\right)}{\partial y}j\right)
+\label{eq:forceDifferentiation}
 \end{equation}
 
 However, if one or more of the fields cannot be differentiated, the force vector
-must be calculated discretely. This is achieved using equation .
+must be calculated discretely. This is achieved using equation
+\ref{eq:forceDifferentiationDiscrete}.
 
 \begin{equation}
 \boldsymbol{F}(x,y)=\left(P\left(x-1,y\right)-P\left(x+1,y\right)\right)+\left(P\left(x,y-1\right)-P\left(x,y+1\right)\right)j
+\label{eq:forceDifferentiationDiscrete}
 \end{equation}
 
 The negative gradient is used to ensure the robot moves towards lower field
@@ -339,26 +342,28 @@ goals specific to its role.
 
 \subsection{Potential Field Shapes}
 
-Attractive fields are used to designate areas which the robot should be headed
-for. In order to ensure that the robot always heads towards them, it is
+Attractive fields are used to designate areas which the robot should heading
+for. In order to ensure that the robot always moves towards them, it is
 important that their effect is felt across the entire field. However, they must
 not be so strong that they overwhelm the short distance effects of the repulsive
-fields, but strong enough to govern the robot's overall destination.
+fields.
 
-Repulsive fields are used to alter the route of the robot when heading for these
-targets. For example, such fields are used to get the robot to avoid collisions,
-as well as to control where the robot intercepts the ball. These fields
-typically only act over a short distance, as they should only have an effect
-when they are required. They need to be strong enough to overwhelm the
+Repulsive fields are used to alter the route of the robot when moving towards
+these targets. For example, such fields are used to get the robot to avoid
+collisions, as well as to control where the robot intercepts the ball. These
+fields typically only act over a short distance, as they should only have an
+effect when they are required. They need to be strong enough to overwhelm the
 attractive fields at short range.
 
-The field shapes experimented with are described in the following sections, in
-order to determine the best combination for each scenario. As the basic fields
-in use are axisymmetric in shape (or begin that way), the fields are best
-described using polar coordinates. The coordinates are defined as in figure
-\ref{fig:polarCoordinateFrame}, and are always centred on the field producing
-object. This frame of reference can then be translated to the Cartesian
-coordinates in use elsewhere to allow the total field at a point to be
+The field shapes experimented with are described in the following sections, and
+a selection of them were integrated into the final strategy, in order to produce
+the best combination for each scenario.
+
+As the basic fields in use are axisymmetric in shape (or begin that way), the
+fields are best described using polar coordinates. The coordinates are defined
+as in figure \ref{fig:polarCoordinateFrame}, and are always centred on the field
+producing object. This frame of reference can then be translated to the
+Cartesian coordinates in use elsewhere to allow the total field at a point to be
 calculated.
 
 \subsubsection{Basic Attractive Field\label{sub:Basic-Attractive-Field}}
@@ -377,8 +382,9 @@ to the object (in this case the ball). This is a very useful field for a route
 finder (as described in the paper), where it is desirable for the the robot to
 stop when it reaches the destination, and so it needs to slow down as it
 approaches the target. However, in this application it is more useful for the
-robot to make a rapid approach and not slow down after arrival, as this will hit
-the ball away from the robot.
+robot to make a rapid approach and not slow down after arrival. This is because
+the ball is not held to the robot in any way, so if the robot slows down after
+it arrives, the ball will move away without it.
 
 In order to overcome this problem, the field was simplified to equation
 \ref{eq:conicBallField}.
@@ -390,17 +396,17 @@ P(r,\theta)=\frac{1}{2}k_{attr}r\label{eq:conicBallField}
 This field produces a constant force of $k_{attr}$ acting towards the centre of
 the ball, which will hold the robot against the ball (as far as possible) as the
 ball and robot move around. It doesn't provide any guidance once the ball has
-been reached, and so this will need to be provided by an additional field once
+been reached, and so this will need to be provided by externally once
 the intercept is complete.
 
 \subsubsection{Basic Repulsive Field\label{sub:Basic-Repulsive-Field}}
 
 One of the rules of the game is that the robot cannot intentionally collide with
 an opposing robot, unless they are in possession of the ball
-\cite{simurosotSim}. This means that the robot must actively avoid the other
-robots. It is also advantageous to be able to avoid the robots own team, as this
-prevents the robots getting into a position where they cannot move as they are
-fighting against each other.
+\cite{simurosotSim}. This means that the robot must actively avoid the
+opposition. It is also advantageous to be able to avoid the robots own team, as
+this prevents the robots getting into a position where they cannot move as they
+are fighting against each other.
 
 A apparently simple solution would be to surround all the obstacles with a
 region of potential that is substantially higher than the surrounding area, as
@@ -413,18 +419,18 @@ k_{repulse} & r<R_{0}\\
 \end{cases}\label{eq:circleRepulseField}
 \end{equation}
 
-Where $k_{repulse}$is the repulsive potential and $R_{0}$is the radius of the
+Where $k_{repulse}$is the repulsive potential and $R_{0}$ is the radius of the
 circle. This produces a field as illustrated in figure \ref{fig:circleField}.
 
 In theory, the robot would avoid this circle, as the algorithm should not have
-the robot move into a region of high potential. However, this does not work, as
-the controller actually responds to the gradient of the field (shown in figure
-\ref{fig:circleFieldGradient}). As shown in the figure, this type of field
-produces very high force, but only in a very small region. Once inside the
-repulsive circle, the gradient returns again to zero, and so does not effect the
-motion of the robot. As the robot has inertia, it is very likely that it pass
-through the region of high force and then leave it before it's velocity has
-altered sufficiently to avoid the obstacle.
+the robot move into a region of high potential. However, this does not work as
+the controller actually responds to the gradient of the field.. As shown in
+figure \ref{fig:circleFieldGradient}, this type of field produces very high
+force, but only in a very small region. Once inside the repulsive circle, the
+gradient returns again to zero, and so does not effect the motion of the robot.
+As the robot has inertia, it is very likely that it pass through the region of
+high force and then leave it before it's velocity has altered sufficiently to
+avoid the obstacle.
 
 In order to maximise the repulsive effect of the field, the force must be
 exerted over a large area. This can be achieved with a field that gradually
@@ -712,7 +718,7 @@ This does not appear to be called by the simulator at this time, and so has been
 \subsubsection{InterceptStrategy}
 
 The main strategy, named InterceptStrategy because it was initially used to have
-the robot intercept the ball only, 
+the robot intercept the ball only,
 
 TODO : Discuss final strategy implementation
 

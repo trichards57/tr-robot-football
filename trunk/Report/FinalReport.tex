@@ -9,7 +9,7 @@
 \usepackage{subfig}
 \usepackage{siunitx}
 \usepackage{amsmath}
-\doublespacing
+%\doublespacing
 \usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0
 1},colorlinks=true]{hyperref}
 \hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
@@ -25,6 +25,7 @@
 \acrodef{DLL}{Dynamic Link Library}
 \acrodef{CRT}{C Runtime Library}
 \acrodef{CSV}{Comma Seperated Variable}
+\acrodef{FIRA}{Federation of International Robot-Soccor Association}
 
 \begin{document}
 
@@ -32,18 +33,26 @@
 
 \section{Introduction}
 
-Discuss: 
+TODO:
+
+Discuss:
+ 
 Initial plan to use route planning and prediction
+
 Discovery that route planning would have to be done far to regularly to be
 feasible
+
 Discovery that route planning would be vvv CPU intensive
+
 Decision to explore artificial potential field force navigation
 
 \section{Literature Review}
 
+TODO : Lit Review
+
 \section{Computational Methods}
 
-\subsection{Motion Control}
+\subsection{Motion Control\label{sub:motionControl}}
 
 \subsubsection{Simulator Characteristics}
 
@@ -112,9 +121,7 @@ simulator cycle length, as this would be hidden by the fixed time-step length.
 The fact that it is present shows that there were one or more simulator cycles
 where the system was not updated.  This suggests that it is due to a bug in the
 simulator, and any controller will need to be able to handle this sort of error
-with minimum disruption.
-
-Next, it was necessary 
+with minimum disruption. 
 
 \begin{figure}
  \centering
@@ -319,6 +326,180 @@ was decided that investigating the higher level control was more important for
 this specific work.  The effect of a better control system can then be
 investigated in the future.
 
+\subsection{Motion Prediction}
+It was initially planned that the robot's would function by tracking the ball
+and plotting an intercept trajectory.  This would require the path of the ball
+to be predicted to ensure that the robot correctly intercepts the ball.
+
+It was intially decided that the motion of the ball would be represented with a
+quadratic equation ($x=at^2+ut+c$), which is sufficient to represent the motion
+of a body when under a constant force (e.g. friction).  It does not include a
+term to represent effects related to velocity (e.g. air resistance), but it is
+assumed that these effects will be small (if present at all), and so will not
+cause significant error in the predicted motion.
+
+Provided information about past motion is stored, this equation can be solved
+using the least squares method.  This technique works to minimize the distance
+between equation and the data-points provided, minimizing equation
+\ref{eq:leastSquaresEq}.
+
+\begin{equation}
+  S = \sum_{i=1}^n (a t_i^2+ u t_i + c - x_i)^2 
+  \label{eq:leastSquaresEq}
+\end{equation}
+
+Taking partial differentials of this equation can be used to find the minimum
+with respect to $a$, $u$ and $c$, and which gives equation
+\ref{eq:leastSquaresMatrix}.
+
+\begin{equation}
+  \left[
+   \begin{matrix}
+    \sum t_i^4 & \sum t_i^3 & \sum t_i^2 \\
+    \sum t_i^3 & \sum t_i^2 & \sum t_i^1 \\
+    \sum t_i^2 & \sum t_i^1 & \sum n
+   \end{matrix}
+  \right]
+  \left[
+   \begin{matrix}
+    a \\
+    u \\
+    c
+   \end{matrix}
+  \right]
+  =
+  \left[
+   \begin{matrix}
+    \sum t_i^2 y_i \\
+    \sum t_i y_i \\
+    \sum y_i
+   \end{matrix}
+  \right]
+  \label{eq:leastSquaresMatrix}
+\end{equation}
+
+This can then be solved using matrix techniques.
+
+In order to allow for sudden changes in motion, only a small number of past
+positions would be recorded.  This would become a compromise between increasing
+the number of samples to increase accuracy over a large continuous section, and
+decreasing the number of samples to minimise the effect of sudden changes in
+direction.
+
+If the equation is solved by inverting the matrix of timestep sums, the amount
+of computation can be reduced by always setting the first timestep to be at
+$t=0$, and then adjusting the time values appropriatly whenever the resulting
+coefficients are used.  This means the inverted matrix can be calculated once
+and then stored.
+
+The actual inversion can be quickly calculated using the inversion code provided
+by Intel \cite{intelMatrixInverse}.  This takes advantages of \ac{SIMD}
+instructions to speed up the calculation.  This was initially implemented to
+deal with the condition where the timestep changed each time, which would
+require the matrix to be recalculated each time, and was kept in, even though
+the overall gains are negligible if the matrix is only calculated once.
+
+Similar techniques can then be used to perform the multiplications required to
+solve the final equations.
+
+\subsection{Route Finding}
+In order to determine the best method of planning a route, some time was spent
+investigating different route finding techniques to examine their behaviour. 
+The two main techniques investigated were the A* algorithm and the potential
+field force algorithm shown in \cite{intelligentAlgorithmPathPlanning}.
+
+\subsubsection{A* Algorithm}
+
+The A* algorithm is a discrete route finding algorithm, which requires the field
+to be divided into a number of squares to function \cite{aiModernApproach}.  It
+then represents the possible moves around the field as a tree, and then traverses the tree to find
+the shortest route.  The algorithm theoretically operates faster than the
+similar Dijkstra's algorithm, by using a heuristic algorithm to predict the best
+moves \cite{wikipediaAStar}.
+
+The algorithm uses two sets, one to hold the squares to be examined (the open
+set), and one to hold the squares that have already been examined (the closed
+set). Squares are added to the open setwhen one of their neighbours is examined,
+and are then examined in an order defined by the heuristic algorithm.  Each
+square is examined to determine it's distance from the origin (based on the last
+already examined neighbouring squares' distances) and it's predicted distance to
+the destination. Provided the heuristic is good, this will result in a short
+route being found between the start and end points.
+
+The test version of the algorithm was implemented using the .Net Framework,
+initially using the basic \texttt{List(Of T)} class to hold the sets.  This was
+found to be a very slow, and when profiled, it was discovered that a lot of the
+time was spent checking if a square was already in the closed set.  With the
+\texttt{List(Of T)} class, the find algorithm is an $O(n)$ operation
+\cite{msdnListOfT}, and so keeps taking longer as the algorithm continues.  When
+this was replaced with a \texttt{HashSet(Of T)}, which uses an $O(1)$ operation
+to find elements \cite{msdnHashSetOfT}, a significant time saving was made (as
+can be seen in table \ref{tab:aStarTimingsTable}).
+
+An attempt to partially parallelise the operation resulted in a slightly slower
+algorithm (see table \ref{tab:aStarTimingsTable}). The nature of the A*
+algorithm makes it rare to have enough concurrent work to justify the increased overhead
+of parallel algorithms.
+
+\begin{singlespace}
+\begin{table}
+\centering%
+\begin{tabular}{|c|m{3cm}|p{2cm}|}
+\hline
+\multirow{2}{*}{Task} & \multirow{2}{3cm}{Container Class} &
+\multirow{2}{2cm}{Execution Time (\si{\second})} \\
+ &  & \\
+\hline
+\multirow{2}{*}{Serial Algorithm} & \texttt{List(Of T)} & \num{25.37}
+\\
+\cline{2-3}
+ & \texttt{HashSet(Of T)} & \num{5.159} \\
+\hline
+\multirow{2}{*}{Parallel Algorithm} & \texttt{List(Of T)} & \num{25.72}
+\\
+\cline{2-3}
+ & \texttt{HashSet(Of T)} & \num{5.502} \\
+\hline
+\end{tabular}
+
+\caption{A* Algorithm Execution Times\label{tab:aStarTimingsTable}}
+\end{table}
+
+\end{singlespace}
+
+\subsubsection{Potential Field Force Algorithm}
+
+The potential field force algorithm is described in detail later in this report
+(see section \ref{sub:Potential-Field-Force}).  This initial investigation was
+used to plan a route in advance that the robot can follow.  It proved
+troublesome as a route planning algorithm (as opposide to a real-time guidance
+routine as used later), as a full implementation would require a full model of
+the robot's behaviour to process.  When this was ommitted, simplifying the
+program, the route finder often ended with the path achieving an orbit around
+the target point instead of approaching it directly.  This rendered the
+algorithm as it was useless for planning a route in advance.
+
+\subsubsection{Route Planning Evaluation}
+
+At this point, the practicality of using routes planned in advance was
+reconsidered.  As shown previously, the full route planning has the potential to
+take a significant amount of time compared to the ideal \SI{20}{\milli\second}
+cycle length.  This would result in an algorithm that takes multiple cycles to
+run (and is therefore always working on out-of-date information), or which only
+runs over a very short distance in the future.
+
+Given that the state of the game can change significantly over the
+\SI{5}{\second} it currently took to calculate a route using the A* algorithm,
+this would render a route calculated substantially in advance nearly useless. 
+The short distance route may be slightly useful, but would be of little help in
+planning an overall strategy compared to the investment in calculation time.
+
+For this reason, the decision was made to shift from a pre-planned route to a
+real-time guidance system, based on the potential field force navigation
+algorithm. This removes the need for a ruote planning algorithm, and it was
+hoped that the robot's strategy could then be embedded into the structure of the
+field.
+
 \subsection{Potential Field Force Navigation\label{sub:Potential-Field-Force}}
 
 With this technique, a potential field is used to create a force that guides
@@ -519,8 +700,8 @@ Where $\sigma_{repulse}$ controls the width of the field.
 
 For this purpose, the Gaussian function was selected, because it was believed
 that a flatter region in the centre of the field would be preferable over an
-infinite field potential (see section TODO). This produces a field as shown in
-figure \ref{fig:gaussianField}. As the gradient image shows, this produces a
+infinite field potential (see section \ref{sub:fieldDesignConsiderations}). This
+produces a field as shown in figure \ref{fig:gaussianField}. As the gradient image shows, this produces a
 region of rapidly increasing force around the object, with no discontinuities
 that produce disruptive motion at the edge of the field.
 
@@ -607,9 +788,6 @@ desired desination (initially, the goal).  This is achieved by providing this
 vector to the field calculation code, which then sets the point locations
 appropriately.
 
-TODO : Consider including a video showing this in action, or perhaps include it
-in the results section.
-
 When this field is in use, the robot is not attracted to the actual position of
 the ball, and so this field will not allow the robot to guide it to the goal.
 However, if a new set of field configurations are used once this robot is in
@@ -650,7 +828,7 @@ moving around the obstacle in the desired ellipse when previoulsy approaching
 for a head-on collision.  However, the test used, where the attacking robot that
 was already in posession of the ball approached an opponent deliberatly placed
 in the way of the goal, highlighted an issue with the robot's control of the
-ball.  This is further discussed in section TODO.
+ball.  This is further discussed in section \ref{sub:simulatorIssues}.
 
 \subsection{Field Calculations}
 
@@ -772,9 +950,7 @@ have been used as far as possible, as they can also allow the compiler to
 perform hardware specific optimisations (and again they can sometimes map
 directly to individual instructions on the hardware).\cite{openCl11Spec}
 
-TODO : discuss any other optimisations
-
-\subsubsection{Field Design Consideration}
+\subsubsection{Field Design Consideration\label{sub:fieldDesignConsiderations}}
 
 As previously discussed (see section \ref{sub:Basic-Repulsive-Field}), it is
 important that a repulsive field changes graudally over an reasonably large
@@ -955,7 +1131,7 @@ Provided there are no obstacles between the point where the robot intercepts the
 ball and the goal, this strategy will cause a robot to score a goal.  It cannot
 currently cope with any opposing action, and any close encounter with an
 opponent will cause the robot to move away from the opponent rather than
-maintain contact with the ball, for the reasons discussed in secion TODO.
+maintain contact with the ball.
 
 \subsection{Field Renderer}
 
@@ -995,11 +1171,11 @@ user.
 
 \subsection{Problems Encountered} 
 
-\subsubsection{Simulator Issues}
+\subsubsection{Simulator Issues\label{sub:simulatorIssues}}
 
 The lack of documentation for the simulator has already been discussed in
-section TODO.  As previously mentioned, the behaviour of the system had to be
-reverse-engineered from the system's response to different inputs, allowing a
+section \ref{sub:motionControl}.  As previously mentioned, the behaviour of the
+system had to be reverse-engineered from the system's response to different inputs, allowing a
 model to be produced.  Because the governing variables are not fully known, the
 model is only an approximatation, but it appears to be sufficient to control the
 system to a basic degree.

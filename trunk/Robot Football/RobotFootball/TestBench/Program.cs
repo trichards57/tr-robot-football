@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Linq;
 using RobotFootballCore.Objects;
 using RouteFinders;
+using System.Collections.Generic;
+using RobotFootballCore.Interfaces;
 
 /// @brief The testing classes
 /// 
@@ -28,17 +30,36 @@ namespace TestBench
             var opponents = field.Players.Where(p => p.Team == Team.Opposition).Select(t => (PositionedObject.FromIPositionedObject(t))).ToArray();
             var route4 = new Point[1024]; for (var i = 0; i < 1024; i++) route4[i] = Point.Empty;
 
+            var finder1 = new ListAStarRouteFinder();
+            var finder2 = new HashSetAStarRouteFinder();
+            var finder3 = new ParallelListAStarRouteFinder();
+            var finder4 = new ParallelHashSetAStarRouteFinder();
+
             timer.Restart();
-            NativeRouteFinder.AStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route4.Length, true);
+
+            finder1.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+
             timer.Stop();
 
             Console.WriteLine("Series Route Finder (Native, Non-Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
 
             timer.Restart();
-            NativeRouteFinder.HashMapAStarFindRoute(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field.Size, new Size(10, 10), Player.PlayerSize, 20, opponents, opponents.Length, route4, (uint)route4.Length, true);
+            finder2.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
             timer.Stop();
 
             Console.WriteLine("Series Route Finder (Native, Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
+
+            timer.Restart();
+            finder3.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            timer.Stop();
+
+            Console.WriteLine("Parallel Route Finder (Native, Non-Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
+
+            timer.Restart();
+            finder4.FindPath(field.Players.First(p => p.Team == Team.Current).Position, field.Ball.Position, field, field.Players.First(p => p.Team == Team.Current));
+            timer.Stop();
+
+            Console.WriteLine("Parallel Route Finder (Native, Hashmap, Square-Root) : {0}s", timer.Elapsed.TotalSeconds);
 
             Console.ReadLine();
         }

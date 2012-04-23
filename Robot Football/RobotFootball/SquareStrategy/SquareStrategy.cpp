@@ -47,7 +47,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		Vector3D result;
 		if (t < PATH_LENGTH)
 		{
-			result.x = STRAIGHT_LINE_POS(LEFT_X, RIGHT_X, t, PATH_LENGTH);
+			result.x = CubicPath(LEFT_X, RIGHT_X, t, PATH_LENGTH);
 			result.y = TOP_Y;
 		}
 		else
@@ -61,7 +61,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		if (t < PATH_LENGTH)
 		{
 			result.x = RIGHT_X;
-			result.y = STRAIGHT_LINE_POS(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
+			result.y = CubicPath(TOP_Y, BOTTOM_Y, t, PATH_LENGTH);
 		}
 		else
 		{
@@ -73,7 +73,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		Vector3D result;
 		if (t < PATH_LENGTH)
 		{
-			result.x = STRAIGHT_LINE_POS(RIGHT_X, LEFT_X, t, PATH_LENGTH);
+			result.x = CubicPath(RIGHT_X, LEFT_X, t, PATH_LENGTH);
 			result.y = BOTTOM_Y;
 		}
 		else
@@ -87,7 +87,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 		if (t < PATH_LENGTH)
 		{
 			result.x = LEFT_X;
-			result.y = STRAIGHT_LINE_POS(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
+			result.y = CubicPath(BOTTOM_Y, TOP_Y, t, PATH_LENGTH);
 		}
 		else
 		{

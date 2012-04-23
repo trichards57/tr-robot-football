@@ -51,7 +51,7 @@ float possessionFieldAtPoint(float2 realPos, float2 ball, __constant float2 *bas
 
 	for (int i = 0; i < 10; i++)
 	{
-		repField += stretchedBasicRepel(realPos, basicRepulsers[i]);
+		repField += basicRepel(realPos, basicRepulsers[i]);
 	}
 
 	return attractField + repField;

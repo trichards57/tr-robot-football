@@ -12,7 +12,7 @@ extern "C" STRATEGY_API void Create(Environment* env)
 {
 	auto userData = new UserData();
 	env->userData = userData;
-	
+
 	auto t = time(nullptr);
 	auto currentTime = localtime(&t);
 	userData->outStream << asctime(currentTime) << "," << VELOCITY_INPUT << std::endl;

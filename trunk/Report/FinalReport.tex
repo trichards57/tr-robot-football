@@ -1256,7 +1256,73 @@ the corrected calculations.
 
 \section{Conclusions}
 
-TODO compare produced items to objectives from last report.
+In the Project Plan and Literature Review already submitted, the following
+objectives were set:
+
+\begin{itemize}
+\item A subsystem that will allow the robots to position themselves at an 
+arbitrary position with a given final speed and direction of motion (within the
+limits of the robots).  This will allow the robots to interact with the ball to 
+produce the motion required by the higher-level planning algorithms.
+
+\item A subsystem that can predict the location of the ball or an opposing robot 
+at a given time in the future.  The prediction will only need to work for the 
+next two to three seconds, allowing better decisions to be made.
+
+\item A subsystem that will monitor the behaviour of each robot and ensure that 
+it's actions will not cause a foul (as described in the \ac{FIRA} rules of play 
+\cite{simurosotSim}).  For example, it should intervene if an action will cause 
+a collision with an opponent by altering a planned route appropriately.  This 
+will ensure that the team is compliant with the rules and does not incur any 
+corrective action from the referee.
+
+\item A subsystem that will combine the previous two to produce a path for a 
+robot to allow it to interact with the ball to change the balls speed and 
+direction of motion.  This will allow the higher level planning sub-systems 
+to state a desired ball motion path and have a robot cause that action to 
+happen.
+
+\item A subsystem that will take in the current state of the system and decide 
+on an appropriate course of action. When the ball is under the control of the 
+current player, it will have the robots attack the opposing goal and attempt to 
+score a goal.  When the ball is under the control of the opposition it will 
+attempt to defend its own goal and disrupt the opponents actions. When the ball 
+is not under any defined control, it will attempt to take control of the ball.
+\end{itemize}
+
+\cite{pplr}
+
+These objectives have been met with mixed results.
+
+A set of controllers have been produced, which can be manipulated to position
+the robot at a given position, or to make the robot move with a given velocity. 
+It is not currently possible to specify the velocity of the robot at a given
+point, but it should be possible to achieve this by manipulating the two
+controllers.  However, this objective is no longer as important, since the
+emphasis has changed from a planned motion strategy to a potential field based
+one.
+
+Some code has been produced that can begin to solve the equations required to
+predict the velocity of an object at a given time in the future.  It is
+currently based on a simplified equation of motion, which while applicable to
+the ball when it is moving freely, is less useful accurate in the prediction of
+another robot's position.  This code is currently incomplete, as it became less
+urgent when the focus of the project changed.
+
+While some effort has been made into controlling the robot so that avoids
+collisions, the code does not currently make any other consideration to the
+other rules of the game, and does not successfully avoid all collisions.
+
+The current code successfully manipulates the robot to intercept the ball and
+cause it to score a goal.  It isn't robust enough to properly play a full game
+yet, as it can only cope with a very small set of conditions, but, with proper
+manipulation of the fields, sufficient functionality is available to have the
+robot direct the ball to a useful location.
+
+The decision making code is currently very simple, based around a state machine
+which responds to a specific set of circumstances.  It is not sufficient to play
+a game yet (for example, it cannot correctly take possession of the ball from
+an opponent).
 
 \section{Future Work}
 

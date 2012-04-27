@@ -1,6 +1,9 @@
 \documentclass[10pt]{article} 
 \usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
+% \geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
+% TODO : Enable the correct margins before final submit
+% TODO : Check right side margin
+\geometry{verbose,tmargin=10mm,bmargin=10mm,lmargin=10mm,rmargin=10mm}
 \usepackage{color}
 \usepackage{array}
 \usepackage{multirow}
@@ -10,9 +13,11 @@
 \usepackage{subfig}
 \usepackage{siunitx}
 \usepackage{amsmath}
-%\doublespacing TODO : Re-enable me!
+% \doublespacing 
+% TODO : Enable me before final submit.
 \usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0
 1},colorlinks=true]{hyperref}
+\usepackage{listings}
 \hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
 
 \DeclareSIUnit\inch{in}
@@ -23,18 +28,23 @@
 
 \section{Introduction}
 
-TODO:
+The aim of this project is to develop a set of suitable strategies to control a
+team of five simulated to play a game of football against five other robots.
 
-Discuss:
- 
-Initial plan to use route planning and prediction
+As discussed in the previously submited project plan \cite{pplr}, it was
+originally planned to produce a system that uses projections of the future state
+of the system to plan out trajectories for all of the robots.  This plans would
+be set up to move the ball towards the goal.  The system would include a module
+that selected the best of the current options based on the state of the game,
+and would include monitoring code to ensure that the team abides by the rules of
+the game.
 
-Discovery that route planning would have to be done far to regularly to be
-feasible
-
-Discovery that route planning would be vvv CPU intensive
-
-Decision to explore artificial potential field force navigation
+The following report begins by reviewing the literature relevant to the work
+done.  It then goes on to describe the methods used to develop the code that has
+been submitted, and the changes that were made as the project continued. The
+final software produced is then discussed, along with it's limitations. Finally,
+the successes and limitations of the project of a whole are discussed, as well
+as some of the work that could be done to extend this project.
 
 \section{Literature Review}
 
@@ -289,11 +299,11 @@ receiving velocity feedback and the position control receiving position
 feedback.  The overall control design is shown in Figure
 \ref{fig:overalController}.
 
-The gains were tuned using the MATLAB controller design tools <- TODO Check this
-name. The velocity control was handled first, to ensure that it would stand
-alone, and then motion control was tuned to adequatly manipulate the resulting
-velocity.  The gains calculated were then transferred to the C++ classes
-VelocityController and MotionController to be tested.
+The gains were tuned using the MATLAB Control System Toolbox. The velocity
+control was handled first, to ensure that it would stand alone, and then motion
+control was tuned to adequatly manipulate the resulting velocity.  The gains
+calculated were then transferred to the C++ classes VelocityController and
+MotionController to be tested.
 
 Unfortunatly, when the code was tested, it was found that the system was highly
 unstable, and the specific reasons could not be quickly isolated.  As the aim of
@@ -369,7 +379,8 @@ respect to $a$, $u$ and $c$, and which gives Equation
   \label{eq:leastSquaresMatrix}
 \end{equation}
 
-This can then be solved using matrix techniques.
+This can then be solved using matrix techniques, and the full derivation is
+shown in Appendix \ref{app:leastSquaresDerivation}.
 
 In order to allow for sudden changes in motion, only a small number of past
 positions would be recorded.  This would become a compromise between increasing
@@ -428,9 +439,9 @@ find elements \cite{msdnHashSetOfT}, a significant time saving was made (as can
 be seen in Table \ref{tab:aStarTimingsTable}).
 
 An attempt to partially parallelise the operation resulted in a slightly slower
-algorithm (see Table \ref{tab:aStarTimingsTable}). The nature of the A*
-algorithm makes it rare to have enough concurrent work to justify the increased overhead
-of parallel algorithms.
+run time (see Table \ref{tab:aStarTimingsTable}). This is probably because the
+nature of the A* algorithm makes it rare to have enough concurrent work to
+justify the increased overhead of parallel algorithms.
 
 \begin{singlespace}
 \begin{table}
@@ -504,14 +515,6 @@ it. The total field can then be calculated with Equation
 \begin{equation}
 P(x,y)=\sum_{i=0}^{N-1}p_{i}\left(x,y\right)\label{eq:fieldSummation}
 \end{equation}
-
-Where:
-
-$P\left(x,y\right)$ is the total field potential at point $\left(x,y\right)$.
-
-$p_{i}\left(x,y\right)$ is the potential produced by object $i$ at a point.
-
-$N$ is the number of field producing objects.
 
 The direction that the robot will move in is then determined by the gradient of
 the field at the current point, such that the robot moves down the field
@@ -587,8 +590,6 @@ attractive point is described with Equation \ref{eq:quadraticBallField}.
 P(r,\theta)=k_{attr}r^{2}\label{eq:quadraticBallField}
 \end{equation}
 
-Where $k_{attr}$ is the attractive weight assigned to the ball.
-
 This produces an attractive force that is linearly proportional to the distance
 to the object (in this case the ball). This is a very useful field for a route
 finder (as described in the paper), where it is desirable for the the robot to
@@ -631,14 +632,22 @@ k_{repulse} & r<R_{0}\\
 \end{cases}\label{eq:circleRepulseField}
 \end{equation}
 
-Where $k_{repulse}$is the repulsive potential and $R_{0}$ is the radius of the
-circle. This produces a field as illustrated in Figure \ref{fig:circleField}.
+This produces a field as illustrated in Figure \ref{fig:circleRepulseField}.
+
+\begin{figure}
+ \centering
+ \subfloat[Field
+ Magnitude]{\label{fig:circleRepulseField}\includegraphics[width=0.3\textwidth]{Images/circle-field}}
+ \subfloat[Field
+ Gradient]{\label{fig:circleRepulseFieldGradient}\includegraphics[width=0.3\textwidth]{Images/circle-field-gradient}}
+ \caption{Circular Repulsive Field}
+\end{figure}
 
 In theory, the robot would avoid this circle, as the algorithm should not have
 the robot move into a region of high potential. However, this does not work as
 the controller actually responds to the gradient of the field. As shown in
-Figure \ref{fig:circleFieldGradient}, this type of field produces very high
-force, but only in a very small region. Once inside the repulsive circle, the
+Figure \ref{fig:circleRepulseFieldGradient}, this type of field produces very
+high force, but only in a very small region. Once inside the repulsive circle, the
 gradient returns again to zero, and so does not effect the motion of the robot.
 As the robot has inertia, it is very likely that it will pass through the region
 of high force and then leave it before it's velocity has altered sufficiently to
@@ -651,7 +660,7 @@ equation .
 
 \[
 P\left(r,\theta\right)=\begin{cases}
-k_{repulse}\cdot r & r<R_{0}\\
+k_{repulse}\cdot \left(R_{0} - r\right) & r<R_{0}\\
 0 & r\geq R_{0}
 \end{cases}
 \]
@@ -659,7 +668,16 @@ k_{repulse}\cdot r & r<R_{0}\\
 This field will create a constant force that acts radially away from the
 obstacle, much like the attractive force described in Eection
 \ref{sub:Basic-Attractive-Field}, but over a restricted area (as illustrated in
-Figure \ref{fig:conicRepelField} and \ref{fig:ConicRepelFieldGradient}). 
+Figure \ref{fig:conicRepelField} and \ref{fig:conicRepelFieldGradient}). 
+
+\begin{figure}
+ \centering
+ \subfloat[Field
+ Magnitude]{\label{fig:conicRepelField}\includegraphics[width=0.3\textwidth]{Images/conic-repel-field}}
+ \subfloat[Field
+ Gradient]{\label{fig:conicRepelFieldGradient}\includegraphics[width=0.3\textwidth]{Images/conic-repel-field-gradient}}
+ \caption{Conic Repulsive Field}
+\end{figure}
 
 If the target is behind the obstacle, and the force is exactly strong enough, it
 will cause the robot to stop in the repulsive field. If the force is too small,
@@ -685,17 +703,30 @@ P\left(r,\theta\right)=\frac{k_{repulse}}{r}\label{eq:inverseRepulseField}
 \end{equation}
 
 \begin{equation}
-P\left(r,\theta\right)=k_{repulse}\cdot e^{\left(\frac{r^{2}}{2\sigma_{repulse}}\right)}\label{eq:gaussianRepulseField}
+P\left(r,\theta\right)=k_{repulse}\cdot
+e^{\left(-\frac{r^{2}}{2\sigma}\right)}\label{eq:gaussianRepulseField}
 \end{equation}
-
-Where $\sigma_{repulse}$ controls the width of the field.
 
 For this purpose, the Gaussian function was selected, because it was believed
 that a flatter region in the centre of the field would be preferable over an
 infinite field potential (see Section \ref{sub:fieldDesignConsiderations}). This
-produces a field as shown in Figure \ref{fig:gaussianField}. As the gradient image shows, this produces a
-region of rapidly increasing force around the object, with no discontinuities
-that produce disruptive motion at the edge of the field.
+produces a field as shown in Figure \ref{fig:gaussianField}. As the gradient
+image shows, this produces a region of rapidly increasing force around the
+object, with no discontinuities that produce disruptive motion at the edge of
+the field.
+
+The OpenCL code used to calculate this field can be found in Appendix
+\ref{app:gaussianRepulsive}.
+
+\begin{figure}
+ \centering
+ \subfloat[Field
+ Magnitude]{\includegraphics[width=0.3\textwidth]{Images/gauss-field}}
+ \subfloat[Field
+ Gradient]{\includegraphics[width=0.3\textwidth]{Images/gauss-field-gradient}}
+ \caption{Gaussian Repulsive Field}
+ \label{fig:gaussianField}
+\end{figure}
 
 \subsubsection{Shaped Approach Guiding Field\label{sub:Shaped-Approach-Guiding}}
 
@@ -712,12 +743,19 @@ direction. This is described by the Equation \ref{eq:wrappedGaussian} and shown
 in Figure \ref{fig:wrappedGaussianField}.
 
 \begin{equation}
-P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma_{repulse}}}\cdot\left|\frac{\theta}{\pi}\right|\label{eq:wrappedGaussian}
+P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma}}\cdot\left|\frac{\theta}{\pi}\right|\label{eq:wrappedGaussian}
 \end{equation}
 
 \[
 -\pi\leq\theta\leq\pi
 \]
+
+\begin{figure}
+ \centering
+ \includegraphics[width=0.3\textwidth]{Images/wrapped-field}
+ \caption{Shaped Gaussian Repulsive Field}
+ \label{fig:wrappedGaussianField}
+\end{figure}
 
 This field initially looked promising, as it contains the desired slope towards
 a specific approach angle and repels away from every other angle. On testing,
@@ -726,13 +764,7 @@ it's surroundings, the edges of the field force the robot radially away from the
 ball instead of towards the target angle, and so the robot just stops at the
 edge of the field.
 
-The field was then modified to be at a lower potential than it's surroundings,
-as shown in Equation \ref{eq:insetWrappedGaussian}.
-
-\begin{equation}
-P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma_{repulse}}}\cdot\left|\frac{\pi-\theta}{\pi}\right|\label{eq:insetWrappedGaussian}
-\end{equation}
-
+The field was then modified to be at a lower potential than it's surroundings.
 This removed the previous radial force. However, it was determined that a field
 wide enough to be of any use in directing the robot had to have a radius that
 caused the field to strongly interfere with motion elsewhere in the playing
@@ -749,7 +781,7 @@ field could probably be found that achieved what was desired, it was determined
 that the search would be too time-consuming with the lack of guiding
 information.
 
-\subsubsection{Paired Source Approach Guidance Field}
+\subsubsection{Paired Source Approach Guidance Field\label{sub:paired-field}}
 
 As discussed in Section \ref{sub:Shaped-Approach-Guiding}, a field was required
 to guide robot's the approach to ball. As a single field did not function as
@@ -761,6 +793,16 @@ inches in the $x$ axis) and a basic repulsive field (see Section
 \ref{sub:Basic-Repulsive-Field}) was placed in the symmetrically opposite
 position. This produces the overall field shown in Figure
 \ref{fig:pairedApproachField}.
+
+\begin{figure}
+ \centering
+ \subfloat[Field
+ Magnitude]{\includegraphics[width=0.3\textwidth]{Images/paired-field}}
+ \subfloat[Field
+ Gradient]{\includegraphics[width=0.3\textwidth]{Images/paired-field-gradient}}
+ \caption{Paired Approach Guidance Field}
+ \label{fig:pairedApproachField}
+\end{figure}
 
 This technique immediatly showed positive results, with the robot moving onto
 the attractive point while avoiding the ball if it approached from the wrong
@@ -804,18 +846,36 @@ move out of the way).
 
 This field shaping was achieved by slightly modifying the Gaussian function used
 to produce the repulsive field, resulting in Equation
-\ref{eq:stretchedGaussianField}.  
+\ref{eq:stretchedGaussianField}. 
+
+\begin{equation}
+P\left(r,\theta\right)=k_{repulse}\cdot
+e^{\left(-\left(\frac{x^{2}}{2\sigma_x}+\frac{y^{2}}{2\sigma_y}\right)\right)}\label{eq:stretchedGaussianField}
+\end{equation} 
 
 By setting $\sigma_x$ to be different to $\sigma_y$, an elliptical field  is
 produced, which has an effect further out in one axis than in the other. 
 Manipulation of the $x$, $y$, $\sigma_x$ and $\sigma_y$ terms can produce a
 field with any desired orientation.
 
+The OpenCL code used to test this field can be found in Appendix
+\ref{app:stretchedGaussianRepulsive}.
+
 Initial testing was done with stretching in the $x$ axis, which produces the
 field shown in Figure \ref{fig:stretchedGaussianField}.  This field would be
 useful for projecting around the goal-keeper, as the approaching robot does not
 want to approach the goalkeeper head-on, but should easily be able to pass it
 by.
+
+\begin{figure}
+ \centering
+ \subfloat[Field
+ Magnitude]{\includegraphics[width=0.3\textwidth]{Images/stretched-gauss-field}}
+ \subfloat[Field
+ Gradient]{\includegraphics[width=0.3\textwidth]{Images/stretched-gauss-field-gradient}}
+ \caption{Stretched Gaussian Repulsive Field}
+ \label{fig:stretchedGaussianField}
+\end{figure}
 
 The tests proved successful in controlling the robot's motion, with the robot
 moving around the obstacle in the desired ellipse when previoulsy approaching
@@ -954,8 +1014,8 @@ gradient also enforce this limitation, particularly on fields which exhibit step
 changes.
 
 As the robot approaches a field with a step-change of intensity (like that shown
-in Figure \ref{fig:circleField}), the field initially evaluates as flat with
-respect to the outside field (as in, the field has no effect on the surrounding
+in Figure \ref{fig:circleRepulseField}), the field initially evaluates as flat
+with respect to the outside field (as in, the field has no effect on the surrounding
 field), as shown in Figure \ref{fig:field-evaluation-pre-step}.  The simulator
 then advances one time-step, using the speed instructions given.  Three things
 could then happen:
@@ -1114,14 +1174,24 @@ of the ball furthest from the goal.  The paired source is aligned so that the
 robot's final approach angle to the ball is along the vector between the ball
 and the goal.
 
+This field is calculated using the OpenCL code found in Appendix
+\ref{app:initialApproachField}.
+
 State 1 is triggered when the robot reaches the attractive point placed by state
 0.  This switches the paired source for a basic attractive point placed on the
 ball (see Section \ref{sub:Basic-Attractive-Field}) to position the robot next
 to the ball and start it moving towards the goal.
 
+This field is also calculated using the OpenCL code found in Appendix
+\ref{app:initialApproachField}, but with the input ball velocity set to
+$\left(0,0\right)$.
+
 State 2 is triggered when the robot reaches the ball.  This then maintains the
 attractive field for the ball, and adds on a field that attracts the robot
 towards the goal.
+
+This field is calculated using the OpenCL found in Appendix
+\ref{app:possessionField}.
 
 Provided there are no obstacles between the point where the robot intercepts the
 ball and the goal, this strategy will cause a robot to score a goal.  It cannot
@@ -1129,9 +1199,17 @@ currently cope with any opposing action, and any close encounter with an
 opponent will cause the robot to move away from the opponent rather than
 maintain contact with the ball.
 
-TODO Named pipe stuff
+In order to allow the Field Renderer (discussed in Section
+\ref{sub:field-renderer}) to function, the strategy needs to provide the
+Renderer with data about the current state of the game.  It achieves this by
+passing the current environment data, the current strategy state and the current
+velocity of the ball through the named pipe set up by the Field Renderer.  The
+software attempts to do this on every simulator cycle, but if it fails (e.g. if
+the Renderer is busy handling the last received status report), it ignores the
+error and carries on.  This also allows the system to continue if the Renderer
+is busy, or if it is not running at all.
 
-\subsection{Field Renderer}
+\subsection{Field Renderer\label{sub:field-renderer}}
 
 The field renderer provides a near real-time view of the potential field and the
 field gradients at run time to allow easier debugging of the field calculations.
@@ -1173,10 +1251,10 @@ user.
 
 The lack of documentation for the simulator has already been discussed in
 Section \ref{sub:motionControl}.  As previously mentioned, the behaviour of the
-system had to be reverse-engineered from the system's response to different inputs, allowing a
-model to be produced.  Because the governing variables are not fully known, the
-model is only an approximatation, but it appears to be sufficient to control the
-system to a basic degree.
+system had to be reverse-engineered from the system's response to different
+inputs, allowing a model to be produced.  Because the governing variables are
+not fully known, the model is only an approximatation, but it appears to be
+sufficient to control the system to a basic degree.
 
 Because the focus of this project is on the high level control, it was decided
 that only a small amount of time would be spent on the low level control.  This
@@ -1366,9 +1444,6 @@ man-hours (compared to normal competitive teams) and the large change of plan
 made early in the project have made it impossible to bring the project to it's
 conclusion.  It is believed that a good foundation has been produced that will
 allow further work to achieve the objectives to be completed.
-
-TODO Define all symbels and acronyms in a single list, then just use the
-acronyms throughout (ditch the acronym package).
 
 \cleardoublepage{}
 \include{appendices}

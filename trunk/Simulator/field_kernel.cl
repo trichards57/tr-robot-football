@@ -4,6 +4,9 @@
 #define OBSTACLE_WEIGHT 100
 #define OBSTACLE_SIGMA 5
 
+/// @brief Calculates the effect of a basic repulsive field
+/// @param realPos The real position of the point being examined
+/// @param repulser The real position of the repulsive point
 inline float basicRepel(float2 realPos, float2 repulser)
 {
 	float2 diff = repulser - realPos;
@@ -11,6 +14,9 @@ inline float basicRepel(float2 realPos, float2 repulser)
 	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) / (2*OBSTACLE_SIGMA));
 }
 
+/// @brief Calculates the effect of a stretched repulsive field
+/// @param realPos The real position of the point being examined
+/// @param repulser The real position of the repulsive point
 inline float stretchedBasicRepel(float2 realPos, float2 repulser)
 {
 	float2 diff = repulser - realPos;
@@ -18,6 +24,11 @@ inline float stretchedBasicRepel(float2 realPos, float2 repulser)
 	return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) / (2* OBSTACLE_SIGMA * 6) + (diff.y*diff.y)/ (2*OBSTACLE_SIGMA)) );
 }
 
+/// @brief Calculates the initial approach field at a given point
+/// @param realPos The real position of the point being examined
+/// @param ball The real position of the ball
+/// @param ballVelocity The current velocity of the ball
+/// @param basicRepulsers The real positions of each of the basic repulsive objects
 float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant float2 *basicRepulsers)
 {
 	float2 posShift = normalize(ballVelocity)*-7;
@@ -39,6 +50,11 @@ float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, __constant 
 	return attractField + repField;
 }
 
+/// @brief Calculates the possession field at a given point
+/// @param realPos The real position of the point being examined
+/// @param ball The real position of the ball
+/// @param basicRepulsers The real positions of each of the basic repulsive objects
+/// @param goalTarget The real position of the target goal point
 float possessionFieldAtPoint(float2 realPos, float2 ball, __constant float2 *basicRepulsers, float2 goalTarget)
 {
 	float2 vectorToGoal = normalize(goalTarget - realPos)*5;

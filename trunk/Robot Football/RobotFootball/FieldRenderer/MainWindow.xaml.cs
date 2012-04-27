@@ -22,6 +22,7 @@ namespace FieldRenderer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// @todo Store the entire status report, not just the individual bits
     public partial class MainWindow : IDisposable
     {
         /// <summary>
@@ -68,8 +69,14 @@ namespace FieldRenderer
         /// The field vector reported by the simulator
         /// </summary>
         private Vector3D currentVector;
-
+        
+        /// <summary>
+        /// Flag if the class has been disposed
+        /// </summary>
         private bool disposed;
+        /// <summary>
+        /// The current field configuration being rendered
+        /// </summary>
         private int fieldType;
 
         /// <summary>
@@ -104,8 +111,16 @@ namespace FieldRenderer
         /// Must lock <see cref="latestEnvironmentLocker"/> before use.
         /// </remarks>
         private Classes.Environment latestEnvironment;
-
+        /// <summary>
+        /// The last ball velocity received
+        /// </summary>
+        /// <remarks>
+        /// Must lock latestEnvironmentLocker before use.
+        /// </remarks>
         private Vector3D latestBallVelocity;
+        /// <summary>
+        /// The current ball velocity being used by the rendering
+        /// </summary>
         private Vector3D currentBallVelocity;
 
         /// <summary>
@@ -144,7 +159,9 @@ namespace FieldRenderer
         /// </summary>
         /// <seealso cref="outCl"/>
         private float[] points;
-
+        /// <summary>
+        /// The kernel used to calculate the field when the robot is in posession of the ball
+        /// </summary>
         private ComputeKernel possessionKernel;
 
         /// <summary>
@@ -156,7 +173,9 @@ namespace FieldRenderer
             worker.DoWork += RenderImage;
             InitializeComponent();
         }
-
+        /// <summary>
+        /// Finalizes the instance of the <see cref="MainWindow"/> class.
+        /// </summary>
         ~MainWindow()
         {
             Dispose(false);
@@ -174,23 +193,31 @@ namespace FieldRenderer
             set
             {
                 currentVector = value;
-                Dispatcher.Invoke(new Action(() =>
+                Dispatcher.Invoke(new Action(() => // Update the field vector display using the UI Thread
                                              FieldVector.Text =
                                              string.Format("{0},{1}", currentVector.X, currentVector.Y)));
             }
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">If true, disposes all managed and unmanaged resources. If false, only unmanaged resources are disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposed) return;
             if (!disposing) return;
 
+            // Clear out all the OpenCL resources to stop them leaking
             outPix.Dispose();
             outCl.Dispose();
             outGradient.Dispose();
@@ -223,8 +250,6 @@ namespace FieldRenderer
                     (33.932f + 49.6801f) / 2.0f - currentEnvironment.FieldBounds.Bottom);
 
             var ballvel = new Vector2((float)currentEnvironment.CurrentBall.Position.X - goalTarget.X - currentEnvironment.FieldBounds.Left, (float)currentEnvironment.CurrentBall.Position.Y - goalTarget.Y - currentEnvironment.FieldBounds.Bottom);
-
-            //var ballvel = new Vector2(/*(float)currentBallVelocity.X*/-7, /*(float)currentBallVelocity.Y*/0);
 
             // Collect together all the points that will repel the robot
             var repulsers =
@@ -303,6 +328,11 @@ namespace FieldRenderer
             queue.ReadFromBuffer(outGradient, ref gradPoints, true, null);
         }
 
+        /// <summary>
+        /// Computes the field used when the robot posesses the ball
+        /// </summary>
+        /// <param name="queue">The queue to execute the kernel on.</param>
+        /// <param name="field">The calculated field points</param>
         private void ComputePosessionField(ComputeCommandQueue queue, float[] field)
         {
             var ball =
@@ -506,6 +536,12 @@ namespace FieldRenderer
             return bitmap;
         }
 
+        /// <summary>
+        /// Called when the window has been closed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.Windows.EventArgs"/> instance containing the event data.</param>
+        /// Cleans up the cached OpenCL objects.
         private void WindowClosed(object sender, EventArgs e)
         {
             Dispose();
@@ -516,10 +552,8 @@ namespace FieldRenderer
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
-        /// <remarks>
         /// Initialises the OpenCL parts that can be cached and re-used. Compiles the kernels and sets up the larger data storage
         /// properties.
-        /// </remarks>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             platformList = ComputePlatform.Platforms;

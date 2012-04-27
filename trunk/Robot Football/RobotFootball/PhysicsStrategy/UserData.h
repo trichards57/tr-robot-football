@@ -1,24 +1,20 @@
 #pragma once
 
-enum ExperimentState
-{
-	RobotMotion,
-	RobotMotionSweep
-};
-
+/// @brief Class used to maintain state between simulator calls
 class UserData
 {
 public:
-	ExperimentState State;
-	std::vector<double> x;
-	std::vector<double> y;
+	/// @brief The output stream used to store output data
 	std::fstream outStream;
-	int velocityStartTime;
-	int velocity;
 
+	/// @brief Initialize a new instance of the UserData class
 	UserData()
-		: State (RobotMotion), outStream("D:\\Users\\Tony\\Documents\\DataDump.csv", std::fstream::out | std::fstream::app)
+		: outStream("D:\\Users\\Tony\\Documents\\DataDump.csv", std::fstream::out | std::fstream::app)
 	{ }
+
+	/// @brief Finalizes an instance of the UserData class.
+	///
+	/// Flushes and closes outStream.
 	~UserData()
 	{
 		outStream.flush();

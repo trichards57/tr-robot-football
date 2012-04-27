@@ -35,16 +35,21 @@ TODO : Abstract
 \tableofcontents
 
 \section*{Document Conventions}
-The following conventions are used by this document
+The following unit conventions are used by this document
 
 \begin{itemize}
-  \item TODO
+  \item Unless otherwise stated, all units used are standard SI units
+  \item The symbol 'in' is used to designate the unit inches
 \end{itemize}
+
+All images displaying field layouts are shown as a grayscale image representing
+relative magnitude.  A white pixel represents a point of highest magnitude
+(either gradient or field intensity), while a black pixel represents a point of
+lowest magnitude.
 
 \subsection*{List of Acronyms}
 
-The following acronyms are in use in this document, with the meanings defined
-below:
+The following acronyms are in use in this document:
 
 \begin{itemize}
   \item CPU - Central Processing Unit
@@ -57,7 +62,30 @@ below:
   \item SIMD - Single Instruction Multiple Data
 \end{itemize}
 
+\subsection*{List of Symbols}
 
+The following symboles are in use in this document:
+
+\begin{itemize}
+  \item $e$ - The base of the natural logarithm.
+  \item $\boldsymbol{F}(x,y)$ - The gradient of a potential field at point
+  $\left(x,y\right)$.  The real part is the gradient in $x$, while the imaginary
+  part is the gradient in $y$.
+  \item $G(s)$ - A transfer function, represented in the laplace domain.
+  \item $k_{attr}$ - A weight for an attractive field.
+  \item $k_{repulse}$ - A weight for a repulsive field.
+  \item $N$ - The number of elements in a summation.
+  \item $p_i(x,y)$ - The intensity of potential field $i$ at point
+  $\left(x,y\right)$
+  \item $P(x,y)$ - The total potential field intensitity at point
+  $\left(x,y\right)$.
+  \item $R_0$ - The limiting radius of a field.
+  \item $R^2$ - A measure of the quality of a line of best fit, where 1 is a
+  perfect fit a smaller number represents a worse fit.
+  \item $t$ - The time in seconds (normally relative to the beginning of the
+  operation).
+  \item $\sigma$ - The variable controlling the spread of a Gaussian function
+\end{itemize}
 
 \cleardoublepage
 

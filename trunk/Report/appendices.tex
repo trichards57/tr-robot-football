@@ -1,10 +1,164 @@
 \appendix
 
+
+\section{OpenCL Kernels\label{sub:OpenCL-Kernels}}
+
+The following listings contain a sub-set of the total code produced. The full
+code listings can be found on the included CD, along with the required build
+instructions and any additional libraries.
+
+\subsection{Basic Field Shapes}
+
+\lstset{language=C, morekeywords={float2, inline, __constant, __global, int2,
+size_t, __kernel},basicstyle=\small\ttfamily}
+
+\subsubsection{Gaussian Repulsive Field\label{app:gaussianRepulsive}}
+
+\begin{lstlisting}
+
+#define BALL_WEIGHT 10
+#define OBSTACLE_WEIGHT 100
+#define OBSTACLE_SIGMA 5
+
+inline float basicRepel(float2 realPos, float2 repulser)
+{
+  float2 diff = repulser - realPos;
+  return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) + (diff.y*diff.y)) /
+  (2*OBSTACLE_SIGMA)); 
+}
+\end{lstlisting}
+
+\subsubsection{Stretched Gaussian Repulsive
+Field\label{app:stretchedGaussianRepulsive}}
+
+\begin{lstlisting}
+inline float stretchedBasicRepel(float2 realPos, float2 repulser)
+{
+  float2 diff = repulser - realPos;
+  return OBSTACLE_WEIGHT * native_exp(-((diff.x*diff.x) / (2* OBSTACLE_SIGMA *
+  6) + (diff.y*diff.y)/ (2*OBSTACLE_SIGMA)) ); 
+}
+\end{lstlisting}
+
+\subsection{Field Calculations}
+
+\subsubsection{Initial Approach Field\label{app:initialApproachField}}
+
+\begin{lstlisting}
+// Calculates the field at a given point
+float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, 
+                   __constant float2 *basicRepulsers)
+{
+  float2 posShift = normalize(ballVelocity)*-7;
+  float2 attractBall = ball - posShift;
+  float2 repelBall = ball + posShift;
+  float dist = distance(attractBall, realPos);
+  float attractField = BALL_WEIGHT * dist;
+
+  float repField;
+
+  if (length(posShift) > 1.0f)
+    repField += basicRepel(realPos, repelBall);
+
+  for (int i = 0; i < 10; i++)
+  {
+    repField += basicRepel(realPos, basicRepulsers[i]);
+  }
+
+  return attractField + repField;
+}
+
+// Used to calculate the entire field
+__kernel void main(float2 ball, float fieldResolution, 
+                   __constant float2 *basicRepulsers, __global float * out,
+                   float2 ballVelocity) 
+{
+  int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
+
+  size_t index = gridPos.x + gridPos.y * get_global_size(0);
+
+  float2 realPos = convert_float2(gridPos) * fieldResolution;
+
+  float res = fieldAtPoint(realPos, ball, ballVelocity, basicRepulsers);
+
+  out[index] = res;
+}
+
+// Used to calculate the field at a set of given points
+__kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, 
+                            __constant float2 *basicRepulsers, 
+                            __global float * out, float2 ballVelocity) 
+{
+  size_t pointId = get_global_id(0);
+
+  out[pointId] = fieldAtPoint(fieldPoints[pointId], ball, ballVelocity,
+  basicRepulsers); 
+}
+\end{lstlisting}
+
+\subsubsection{Ball Possession Field \label{app:possessionField}}
+
+\begin{lstlisting}
+// Calculates the possession field at a given point
+float possessionFieldAtPoint(float2 realPos, float2 ball, 
+                             __constant float2 *basicRepulsers, 
+                             float2 goalTarget) 
+{
+  float2 vectorToGoal = normalize(goalTarget - realPos)*5;
+  float2 attractBall = ball + vectorToGoal;
+
+  float dist = distance(attractBall, realPos);
+  float attractField = BALL_WEIGHT * dist;
+
+  float repField = 0;
+
+  for (int i = 0; i < 10; i++)
+  {
+    repField += basicRepel(realPos, basicRepulsers[i]);
+  }
+
+  return attractField + repField;
+}
+
+// Used to calculate the entire possession field
+__kernel void possessionMain(float2 ball, float2 goalTarget, 
+                             float fieldResolution, 
+                             __constant float2 *basicRepulsers, 
+                             __global float * out) 
+ { 
+  int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
+
+  size_t index = gridPos.x + gridPos.y * get_global_size(0);
+
+  float2 realPos = convert_float2(gridPos) * fieldResolution;
+
+  float res = possessionFieldAtPoint(realPos, ball, basicRepulsers, goalTarget);
+
+  out[index] = res;
+}
+
+// Used to calculate the possession field at a given point
+__kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget, 
+                                      __constant float2 *fieldPoints, 
+                                      __constant float2 *basicRepulsers, 
+                                      __global float * out) 
+{
+  size_t pointId = get_global_id(0);
+
+  out[pointId] = possessionFieldAtPoint(fieldPoints[pointId], ball,
+  basicRepulsers, goalTarget); 
+}
+\end{lstlisting}
+
 \section{Code Listings \label{sec:Code-Listings}}
 
-\subsection{OpenCL Kernels\label{sub:OpenCL-Kernels}}
+The following listings contains a sub-set of the total code produced.  The full
+code listings can be found on the included CD, along with the required build
+instructions and any additional libraries.
 
 \subsection{Intercept Strategy File}
+
+
 
 \cleardoublepage{}
 

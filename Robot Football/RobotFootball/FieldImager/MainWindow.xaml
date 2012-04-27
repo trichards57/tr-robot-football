@@ -4,10 +4,15 @@
         Title="MainWindow" Height="350" Width="525">
     <DockPanel>
         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-            <Button Click="CircularFieldClick" >Draw Circular Field</Button>
+            <Button Click="CircularRepelFieldClick" >Draw Circular Repel Field</Button>
+            <Button Click="ConicRepelFieldClick">Draw Conic Repel Field</Button>
+            <Button Click="GaussianFieldClick">Draw Gaussian Field</Button>
+            <Button Click="StretchedGaussianFieldClick">Draw Stretched Gaussian Field</Button>
+            <Button Click="ShapedFieldClick">Draw Shaped Field</Button>
+            <Button Click="PairedFieldClick">Draw Paired Field</Button>
         </StackPanel>
         <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center">
-            <Button>Save Image</Button>
+            <Button Click="SaveImageClick">Save Image</Button>
         </StackPanel>
         <Viewbox VerticalAlignment="Center" Margin="10">
             <StackPanel Orientation="Horizontal">

@@ -4,12 +4,6 @@
 #include "..\InterceptStrategy\VelocityController.h"
 #include "..\InterceptStrategy\Utilities.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#define DEGREES_TO_RADIANS(X) (X * M_PI / 180)
-#define MAX_WHEEL_SPEED 125
-
 namespace Strategies
 {
 	MotionController::MotionController(double positionControlScale, double angleControlScale)
@@ -19,39 +13,25 @@ namespace Strategies
 
 	void MotionController::Control(Vector3D targetPosition, Vector3D currentVelocity, Robot* bot)
 	{
-#ifdef LOG
-		std::fstream logFile("c:\\strategy\\MotionControllerLog.csv", std::fstream::out | std::fstream::app);
-		logFile << clock() << "," << targetPosition.x << "," << targetPosition.y << "," << bot->pos.x << "," << bot->pos.y << "," << bot->rotation << ",";
-#endif
+		auto diff = Utilities::Subtract(targetPosition, bot->pos); // Get the vector from the robot to the target position
+		auto angle = atan2(diff.y, diff.x);                        // Work out the angle to the target position
+		auto botAngle = DEGREES_TO_RADIANS(bot->rotation);         // Convert the robot angle into radians, which all the C math functions use...
+		auto distance = Utilities::Length(diff);                   // Get the actual distance to the target position
+		auto vel = distance * positionProportionalTerm;            // Calculate the desired speed
 
-		auto diff = Utilities::Subtract(targetPosition, bot->pos);
-		auto angle = atan2(diff.y, diff.x);
-		auto botAngle = DEGREES_TO_RADIANS(bot->rotation); // Convert the robot angle into radians, which all the C math functions use...
-		auto distance = Utilities::Length(diff);
-		auto vel = distance * positionProportionalTerm;
+		angle = angle - botAngle;                                  // Move target angle into robot frame of reference
 
-		// Move target angle into robot frame of reference
-		angle = angle - botAngle;
-
-		// Normalise between pi and -pi
+		// Normalise the new angle between pi and -pi
 		if (angle > M_PI)
 			angle -= 2*M_PI;
 		if (angle < -M_PI)
 			angle += 2*M_PI;
 
-		Vector3D desiredVelocity;
-		desiredVelocity.x = vel * cos(angle);
+		Vector3D desiredVelocity;                                  // Calculate the desired speed
+		desiredVelocity.x = vel * cos(angle);                 
 		desiredVelocity.y = vel * sin(angle);
 
-		VelocityController control;
-		control.Control(desiredVelocity, currentVelocity, bot);
-#ifdef LOG
-		logFile << bot->velocityLeft << "," << bot->velocityRight << std::endl;
-		logFile.close();
-#endif
-	}
-
-	MotionController::~MotionController(void)
-	{
+		VelocityController control;                                
+		control.Control(desiredVelocity, currentVelocity, bot);    // Pass the information on to the velocity controller
 	}
 }

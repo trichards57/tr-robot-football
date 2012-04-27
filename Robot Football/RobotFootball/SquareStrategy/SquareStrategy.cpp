@@ -8,22 +8,42 @@
 #include "MotionController.h"
 #include "PathController.h"
 
+/// @file SquareStrategy.cpp 
+/// @brief Contains all the standard strategy functions for SquareStrategy
+
+/// @brief Converts centimetres to inches
 #define CM_TO_INCHES(X) (X / 2.54)
+/// @brief The left x coordinate to aim for
 #define LEFT_X (FLEFTX + CM_TO_INCHES(55))
+/// @brief The right x coordinate to aim for
 #define RIGHT_X (FRIGHTX - CM_TO_INCHES(55))
+/// @brief The top y coordinate to aim for
 #define TOP_Y (FTOP - CM_TO_INCHES(30))
+/// @brief The bottom y coordinate to aim for
 #define BOTTOM_Y (FBOT + CM_TO_INCHES(30))
 
+/// @brief Calculates the position along a straight line path at the given time
+/// @param STARTPOS The starting position
+/// @param ENDPOS The end position
+/// @param TIME The current time
+/// @param PERIOD The total length of the path in time
 #define STRAIGHT_LINE_POS(STARTPOS, ENDPOS, TIME, PERIOD) ((ENDPOS - STARTPOS) * (TIME) / PERIOD + STARTPOS)
+/// @brief The target length of each path in time
 #define PATH_LENGTH 3000
 
 using namespace Strategies;
 
-clock_t startTime = 0;
+/// @brief The main PathController
 PathController controller;
+/// @brief The last recorded positions of each robot
 Vector3D lastPositions[5];
-clock_t lastTime = 0;
 
+/// @brief Calculates the position along a cubic blend path at a given time
+/// @param startPoint The starting position
+/// @param endPoint The end position
+/// @param time The current time
+/// @param timePeriod The total length of the path in time
+/// @todo Cite this
 double CubicPath(double startPoint, double endPoint, clock_t time, clock_t timePeriod)
 {
 	time /= CLOCKS_PER_SEC;
@@ -36,6 +56,10 @@ double CubicPath(double startPoint, double endPoint, clock_t time, clock_t timeP
 	return a0 + a2*time*time + a3*time*time*time;
 }
 
+/// @brief Creates this object.
+/// @param[in] env The environment created by the simulator.
+///
+/// Sets up and registers the path the robot should follow.
 extern "C" STRATEGY_API void Create(Environment* env)
 {
 	auto data = new UserData();
@@ -106,10 +130,18 @@ extern "C" STRATEGY_API void Create(Environment* env)
 	controller.RegisterPath(p, 1);
 }
 
+/// @brief Destroys this object.
+/// @param[in] env The environment created by the simulator.
+/// @remark Does not appear to be called
 extern "C" STRATEGY_API void Destroy(Environment* env)
 {
 }
 
+/// @brief Called on each time-step to control the robots.
+/// @param[in] env The environment created by the simulator.
+///
+/// Triggers the PathController to step through the path at each cycle
+/// @todo Use the simulator fixed time, not the real wall-time
 extern "C" STRATEGY_API void Strategy(Environment* env)
 {
 	auto currentTime = clock();
@@ -124,7 +156,6 @@ extern "C" STRATEGY_API void Strategy(Environment* env)
 
 	controller.StepPaths(env, new MotionController(), velocities);
 
-	lastTime = currentTime;
 	for (int i = 0; i < 5; i++)
 	{
 		lastPositions[i].x = env->home[i].pos.x;

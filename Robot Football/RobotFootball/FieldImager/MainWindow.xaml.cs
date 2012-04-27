@@ -13,6 +13,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
+using System.IO;
 
 namespace FieldImager
 {
@@ -31,43 +33,27 @@ namespace FieldImager
             InitializeComponent();
         }
 
-        private void CircularFieldClick(object sender, RoutedEventArgs e)
+        private void CircularRepelFieldClick(object sender, RoutedEventArgs e)
         {
             const int distance = 200;
             const int level = 20;
 
-            var field = new double[fieldWidth * fieldHeight];
+            GetField((x, y, field) =>
+            {
+                var xDist = x - fieldCenterX;
+                var yDist = y - fieldCenterY;
 
-            Parallel.For(0, fieldWidth, x =>
-                {
-                    for (int y = 0 ; y < fieldHeight; y++)
-                    {
-                        var xDist = x - fieldCenterX;
-                        var yDist = y - fieldCenterY;
+                var dist = Math.Sqrt(xDist * xDist + yDist * yDist);
 
-                        var dist = Math.Sqrt(xDist * xDist + yDist * yDist);
+                double val;
 
-                        float val;
+                if (dist < distance)
+                    val = level;
+                else
+                    val = 0;
 
-                        if (dist < distance)
-                            val = level;
-                        else
-                            val = 0;
-
-                        field[x + y * fieldWidth] = val;
-                    }
-                });
-
-            var gradField = GetGradient(field);
-
-            var mainImage = GetImage(field);
-            var gradImage = GetImage(gradField);
-
-
-            Dispatcher.Invoke(new Action(() => { 
-                MagnitudeImage.Source = BitmapSource.Create(fieldWidth, fieldHeight, 20, 20, PixelFormats.Rgb24, null, mainImage, fieldWidth * 3); 
-                GradientImage.Source = BitmapSource.Create(fieldWidth, fieldHeight, 20, 20, PixelFormats.Rgb24, null, gradImage, fieldWidth * 3); 
-            }));
+                field[x + y * fieldWidth] = val;
+            });
         }
 
         private byte[] GetImage(double[] data)
@@ -107,7 +93,161 @@ namespace FieldImager
             return gradientField;
         }
 
+        private void SaveImageClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SaveFileDialog
+            {
+                CheckPathExists = true,
+                DefaultExt = "png",
+                Filter = "PNG File|*.png|All Files|*.*",
+                OverwritePrompt = true,
+                ValidateNames = true,
+                Title = "Save Field Image"
+            };
+            var res = dlg.ShowDialog(this);
 
+            if (res == true)
+            {
+                using (var file = File.OpenWrite(dlg.FileName))
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(MagnitudeImage.Source as BitmapSource));
+                    encoder.Save(file);
+                }
+            }
+
+            dlg.Title = "Save Gradient Image";
+            res = dlg.ShowDialog(this);
+
+            if (res == true)
+            {
+                using (var file = File.OpenWrite(dlg.FileName))
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(GradientImage.Source as BitmapSource));
+                    encoder.Save(file);
+                }
+            }
+        }
+
+        private void GetField(Action<int, int, double[]> renderCode)
+        {
+            var field = new double[fieldWidth * fieldHeight];
+
+            Parallel.For(0, fieldWidth, x =>
+                {
+                    for (int y = 0; y < fieldHeight; y++)
+                    {
+                        renderCode(x, y, field);
+                    }
+                });
+
+            var gradField = GetGradient(field);
+
+            var mainImage = GetImage(field);
+            var gradImage = GetImage(gradField);
+
+
+            Dispatcher.Invoke(new Action(() =>
+            {
+                MagnitudeImage.Source = BitmapSource.Create(fieldWidth, fieldHeight, 20, 20, PixelFormats.Rgb24, null, mainImage, fieldWidth * 3);
+                GradientImage.Source = BitmapSource.Create(fieldWidth, fieldHeight, 20, 20, PixelFormats.Rgb24, null, gradImage, fieldWidth * 3);
+            }));
+        }
+
+        private void ConicRepelFieldClick(object sender, RoutedEventArgs e)
+        {
+            const int distance = 200;
+            const int level = 20;
+
+            GetField((x, y, field) =>
+            {
+                var xDist = x - fieldCenterX;
+                var yDist = y - fieldCenterY;
+
+                var dist = Math.Sqrt(xDist * xDist + yDist * yDist);
+
+                double val;
+
+                if (dist < distance)
+                    val = (distance - dist) * level;
+                else
+                    val = 0;
+
+                field[x + y * fieldWidth] = val;
+            });
+        }
+
+        private void GaussianFieldClick(object sender, RoutedEventArgs e)
+        {
+            GetField((x, y, field) =>
+            {
+                var xDist = x - fieldCenterX;
+                var yDist = y - fieldCenterY;
+
+                var dist = xDist * xDist + yDist * yDist;
+                var val = Math.Exp(-dist / 50000.0);
+
+                field[x + y * fieldWidth] = val;
+            });
+        }
+
+        private void StretchedGaussianFieldClick(object sender, RoutedEventArgs e)
+        {
+            GetField((x, y, field) =>
+            {
+                var xDist = x - fieldCenterX;
+                var yDist = y - fieldCenterY;
+
+                var dist = xDist * xDist/60000.0 + yDist * yDist/20000.0;
+                var val = Math.Exp(-dist );
+
+                field[x + y * fieldWidth] = val;
+            });
+        }
+
+        private void ShapedFieldClick(object sender, RoutedEventArgs e)
+        {
+            GetField((x, y, field) =>
+            {
+                var xDist = x - fieldCenterX;
+                var yDist = y - fieldCenterY;
+
+                var dist = xDist * xDist + yDist * yDist;
+
+                var angle = Math.Atan2(yDist, xDist);
+
+                var val = Math.Exp(-dist / 70000.0) * Math.Abs((angle) / Math.PI);
+
+                field[x + y * fieldWidth] = val;
+            });
+        }
+
+        private void PairedFieldClick(object sender, RoutedEventArgs e)
+        {
+            const int level = 20;
+            const int offset = 300;
+
+            GetField((x, y, field) =>
+            {
+                var xDist = x - (fieldCenterX - offset);
+                var yDist = y - (fieldCenterY);
+
+                var dist = Math.Sqrt(xDist * xDist + yDist * yDist);
+
+                var val = dist * level;
+
+                field[x + y * fieldWidth] = val;
+
+                xDist = x - (fieldCenterX + offset);
+                yDist = y - (fieldCenterY);
+
+                dist = xDist * xDist + yDist * yDist;
+                val = Math.Exp(-dist / 10000.0);
+
+                field[x + y * fieldWidth] += val*3000;
+            });
+        }
 
     }
 }

@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "..\..\..\Simulator\Strategy Source\Strategy.h"
 
-/// <summary>Represents data stored by the simulator between time-steps</summary>
+/// @brief Represents data stored by the simulator between time-steps
 class UserData
 {
 public:
-	/// <summary>The target position currently being aimed for.</summary>
+	/// @brief The target position currently being aimed for.
 	Vector3D targetPosition;
 };

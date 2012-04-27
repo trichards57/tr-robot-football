@@ -2,7 +2,6 @@
 #include "VelocityController.h"
 #include "Utilities.h"
 
-#define DEGREES_TO_RADIANS(X) (X * M_PI / 180)
 #define MAX_WHEEL_SPEED 125
 
 namespace Strategies
@@ -12,22 +11,14 @@ namespace Strategies
 	{
 	}
 
-	VelocityController::~VelocityController(void)
-	{
-	}
-
 	void VelocityController::Control(Vector3D targetVelocity, Vector3D currentVelocity, Robot* bot, bool absoluteVelocity, bool nearBall)
 	{
-#ifdef LOG
-		std::fstream logFile("c:\\strategy\\VelocityControllerLog.csv", std::fstream::out | std::fstream::app);
-		logFile << clock() << "," << targetVelocity.x << "," << targetVelocity.y << "," << currentVelocity.x << "," << currentVelocity.y << "," << bot->rotation << ",";
-#endif
-		auto diff = Utilities::Subtract(targetVelocity, currentVelocity);
-		auto angle = atan2(diff.y, diff.x);
-		auto botAngle = DEGREES_TO_RADIANS(bot->rotation);
-		auto error = Utilities::Length(diff);
+		auto diff = Utilities::Subtract(targetVelocity, currentVelocity); // Get the difference between the current and desired velocity
+		auto angle = atan2(diff.y, diff.x);  // Work out the angle difference
+		auto botAngle = DEGREES_TO_RADIANS(bot->rotation); // Get the robot's angle in radians
+		auto error = Utilities::Length(diff); // Get the magnitude of the velocity error
 
-		if (absoluteVelocity)
+		if (absoluteVelocity) // If the velocity is supposed to be an absolute velocity, translate it into a relative one
 			angle = angle - botAngle;
 
 		// Normalise between pi and -pi
@@ -36,8 +27,7 @@ namespace Strategies
 		if (angle < -M_PI)
 			angle += 2*M_PI;
 
-		if (fabs(angle) > M_PI/2)
-			// Target is behind is, will be quicker to go backwards
+		if (fabs(angle) > M_PI/2) // Target is behind is, will be quicker to go backwards
 		{
 			error = -error;
 			// Rotate target angle around 180 degrees
@@ -53,7 +43,7 @@ namespace Strategies
 		bot->velocityLeft = -turnSpeed;
 		bot->velocityRight = turnSpeed;
 
-		if (fabs(angle) < DEGREES_TO_RADIANS(20) || nearBall)
+		if (fabs(angle) < DEGREES_TO_RADIANS(20) || nearBall) // If we're nearly at the right angle, or near the ball, try to turn and move
 		{
 			// Work out the forwards speed
 			auto vel = error * velocityProportionalTerm;
@@ -65,9 +55,5 @@ namespace Strategies
 			bot->velocityLeft += vel;
 			bot->velocityRight += vel;
 		}
-#ifdef LOG
-		logFile << bot->velocityLeft << "," << bot->velocityRight << std::endl;
-		logFile.close();
-#endif
 	}
 }

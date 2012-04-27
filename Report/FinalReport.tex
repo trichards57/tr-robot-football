@@ -312,6 +312,9 @@ the low-level motor control, the problem was not closely examined.  Instead a
 set of gains were produced by a trial-and-error method, which produced a
 sub-optimal but stable system.
 
+The final code used can be seen in Appendix \ref{app:velControl} and 
+\ref{app:motionControl}.
+
 The control of the direction of motion was achieved by noting the similarity
 between the robot footballers and the Mouse robot used in the second year
 project \cite{mouseProjectReport}.  It was changed by altering the relative
@@ -1111,7 +1114,8 @@ In order to analyse the model in use by the simulator, a repeatable
 action was required to produce simple behaviour that could be analysed.  This
 was achieved by having the strategy feed a constant input into both motors,
 which caused the robot to accelerate in a straight line away from it's starting
-location.
+location.  The implementation of this can be seen in Appendix
+\ref{app:interceptStrategy}.
 
 The position of the robot is logged every cycle, allowing the velocity and
 acceleration to be calculated by simple differentiation.  The time that each of
@@ -1157,7 +1161,7 @@ The main strategy, named InterceptStrategy because it was initially used to have
 the robot intercept the ball only, uses the potential field force navigation to
 have a single robot intercept the ball and move it towards the blue goal.  This
 is implemented by using a state-machine to control which field configuration is
-used.  The following states are defined:
+used. The following states are defined:
 
 \begin{itemize}
   \item State 0 - Approach the ball and position to direct it to the goal
@@ -1260,6 +1264,13 @@ Because the focus of this project is on the high level control, it was decided
 that only a small amount of time would be spent on the low level control.  This
 chosen focus resulted in a low-quality controller that has almost certainly had
 a negative impact on the quality of the high level control.
+
+It was noticed early on that the simulator provides no indication to the
+strategy files that the game has been restarted (e.g. after a goal has been
+scored and the player and ball positions have been reset).  It has been
+necessary to make strategies resilliant to sudden changes in the environment,
+and during testing it was often necessary to restart the entire simulator (and
+hence, the strategy code) when a new test run was required.
 
 The most significant problem encountered with the simulator is in the simulated
 design of the robots.  Designed as simple cubes, they have no surface features

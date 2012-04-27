@@ -150,15 +150,145 @@ __kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget,
 }
 \end{lstlisting}
 
-\section{Code Listings \label{sec:Code-Listings}}
+\section{Code Listings}
 
 The following listings contains a sub-set of the total code produced.  The full
 code listings can be found on the included CD, along with the required build
 instructions and any additional libraries.
 
-\subsection{Intercept Strategy File}
+\lstset{language=C++}
 
+\subsection{Velocity Controller\label{app:velControl}}
 
+\begin{lstlisting}
+void VelocityController::Control(Vector3D targetVelocity, 
+                                 Vector3D currentVelocity, Robot* bot, 
+                                 bool absoluteVelocity, bool nearBall)
+{
+  // Get the difference between the current and desired velocity
+  auto diff = Utilities::Subtract(targetVelocity, currentVelocity); 
+  auto angle = atan2(diff.y, diff.x);  // Work out the angle difference
+  // Get the robot's angle in radians
+  auto botAngle = DEGREES_TO_RADIANS(bot->rotation);
+  // Get the magnitude of the velocity error 
+  auto error = Utilities::Length(diff); 
+
+  // If the velocity is supposed to be an absolute velocity, translate it into a
+  // relative one
+  if (absoluteVelocity) 
+    angle = angle - botAngle;
+
+  // Normalise between pi and -pi
+  if (angle > M_PI)
+    angle -= 2*M_PI;
+  if (angle < -M_PI)
+    angle += 2*M_PI;
+
+  if (fabs(angle) > M_PI/2) 
+  {
+    // Target is behind is, will be quicker to go backwards
+    // Rotate target angle around 180 degrees
+    error = -error;
+    angle += M_PI;
+    // Normalise between pi and -pi
+    if (angle > M_PI)
+      angle -= 2*M_PI;
+    if (angle < -M_PI)
+      angle += 2*M_PI;
+  }
+
+  auto turnSpeed = angle * angleProportionalTerm;
+  bot->velocityLeft = -turnSpeed;
+  bot->velocityRight = turnSpeed;
+
+  // If we're nearly at the right angle, or near the ball, try to turn and move
+  if (fabs(angle) < DEGREES_TO_RADIANS(20) || nearBall) 
+  {
+    // Work out the forwards speed
+    auto vel = error * velocityProportionalTerm;
+    // Ensure we won't muck up the turn by trying to move too fast forwards
+    if (vel + abs(turnSpeed) > MAX_WHEEL_SPEED)
+      vel = MAX_WHEEL_SPEED - abs(bot->velocityLeft);
+
+    // Apply the speed.
+    bot->velocityLeft += vel;
+    bot->velocityRight += vel;
+  }
+}
+\end{lstlisting}
+
+\subsection{Motion Controller\label{app:motionControl}}
+
+\begin{lstlisting}
+void MotionController::Control(Vector3D targetPosition, 
+                               Vector3D currentVelocity, Robot* bot)
+{
+  // Get the vector from the robot to the target position
+  auto diff = Utilities::Subtract(targetPosition, bot->pos); 
+  // Work out the angle to the target position
+  auto angle = atan2(diff.y, diff.x);                        
+  // Convert the robot angle into radians, which all the C math functions use...
+  auto botAngle = DEGREES_TO_RADIANS(bot->rotation);         
+  // Get the actual distance to the target position
+  auto distance = Utilities::Length(diff);                   
+  // Calculate the desired speed
+  auto vel = distance * positionProportionalTerm;            
+
+  // Move target angle into robot frame of reference
+  angle = angle - botAngle;                                  
+
+  // Normalise the new angle between pi and -pi
+  if (angle > M_PI)
+    angle -= 2*M_PI;
+  if (angle < -M_PI)
+    angle += 2*M_PI;
+
+  // Calculate the desired speed
+  Vector3D desiredVelocity;                                  
+  desiredVelocity.x = vel * cos(angle);                 
+  desiredVelocity.y = vel * sin(angle);
+
+  // Pass the information on to the velocity controller
+  VelocityController control;                                
+  control.Control(desiredVelocity, currentVelocity, bot);    
+}
+\end{lstlisting}
+
+\subsubsection{Physics Strategy File\label{app:physicsStrategy}}
+
+\begin{lstlisting}
+// Initialises the strategy
+extern "C" STRATEGY_API void Create(Environment* env)
+{
+  auto userData = new UserData();
+  env->userData = userData;
+
+  auto t = time(nullptr);
+  auto currentTime = localtime(&t);
+  userData->outStream << asctime(currentTime) << "," << VELOCITY_INPUT 
+                      << std::endl;
+}
+
+// Runs the robots on every simulator time-step
+extern "C" STRATEGY_API void Strategy(Environment* env)
+{
+  auto userData = (UserData*) env->userData;
+  auto bot = &env->home[1];
+
+  bot->velocityLeft = VELOCITY_INPUT;
+  bot->velocityRight = VELOCITY_INPUT;
+
+  LARGE_INTEGER hiResTimer;
+  LARGE_INTEGER hiResTimerFreq;
+  QueryPerformanceCounter(&hiResTimer);
+  QueryPerformanceFrequency(&hiResTimerFreq);
+
+  userData->outStream << hiResTimerFreq.HighPart << "," 
+                      << hiResTimerFreq.LowPart << "," << hiResTimer.HighPart 
+                      << "," << hiResTimer.LowPart << "," << bot->pos.x << "," 
+                      << bot->pos.y << std::endl; 
+}
+\end{lstlisting}
 
 \cleardoublepage{}
 

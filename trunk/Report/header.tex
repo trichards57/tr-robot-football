@@ -6,43 +6,78 @@
   \Large
   Faculty of Engineering and Design
 
-  \vspace{80pt}
+  \vspace{20pt}
 
+  \begin{singlespace}
   \LARGE
   Final Year MEng Project \\
   Project Report
+  \end{singlespace}
 
-  \vspace{80pt}
+  \vspace{40pt}
   \textbf{Robot Football - High Level Control and Strategy Implementation}
 
   \vspace{10pt}
   \emph{Anthony Richards} \\
   \emph{\today}
+  
+  \vspace{20pt}
+  \begin{singlespace}
+  \emph{ \large
+  `I certify that I have read and understood the entry in the Student Handbook
+  for the Department of Mechanical Engineering on Cheating and Plagiarism and
+  that all material in this assignment is my own work, except where I have
+  indicated with appropriate references. I agree that, in line with Regulation
+  15.3(e), if requested I will submit an electronic copy of this work for
+  submission to a Plagiarism Detection Service for quality assurance purposes.'
+ }
+  \end{singlespace}
+  
+  \vspace{20pt}
+  
+  {\large
+  Author's signature
+  \ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots\ldots
+  \ldots\ldots
+  }
 
   \vspace{80pt}
   Supervisor: \emph{Dr.~Pejman Iravani}
 
   \vspace{10pt}
-  Assessor: \emph{TBD}
+  Assessor: \emph{Dr.~Francis Robinson}
 \end{titlepage}
 
 \pagenumbering{roman}
 
 \begin{abstract}
-TODO : Abstract
+
+The aim of this project is to develop of a set of control algorithms for the
+Federation of International Robot-soccer Association (FIRA) Middle League
+Simursot Game, a simulated five-a-side game played by small (not humanoid)
+autonomous robots.  Working from an idea proposed by one of the papers read in a
+previous report, this design project has produced a system that operates using
+potential field force navigation.  This method uses sets of attractive and
+repulsive fields to push and pull the robots around the field, in order to
+achieve the game's goals.  The system described scores a goal under a given set
+of circumstances, and provides a base for a more complex system that can be
+developed to play a game of football against an opposing team.
+
 \end{abstract}
 
 \tableofcontents
 
+\listoffigures
+
 \section*{Document Conventions}
-The following unit conventions are used by this document
+The following unit conventions are used by this document:
 
 \begin{itemize}
   \item Unless otherwise stated, all units used are standard SI units
-  \item The symbol 'in' is used to designate the unit inches
+  \item The symbol `\si{\inch}' is used to designate the unit inches
 \end{itemize}
 
-All images displaying field layouts are shown as a grayscale image representing
+All images displaying field layouts are shown as a greyscale image representing
 relative magnitude.  A white pixel represents a point of highest magnitude
 (either gradient or field intensity), while a black pixel represents a point of
 lowest magnitude.
@@ -54,9 +89,9 @@ The following acronyms are in use in this document:
 \begin{itemize}
   \item CPU - Central Processing Unit
   \item CRT - C Runtime Library
-  \item CSV - Comma Seperated Variable
+  \item CSV - Comma Separated Variable
   \item DLL - Dynamic Link Library
-  \item FIRA - Federation of International Robot-Soccor Association
+  \item FIRA - Federation of International Robot-Soccer Association
   \item GPR - General Purpose Register
   \item GPU - Graphics Processing Unit
   \item SIMD - Single Instruction Multiple Data
@@ -64,26 +99,19 @@ The following acronyms are in use in this document:
 
 \subsection*{List of Symbols}
 
-The following symboles are in use in this document:
+The following symbols are in use in this document:
 
 \begin{itemize}
-  \item $e$ - The base of the natural logarithm.
-  \item $\boldsymbol{F}(x,y)$ - The gradient of a potential field at point
-  $\left(x,y\right)$.  The real part is the gradient in $x$, while the imaginary
-  part is the gradient in $y$.
-  \item $G(s)$ - A transfer function, represented in the laplace domain.
+  \item $\boldsymbol{F}(x,y)$ - The gradient of a potential field at point $\left(x,y\right)$.  The real part is the gradient in $x$, while the imaginary part is the gradient in $y$.
+  \item $G(s)$ - A transfer function, represented in the Laplace domain.
   \item $k_{attr}$ - A weight for an attractive field.
   \item $k_{repulse}$ - A weight for a repulsive field.
   \item $N$ - The number of elements in a summation.
-  \item $p_i(x,y)$ - The intensity of potential field $i$ at point
-  $\left(x,y\right)$
-  \item $P(x,y)$ - The total potential field intensitity at point
-  $\left(x,y\right)$.
+  \item $p_i(x,y)$ - The intensity of potential field $i$ at point $\left(x,y\right)$
+  \item $P(x,y)$ - The total potential field intensity at point $\left(x,y\right)$.
   \item $R_0$ - The limiting radius of a field.
-  \item $R^2$ - A measure of the quality of a line of best fit, where 1 is a
-  perfect fit a smaller number represents a worse fit.
-  \item $t$ - The time in seconds (normally relative to the beginning of the
-  operation).
+  \item $R^2$ - A measure of the quality of a line of best fit, where 1 is a perfect fit a smaller number represents a worse fit.
+  \item $t$ - The time in seconds (normally relative to the beginning of the operation).
   \item $\sigma$ - The variable controlling the spread of a Gaussian function
 \end{itemize}
 

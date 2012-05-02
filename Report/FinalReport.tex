@@ -1,9 +1,7 @@
 \documentclass[10pt]{article} 
 \usepackage[a4paper]{geometry}
-% \geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
-% TODO : Enable the correct margins before final submit
-% TODO : Check right side margin
-\geometry{verbose,tmargin=10mm,bmargin=10mm,lmargin=10mm,rmargin=10mm}
+\geometry{verbose,tmargin=25mm,bmargin=25mm,lmargin=40mm,rmargin=10mm}
+%\geometry{verbose,tmargin=10mm,bmargin=10mm,lmargin=10mm,rmargin=10mm}
 \usepackage{color}
 \usepackage{array}
 \usepackage{multirow}
@@ -13,8 +11,7 @@
 \usepackage{subfig}
 \usepackage{siunitx}
 \usepackage{amsmath}
-% \doublespacing 
-% TODO : Enable me before final submit.
+\doublespacing 
 \usepackage[pdfusetitle,bookmarks=true,pdfborder={0 0
 1},colorlinks=true]{hyperref}
 \usepackage{listings}
@@ -31,20 +28,21 @@
 The aim of this project is to develop a set of suitable strategies to control a
 team of five simulated to play a game of football against five other robots.
 
-As discussed in the previously submited project plan \cite{pplr}, it was
-originally planned to produce a system that uses projections of the future state
-of the system to plan out trajectories for all of the robots.  This plans would
-be set up to move the ball towards the goal.  The system would include a module
-that selected the best of the current options based on the state of the game,
-and would include monitoring code to ensure that the team abides by the rules of
-the game.
+As discussed in the previously submitted project plan \cite{pplr}, it the aim
+was to produce a system that uses projections of the future state of the system
+to plan out trajectories for all of the robots, with the aim of scoring a goal.
+The system would include a module that selected the best of the current options
+based on the state of the game, and would include monitoring code to ensure that
+the team abides by the rules of the game.
 
-The following report begins by reviewing the literature relevant to the work
-done.  It then goes on to describe the methods used to develop the code that has
-been submitted, and the changes that were made as the project continued. The
-final software produced is then discussed, along with it's limitations. Finally,
-the successes and limitations of the project of a whole are discussed, as well
-as some of the work that could be done to extend this project.
+The following reqport begins by continuing and summarising the literature review
+from the previous report.  It then goes on to describe the methods used to
+develop the code that has been submitted, and the changes that were made as the
+project continued. The final software produced is then discussed, along with its
+limitations. Finally, the successes and limitations of the project as a whole
+are discussed, as well as some of the work that could be done to extend this
+project.
+
 
 \section{Literature Review}
 
@@ -54,24 +52,21 @@ purpose.  Various different techniques have been examined to make the robots
 work together, including flocking algorithms \cite{taskBasedFlocking},
 artificial immune system algorithms \cite{artificialImmuneSystemCooperation} and
 role based strategies \cite{taskRoleSelectionStrategy}
-\cite{multiagentsDynamicBoxChange}.
-
-Decision making algorithms have included the max-plus algorithm
-\cite{maxPlusAlgorithm}, simulated annealling
+\cite{multiagentsDynamicBoxChange}. Decision making algorithms have included the
+max-plus algorithm \cite{maxPlusAlgorithm}, simulated annealing
 \cite{simulatedAnnealingDecisionMaking} and extended behaviour networks to model
 human behaviour \cite{modellingHumanDecisionMaking}. Risk based algorithms have
-also been tried \cite{balancingGainsRisksCostsPassing}.
-
-Route planning techniques including A* \cite{aiModernApproach} and potential
-field navigation \cite{intelligentAlgorithmPathPlanning} have been examined, and
-the latter has been taken further in this project.
+also been tried \cite{balancingGainsRisksCostsPassing}. Route planning
+techniques including A* \cite{aiModernApproach} and potential field navigation
+\cite{intelligentAlgorithmPathPlanning} have been examined, and the latter has
+been taken further in this project.
 
 As well as the resources already considered, other resources were used to
 support development of this project.  In particular, the OpenCL development
 depended heavily on the introduction provided by AMD \cite{amdOpenCLTutorial}.
 This was supported by the full and quick references provided by Khronos
-(\cite{openCl11Spec} and \cite{openCl11QuickRef} respectively).  
-
+(\cite{openCl11Spec} and \cite{openCl11QuickRef} respectively).
+  
 \section{Computational Methods}
 
 \subsection{Motion Control\label{sub:motionControl}}
@@ -83,33 +78,29 @@ characteristics of the system needed to be determined before a working system
 could be produced.  This included the simulator timing system, the coordinate
 system and the model used to represent the robots.
 
-There are two methods of timing that the system could use:
+Two methods of timing could be used by the system:
 \begin{itemize}
- \item Fixed time-step - Every simulator cycle is assumed to be a constant
- length, either running in real-time or freely running.
- \item Variable time-step - The time-step length is proportional to the
- wall-time elapsed since the last time-step.
+ \item Fixed time-step - Every simulator cycle is assumed to be a constant length, either running in real-time or freely running.
+ \item Variable time-step - The time-step length is proportional to the wall-time elapsed since the last time-step.
 \end{itemize}
 
 In order to identify this, the real-time length of each time-step was recorded
-over a period of period of time.  If a fixed time-step was used, and the
-simulator was attempting to run in real-time, the results should show most of
-the readings at this time-step level, with others longer due to other CPU
-use, but none singificantly shorter.  A free running real-time simulator would
-display a varying time-step depending on the length of the instructions to be
-executed each cycle, as well as any other activities currently taking place on
-the computer.  This alone, however, would not be a conclusive result, as fixed
+over a period of time.  If a fixed time-step was used, and the simulator was
+attempting to run in real-time, the results should show most of the readings at
+this time-step level, with others longer due to other CPU use, but none
+significantly shorter.  A free running real-time simulator would display a
+varying time-step depending on the length of the instructions to be executed
+each cycle, as well as any other activities currently taking place on the
+computer.  This alone, however, would not be a conclusive result, as fixed
 time-step simulator that isn't running in real-time would display similar
 results.
 
 The distribution produced is shown in Figure \ref{fig:timestepDistribution}.  As
 can be seen, the real time-step length varies from
-\SIrange{17.5}{26.0}{\milli\second}, with an approximate normal distribution
-around the mean of \SI{19.17}{\milli\second}.  As already discussed, this
-excludes the real-time fixed time-step case, but it is not possible to use this
-result to determine the simulator's time-step type. This result could equally be
-a variable time-step length which is being effected by other operations on the
-computer or a fixed time-step simulation running freely.
+\SIrange{17.5}{26.0}{\milli\second}, distributed around the mean of
+\SI{19.17}{\milli\second}.  As already discussed, this excludes the real-time
+fixed time-step case, but it is not possible to use this result to determine the
+simulator's time-step type.
 
 \begin{figure}
  \includegraphics[width=\textwidth]{Images/time-step-length-distribution} \\
@@ -129,7 +120,7 @@ measured). The actual value of the fixed time-step is not a concern, as it will
 only have a scaling effect on the velocity, which can be accounted for later.
 
 The calculation with a variable time-step (Figure
-\ref{fig:initialSpeedTestRunVariable}) displays a significant oscilation of the
+\ref{fig:initialSpeedTestRunVariable}) displays a significant oscillation of the
 velocity around the expected behaviour.  In contrast, the fixed time-step values
 almost exactly matches the expected behaviour (Figure
 \ref{fig:initialSpeedTestRunFixed}).  While it is possible that the simulator
@@ -137,13 +128,13 @@ could be emulating a non-steady output velocity from the motors, it is expected
 that this would display in both graphs.  This makes it very likely that the
 time-step used by the simulator has a fixed length.
 
-The anomoly displayed at approximatly \SI{0.6}{\second} on Figure
-\ref{fig:initialSpeedTestRunFixed} is also seen in a large number  single overly
-long simulator cycle length, as this would be hidden by the fixed time-step
-length. The fact that it is present shows that there were one or more simulator
-cycles where the system was just not updated.  This suggests that it is due to a
-bug in the simulator, and any controller will need to be able to handle this
-sort of error with minimum disruption.
+The anomaly displayed at approximatly \SI{0.6}{\second} on Figure
+\ref{fig:initialSpeedTestRunFixed} is also seen in a large number of runs.  It
+cannot be attributed to a single overly long simulator cycle length, as this
+would be hidden by the fixed time-step length. The fact that it is present shows
+that there were one or more simulator cycles where the system was not updated. 
+This suggests that it is due to a bug in the simulator, and any controller will
+need to be able to handle this sort of error with minimum disruption.
 
 \begin{figure}
  \centering
@@ -163,20 +154,19 @@ loses the user focus.  It then resumes without anomaly when the simulator
 regains the focus.  As the simulator does not inform this strategies of this,
 and does not provide the strategies with any timing data, it is unreasonable to
 believe that real-time values are in use.  Were they used, the strategies would
-experience control issues caused by the anomalously long time-step if the
+experience control issues caused by the anomalously long time-step when the
 simulator lost the focus (and so was suspended) for a significant period of
 time.  For this reason, it was assumed that a fixed time-step length was in use,
-and the length chosen is \SI{20}{\milli\second}.
+and the length chosen was \SI{20}{\milli\second}.
 
-As well as the timing details, the coordinate system in use by the simulator
-needed to be determined.  The conventional coordinate system used by computer
-programs is often the same as the system used by the computer's graphics
-systems. This defines $\left(0,0\right)$ as the top-left corner, with positive
-$x$ pointing to the right of the screen and positive $y$ pointing down the
-screen. The trigonometric functions provided by the CRT operate using
-radians, and the specification for the playing field is provided in metric
-units.  It was initially assumed that the simulator would follow these
-conventions, but this was quickly disproved.
+The coordinate system in use by the simulator also needed to be verified.  The
+conventional coordinate system used by computer programs is the same as the
+system used by the computer's graphics systems. This defines $\left(0,0\right)$
+as the top-left corner, with positive $x$ pointing to the right of the screen
+and positive $y$ pointing down the screen. The trigonometric functions provided
+by the CRT operate also use radians, and the specification for the playing field
+is provided in metric units.  It was initially assumed that the simulator would
+follow these definitions, but this was quickly disproved.
 
 Examination of the header files provided to support the simulator revealed that
 the basic constants describing the field were defined in inches. The constants
@@ -187,9 +177,10 @@ The units of rotation were not defined in the header files, and so had to be
 found by experimentation.  One of the robots was controlled to spin on the spot
 by driving the motors in opposite directions.  The reported angle of rotation
 was then monitored using a debugger as each cycle passed.  This showed that the
-angle reported varied between from \numrange{+180}{-180}.  This infers that the
+angle reported varied between from \numrange{+180}{-180}, which infers that the
 coordinate system is using degrees to represent angles, and means that
-conversion will need to be made to allow the CRT trigonometric functions.
+conversion will need to be made to allow the CRT trigonometric functions to be
+used.
 
 The final coordinate frame is shown in Figure \ref{fig:simCoordinateFrame}.
 
@@ -204,8 +195,9 @@ The final coordinate frame is shown in Figure \ref{fig:simCoordinateFrame}.
 
 The model used for the robots in the simulator is also not documented. It is
 therefore assumed that the robot's motion is modelled on that produced by an
-electric motor. The basic behaviour of the system should be described by the
-transfer function in Equation \ref{eq:basicMotorModel} \cite{basicControlNotes}.
+electric motor. The basic behaviour of the system should therefore be described
+by the transfer function in Equation \ref{eq:basicMotorModel}
+\cite{basicControlNotes}.
 
 \begin{equation}
  \label{eq:basicMotorModel}
@@ -217,29 +209,30 @@ was set up that fed one of the robots a fixed control signal.  This caused it to
 accelerate in a straight line until it reached a constant speed.  The position
 at each time-step was recorded, to allow the velocity and acceleration to be
 calculated, and this was repeated with a number of different input signals,
-until the robot could no longer achieve a stead-state speed without colliding
+until the robot could no longer achieve a steady-state speed without colliding
 with a wall.
 
 If the model is correct, the steady-state velocity should be directly
-proportional to the input velocity.  The steady-state velocity was calculated by
-averaging the final ten samples of each simulation, and is plotted against input
-signal in Figure \ref{fig:inputOutputVelocityGraph}.  A line of best fit was
-plotted to demonstrates the linear relationship between input and output.
+proportional to the input velocity, and so this serves as a good initial test of
+the model. The steady-state velocity was calculated by averaging the final ten
+samples of each run, and is plotted against input signal in Figure
+\ref{fig:inputOutputVelocityGraph}.  A line of best fit was plotted to
+demonstrate the linear relationship between input and output.
 
 It is interesting to note that the best fit ($R^2 = 1$) is achieved if the
 constraint that zero input produces zero output is removed.  This infers that
 there is a systematic error that is being introduced by the simulation.  This
-will be disregarded in this case, as the error is small
-(\SI{-0.3405}{\inch\per\second}) and should have minimal effect on the behaviour
-of the controller.
+will be disregarded, as the error is small (\SI{-0.3405}{\inch\per\second}) and
+should have minimal effect on the behaviour of the controller.
 
-Given that the the output velocity is 0.7564 times the input velocity, the
-maximum velocity of the robots can now be found. First, the maximum input signal
-was found by passing the simulator a very large number to determine it's
-response. It was discovered that the simulator caps the input value at 125.
-This gives a theoretical maximum velocity of \SI{94.55}{\inch\per\second}.   It
-was noted during this experimentation that the robot could not reach it's
-theoretical full speed without colliding with a wall.
+Given that the output velocity is 0.7564 times the input velocity, the maximum
+velocity of the robots can now be found. First, the maximum input signal was
+found by passing the simulator a very large number to determine its response. It
+was discovered that the simulator caps the input value at 125. This gives a
+theoretical maximum speed of \SI{94.55}{\inch\per\second}.   It was noted during
+this experimentation that the robot could not reach it's theoretical full speed
+without colliding with a wall, instead reaching a maximum speed of approximately
+\SI{30.256}{\inch\per\second}.
 
 In order to determine the equation controlling the system, the velocity data was
 first normalised by dividing it by the input signal.  This allows the various
@@ -255,23 +248,23 @@ what is the form of the time-domain response of the theoretical model in
 Equation \ref{eq:basicMotorModel} to a step-input.
 
 It was noted that the $b$ term is very small, and the $a$ and $c$ terms are
-approximatly the same.  Therefore, it was expected that the model could be
+approximately the same.  Therefore, it was expected that the model could be
 approximated with an equation of the expected form.  This is illustrated in
 Figure \ref{fig:approximateFit}, which demonstrates an acceptable fit to the
-majority of the data.  It is noted that the steady-state velocity implied by
-this model is different to that calculated earlier.  However, it is anticipated
-that the robot will rarely be moving at a constant velocity for long, and this
-model gives a good approximation of the dynamic behaviour shown by the system.
+majority of the data.  While the steady-state velocity implied by this model is
+different to that calculated earlier, this model gives a good approximation of
+the dynamic behaviour shown by the system, which is believed to be more useful
+for this project.
 
 Some of the data in the plot appears to be shifted along in the time-axis, and
-which is likely interfering with the line fitting process. This was determined
-to be due to an error in the original data, where the time had not been reset to
-zero at an appropriate point on one of the test runs. When the data was shifted
-back into a more expected location, the approximate fit was improved (shown in
-Figure \ref{fig:approximateFitTimeShiftRemoved}).
+is likely interfering with the line fitting process. This was determined to be
+due to an error in the original data, where the time had not been reset to zero
+at an appropriate point on one of the test runs. When the data was shifted back
+into a more expected location, the approximate fit was improved (shown in Figure
+\ref{fig:approximateFitTimeShiftRemoved}).
 
 Using this information, the system can be modelled with Equation
-\ref{eq:finalMotorModel},which can be used to design the control systems.
+\ref{eq:finalMotorModel}, which can be used to design the control systems.
 
 \begin{equation}
  \label{eq:finalMotorModel}
@@ -336,19 +329,17 @@ feedback.  The overall control design is shown in Figure
 
 The gains were tuned using the MATLAB Control System Toolbox. The velocity
 control was handled first, to ensure that it would stand alone, and then motion
-control was tuned to adequatly manipulate the resulting velocity.  The gains
+control was tuned to adequately manipulate the resulting velocity.  The gains
 calculated were then transferred to the C++ classes VelocityController and
 MotionController to be tested.
 
-Unfortunatly, when the code was tested, it was found that the system was highly
-unstable, and the specific reasons could not be quickly isolated.  As the aim of
-the project was to investigate the high-level control of the robot, rather than
-the low-level motor control, the problem was not closely examined.  Instead a
-set of gains were produced by a trial-and-error method, which produced a
-sub-optimal but stable system.
-
-The final code used can be seen in Appendix \ref{app:velControl} and 
-\ref{app:motionControl}.
+Unfortunately, it was found that the system was highly unstable, and the
+specific reasons could not be quickly isolated.  As the aim of the project was
+to investigate the high-level control of the robot, rather than the low-level
+motor control, the problem was not closely examined.  Instead a set of gains
+were produced by a trial-and-error method, which produced a sub-optimal but
+stable system.  The final code used can be seen in Appendix \ref{app:velControl}
+and \ref{app:motionControl}.
 
 The control of the direction of motion was achieved by noting the similarity
 between the robot footballers and the Mouse robot used in the second year
@@ -369,18 +360,17 @@ It was planned that the robots would function by tracking the ball and plotting
 intercept trajectories.  This would require the path of the ball to be predicted
 to ensure that the robot correctly intercepts the ball.
 
-It was decided that the motion of the ball could adequately be represented with
-a quadratic equation ($x=at^2+ut+c$), which is sufficient to represent the
-motion of a body when under a constant force (e.g. friction).  It does not
-include a term to represent effects related to velocity (e.g. air resistance),
-but it is assumed that these effects will be small (if present at all in the
-simulation), and so will not cause significant error in the predicted motion.
+The motion of the ball can be approximated with a quadratic equation
+($x=at^2+ut+c$), which is sufficient to represent the motion of a body when
+under a constant force (e.g. friction).  It does not include a term to represent
+effects related to velocity (e.g. air resistance), but it is assumed that these
+effects will be small (if present at all in the simulation), and so will not
+cause significant error in the predicted motion.
 
-Provided information about past motion is stored, this equation can be solved
-using the least squares method.  
-
-This technique works by minimizing the distance between the equation and the
-data-points provided, essentially minimizing Equation \ref{eq:leastSquaresEq}.
+Provided information about past motion is stored, the coefficients can be found
+using the least squares method. This technique works by minimizing the distance
+between the equation and the data-points provided, essentially minimizing
+Equation \ref{eq:leastSquaresEq}.
 
 \begin{equation}
   S = \sum_{i=1}^n (a t_i^2+ u t_i + c - x_i)^2 
@@ -428,16 +418,16 @@ direction.
 
 If the equation is solved by inverting the matrix of time-step sums, the amount
 of computation can be reduced by always setting the first time-step to be at
-$t=0$, and then adjusting the input time values appropriatly whenever the
+$t=0$, and then adjusting the input time values appropriately whenever the
 resulting coefficients are used.  This means the inverted matrix can be
 calculated once and then stored.
 
 The actual inversion can be quickly calculated using the inversion code provided
-by Intel \cite{intelMatrixInverse}.  This takes advantages of SIMD
-instructions to speed up the calculation.  This was initially implemented to
-deal with the condition where the time-step changed each time, which would
-require the matrix to be recalculated every time, and was kept , even though the
-overall gains are negligible if the matrix is only calculated once.
+by Intel \cite{intelMatrixInverse}.  This takes advantages of SIMD instructions
+to speed up the calculation.  This was initially implemented to deal with the
+condition where the time-step changed each time, which would require the matrix
+to be recalculated every time, and was kept, even though the overall gains are
+negligible if the matrix is only calculated once.
 
 Similar techniques can then be used to perform the multiplications required to
 solve the final equations.
@@ -461,10 +451,10 @@ The algorithm uses two sets, one to hold the squares to be examined (the open
 set), and one to hold the squares that have been examined (the closed set).
 Squares are added to the open set when one of their neighbours is examined, and
 are then examined in an order defined by the heuristic algorithm.  Each square
-is examined to determine it's distance from the origin (based on the last
-already examined neighbouring squares' distances) and it's predicted distance to
-the destination. Provided the heuristic is good, this will result in a short
-route being found between the start and end points.
+is examined to determine its distance from the origin (based on the already
+examined neighbouring squares' distances) and its predicted distance to the
+destination. Provided the heuristic is good, this will result in a short route
+being found between the start and end points.
 
 The test version of the algorithm was implemented using the .Net Framework,
 initially using the basic \texttt{List(Of T)} class to hold the sets.  This was
@@ -511,13 +501,13 @@ justify the increased overhead of parallel algorithms.
 
 The potential field force algorithm is described in detail later in this report
 (see Section \ref{sub:Potential-Field-Force}).  This initial investigation used
-it to plan a route in advance that the robot can follow (as opposide to a
+it to plan a route in advance that the robot can follow (as opposed to a
 real-time guidance routine as used later).  It proved troublesome in this
 capacity, as a full implementation would require a full model of the robot's
-behaviour to process.  When this was ommitted, simplifying the program, the
-route finder often ended with the path achieving an orbit around the target
-point instead of approaching it directly.  This rendered the algorithm as it was
-useless for planning a route in advance.
+behaviour to process.  When this was omitted, simplifying the program, the route
+finder often ended with the path achieving an orbit around the target point
+instead of approaching it directly.  This rendered the algorithm as was useless
+for planning a route in advance.
 
 \subsubsection{Route Planning Evaluation}
 
@@ -542,12 +532,12 @@ field.
 
 \subsection{Potential Field Force Navigation\label{sub:Potential-Field-Force}}
 
-With this technique, a potential field is used to create a force that guides
-each robot around the field (as described in
+With this technique, a potential field is used to create a simulated force that
+guides each robot around the field (as described in
 \cite{intelligentAlgorithmPathPlanning}). The field is produced by taking a
 collection of objects and projecting a field around them of a given shape. This
 field can either add to or subtract from the total field potential surrounding
-it. The total field can then be calculated with Equation
+it, and the total field can then be calculated with Equation
 \ref{eq:fieldSummation}.
 
 \begin{equation}
@@ -556,7 +546,7 @@ P(x,y)=\sum_{i=0}^{N-1}p_{i}\left(x,y\right)\label{eq:fieldSummation}
 
 The direction that the robot will move in is then determined by the gradient of
 the field at the current point, such that the robot moves down the field
-potential. The force vector (which controls the velocity of the robot) is given
+potential. This force vector (which controls the velocity of the robot) is given
 by Equation \ref{eq:forceSummation}.
 
 \begin{equation}
@@ -590,16 +580,15 @@ the force vector. Other techniques are discussed by
 
 Navigation of the game field can now be achieved by manipulating the attractive
 and repulsive fields to guide the robot to a target. Computational power
-allowing, each robot would have a separate field that guides it based on the
+allowing, each robot could have a separate field that guides it based on the
 goals specific to its role.
 
 \subsection{Potential Field Shapes}
 
-Attractive fields are used to designate areas which the robot should heading
-for. In order to ensure that the robot always moves towards them, it is
-important that their effect is felt across the entire field. However, they must
-not be so strong that they overwhelm the short distance effects of the repulsive
-fields.
+Attractive fields are used to designate areas which the robot should head for.
+In order to ensure that the robot always moves towards them, it is important
+that their effect is felt across the entire field. However, they must not be so
+strong that they overwhelm the short distance effects of the repulsive fields.
 
 Repulsive fields are used to alter the route of the robot when moving towards
 these targets. For example, such fields are used to get the robot to avoid
@@ -609,7 +598,7 @@ effect when they are required. They need to be strong enough to overwhelm the
 attractive fields at short range.
 
 The field shapes experimented with are described in the following sections, and
-a selection of them were integrated into the final strategy, in order to produce
+a selection of them was integrated into the final strategy, in order to produce
 the best combination for each scenario.
 
 As the basic fields in use are axisymmetric in shape (or begin that way), the
@@ -637,15 +626,16 @@ P(r,\theta)=k_{attr}r^{2}\label{eq:quadraticBallField}
 
 This produces an attractive force that is linearly proportional to the distance
 to the object (in this case the ball). This is a very useful field for a route
-finder (as described in the paper), where it is desirable for the the robot to
-stop when it reaches the destination, and so it needs to slow down as it
-approaches the target. However, in this application it is more useful for the
-robot to make a rapid approach and not slow down after arrival. This is because
-the ball is not held to the robot in any way, so if the robot slows down after
-it arrives, the ball will move away without it.
+finder (as described in the paper), where it is desirable for the robot to stop
+when it reaches the destination, and so it needs to slow down as it approaches
+the target. However, in this application it is more useful for the robot to make
+a rapid approach and not slow down after arrival. This is because the ball is
+not held to the robot in any way, so if the robot slows down after it arrives,
+the ball will move away without it.
 
 In order to overcome this problem, the field was simplified to Equation
 \ref{eq:conicBallField}.
+
 
 \begin{equation}
 P(r,\theta)=k_{attr}r\label{eq:conicBallField}
@@ -660,11 +650,11 @@ the intercept is complete.
 \subsubsection{Basic Repulsive Field\label{sub:Basic-Repulsive-Field}}
 
 One of the rules of the game is that the robot cannot intentionally collide with
-an opposing robot, unless they are in possession of the ball
-\cite{simurosotSim}. This means that the robot must actively avoid the
-opposition. It is also advantageous to be able to avoid the robots own team, as
-this prevents them getting into a position where they cannot move as they are
-fighting against each other.
+an opposing robot, unless it is in possession of the ball \cite{simurosotSim}.
+This means that the robot must actively avoid the opposition. It is also
+advantageous to be able to avoid the robot's own team, as this prevents them
+getting into a position where they cannot move or are fighting against each
+other.
 
 A apparently simple solution would be to surround all the obstacles with a
 region of potential that is substantially higher than the surrounding area, as
@@ -691,29 +681,30 @@ This produces a field as illustrated in Figure \ref{fig:circleRepulseField}.
 In theory, the robot would avoid this circle, as the algorithm should not have
 the robot move into a region of high potential. However, this does not work as
 the controller actually responds to the gradient of the field. As shown in
-Figure \ref{fig:circleRepulseFieldGradient}, this type of field produces very
-high force, but only in a very small region. Once inside the repulsive circle, the
-gradient returns again to zero, and so does not effect the motion of the robot.
-As the robot has inertia, it is very likely that it will pass through the region
-of high force and then leave it before it's velocity has altered sufficiently to
-avoid the obstacle.
+Figure \ref{fig:circleRepulseFieldGradient}, this type of field produces a very
+high gradient, but only in a very small region. Once inside the repulsive
+circle, the gradient returns again to zero, and so does not affect the motion of
+the robot. As the robot has inertia, it is very likely that it will pass through
+the region of high force and then leave it before its velocity has altered
+sufficiently to avoid the obstacle.
 
 In order to maximise the repulsive effect of the field, the force must be
 exerted over a large area. This can be achieved with a field that gradually
 builds in strength as it nears the obstacle. The simplest example is defined by
-equation .
+equation \ref{eq:simpleRepulse}.
 
 \[
 P\left(r,\theta\right)=\begin{cases}
 k_{repulse}\cdot \left(R_{0} - r\right) & r<R_{0}\\
 0 & r\geq R_{0}
 \end{cases}
+\label{eq:simpleRepulse}
 \]
 
 This field will create a constant force that acts radially away from the
-obstacle, much like the attractive force described in Eection
+obstacle, much like the attractive force described in Section
 \ref{sub:Basic-Attractive-Field}, but over a restricted area (as illustrated in
-Figure \ref{fig:conicRepelField} and \ref{fig:conicRepelFieldGradient}). 
+Figure \ref{fig:conicRepelField} and \ref{fig:conicRepelFieldGradient}).
 
 \begin{figure}
  \centering
@@ -739,9 +730,10 @@ it is too strong and causes 'bouncing' is undesirable as the motion of the robot
 may become erratic. A better solution would be one where the force gradually
 increases as it approaches the target. It is also desirable to have a field that
 naturally decays to a small level at a distance without relying on conditional
-operations. Two field shapes which meet this specification are a direct inverse
-proportionality, or the Gaussian function (described by Equations
-\ref{eq:inverseRepulseField} and \ref{eq:gaussianRepulseField} respectively).
+operations (which are expensive on GPU hardware). Two field shapes which meet
+this specification are a direct inverse proportionality, or the Gaussian
+function (described by Equations \ref{eq:inverseRepulseField} and
+\ref{eq:gaussianRepulseField} respectively).
 
 \begin{equation}
 P\left(r,\theta\right)=\frac{k_{repulse}}{r}\label{eq:inverseRepulseField}
@@ -783,7 +775,7 @@ the ball that guides the robot to the correct position.
 
 The initial attempt at this placed a specially shaped field around the ball,
 which was developed by rotating a Gaussian function along a circle around the
-ball, with it's height proportional to the angle from the desired access
+ball, with its height proportional to the angle from the desired access
 direction. This is described by the Equation \ref{eq:wrappedGaussian} and shown
 in Figure \ref{fig:wrappedGaussianField}.
 
@@ -804,32 +796,33 @@ P\left(r,\theta\right)=e^{\frac{-\left(r-r_{0}\right)^{2}}{2\sigma}}\cdot\left|\
 
 This field initially looked promising, as it contains the desired slope towards
 a specific approach angle and repels away from every other angle. On testing,
-however, it was noticed that, because the field is at a higher potential than
-it's surroundings, the edges of the field force the robot radially away from the
-ball instead of towards the target angle, and so the robot just stops at the
-edge of the field.
+however, it was noticed that, as the field is at a higher potential than its
+surroundings, the edges of the field force the robot radially away from the ball
+instead of towards the target angle, and so the robot just stops at the edge of
+the field.
 
-The field was then modified to be at a lower potential than it's surroundings.
-This removed the previous radial force. However, it was determined that a field
-wide enough to be of any use in directing the robot had to have a radius that
-caused the field to strongly interfere with motion elsewhere in the playing
-field. When other robots were introduced into the field, even in their starting
-positions, the robot was unable to approach the ball without a collision with
-another player.
+The field was then modified to be at a lower potential than its surroundings,
+removing the previous radial force. However, it was determined that a field wide
+enough to be of any use in directing the robot had to have a radius that caused
+the field to strongly interfere with motion elsewhere in the playing field. When
+other robots were introduced into the field, even in their starting positions,
+the robot was unable to approach the ball without a collision with another
+player.
 
 Other attempts were made with different shaped fields around the ball (for
 example one field resembled a helter-skelter slide, which produced a constant
 force to guide the ball in when within a certain radial region), but all
 resulted in either an large field that caused too much long-distance
-interference, or forced the robot radially away from the robot. While a single
-field could probably be found that achieved what was desired, it was determined
-that the search would be too time-consuming with the lack of guiding
-information.
+interference, or forced the robot radially away from the robot.
+
+While a single field could probably be found that achieved what was desired, it
+was determined that the search would be too time-consuming with the lack of
+guiding information.
 
 \subsubsection{Paired Source Approach Guidance Field\label{sub:paired-field}}
 
 As discussed in Section \ref{sub:Shaped-Approach-Guiding}, a field was required
-to guide robot's the approach to ball. As a single field did not function as
+to guide the robot's the approach to ball. As a single field did not function as
 desired, it was decided that a pair of fields would be tried.
 
 A basic attractive field (see Section \ref{sub:Basic-Attractive-Field}) was
@@ -849,19 +842,19 @@ position. This produces the overall field shown in Figure
  \label{fig:pairedApproachField}
 \end{figure}
 
-This technique immediatly showed positive results, with the robot moving onto
+This technique immediately showed positive results, with the robot moving onto
 the attractive point while avoiding the ball if it approached from the wrong
 side. This is achieved because the combination of the field produces a region
 that the robot will not pass through, because to do so would involve passing
 through the repulsive region (as shown in Figure
-\ref{fig:pairedSourceApproachFieldNoFlyZone}).  
+\ref{fig:pairedSourceApproachFieldNoFlyZone}).
 
 This field configuration breaks down if the repulsive point is too far from the
 ball or if the robot ends up too near the ball on the wrong side (the region
 shown in Figure \ref{fig:pairedSourceApproachFieldBreakDownZone}), as the
 repulsive field acts to force the robot towards the ball instead of away from
-it.  The strategy will need to be designed so that this occurence is dealt with,
-or prevented from happening altogher.
+it.  The strategy will need to be designed so that this occurrence is dealt
+with, or prevented from happening altogether.
 
 \begin{figure}
  \centering
@@ -874,7 +867,7 @@ or prevented from happening altogher.
 
 To ensure that the robot approaches from the correct location, the points must
 be placed to position the robot along the line that joins the ball and the
-desired desination (initially, the goal).  This is achieved by providing this
+desired destination (initially, the goal).  This is achieved by providing this
 vector to the field calculation code, which then sets the point locations
 appropriately.
 
@@ -894,13 +887,13 @@ which direction it approaches from.
 In the case of a moving opponent, or an opponent where collisions in one axis
 are more of a concern than in the other, it can be useful for the repulsive
 field to reflect this.  For example, a robot moving rapidly in one direction is
-of less of a concern if it is being approached from a vector normal to it's line
+of less of a concern if it is being approached from a vector normal to its line
 of motion, as it is less likely to cause a collision (as the robot will likely
 move out of the way).
 
 This field shaping was achieved by slightly modifying the Gaussian function used
 to produce the repulsive field, resulting in Equation
-\ref{eq:stretchedGaussianField}. 
+\ref{eq:stretchedGaussianField}.
 
 \begin{equation}
 P\left(r,\theta\right)=k_{repulse}\cdot
@@ -932,9 +925,9 @@ by.
 \end{figure}
 
 The tests proved successful in controlling the robot's motion, with the robot
-moving around the obstacle in the desired ellipse when previoulsy approaching
+moving around the obstacle in the desired ellipse when previously approaching
 for a head-on collision.  However, the test used, where the attacking robot that
-was already in posession of the ball approached an opponent deliberatly placed
+was already in possession of the ball approached an opponent deliberately placed
 in the way of the goal, highlighted an issue with the robot's control of the
 ball.  This is further discussed in Section \ref{sub:simulatorIssues}.
 
@@ -993,9 +986,9 @@ the significantly larger memory transfer times which affect GPU operations.
 \hline
 \end{tabular}
 
-In this test, overheads include transfering the inital data to the platform and
-setting up the platform before the calculation, but not one-time-only
-intialisation done by the platform.
+In this test, overheads include transferring the initial data to the platform
+and setting up the platform before the calculation, but not one-time-only
+initialisation done by the platform.
 
 \caption{Field Strenth Calculation Times\label{tab:Field-Strenth-Calculation}}
 \end{table}
@@ -1005,12 +998,11 @@ intialisation done by the platform.
 \subsubsection{Design Philosophy}
 
 The code (shown in Appendix \ref{sub:OpenCL-Kernels}) is written in an attempt
-to take advantage of the parallel nature of it's execution. Each kernel (a
-function run either on the CPU or GPU) is designed to work on an
-individual data point, and the kernel is called multiple times by the platform,
-once for each data point. As the order of execution cannot be guaranteed, each
-kernel is written such that it doesn't depend on the values produced for other
-data points.
+to take advantage of the parallel nature of its execution. Each kernel (a
+function run either on the CPU or GPU) is designed to work on an individual data
+point, and the kernel is called multiple times by the platform, once for each
+data point. As the order of execution cannot be guaranteed, each kernel is
+written so that it doesn't depend on the values produced for other data points.
 
 To simplify the code, the platform is configured to run the kernel over a 2D
 space that represents the field. Each instance of the kernel is then given an ID
@@ -1020,7 +1012,7 @@ instance can operate in isolation without any knowledge of what work has already
 been done. The results are then stored in a shared array (at an index determine
 by the coordinates) which is returned to the host program when the operation has
 finished. Where consecutive functions are required, a series of kernels can be
-queued in turn, and the data is only returned when the queue is complete (which
+queued in turn, and the data is only returned when the queue is complete (this
 represents a significant saving with the GPU code, as GPU to host transfers are
 relatively slow).
 
@@ -1031,29 +1023,27 @@ CPU. In particular, the number of concurrent operations the GPU can process is
 limited by the resource usage of the code.
 
 In order to calculate the Gaussian function, a function to calculate the natural
-exponental is needed. Initially, the built in OpenCL function was used to
+exponential is needed. Initially, the built in OpenCL function was used to
 calculate this. This function is defined by the OpenCL standard to have a
 specific accuracy, which is constant on any hardware. The implementation of this
 on the hardware in use proved to use a large number of GPRs.
 
-A GPU has a large but finite number of GPR available, which are then
-shared between all of the running kernel instances. If a kernel requires a
-larger number of GPRs, then fewer kernel instances can run concurrently. It
-was quickly discovered while implementing the code that limiting the number of
-GPRs in use was very important.
+A GPU has a large but finite number of GPRs available, which are then shared
+between all of the running kernel instances. If a kernel requires a larger
+number of GPRs, then fewer kernel instances can run concurrently. This makes
+limiting the GPRs in use very important.
 
 The OpenCL standard provides for a set of so-called 'native' functions, which
 are produced specifically for the hardware in use, and which are often more
 efficient than the general implementation (for example, they sometimes map to
-single instructions that perform the functions). However, the accuracy of the
-function is implementation specific, and so could change from computer to
-computer and platform to platform (e.g. CPU to GPU)
-\cite{openCl11Spec}. In this case, the native exponential function utilitises
-far fewer GPRs, removing the resource pressure encountered, and the
-undefined accuracy is not important.
+single instructions that perform the functions). The accuracy of the function,
+however is implementation specific, and so could change from computer to
+computer and platform to platform (e.g. CPU to GPU) \cite{openCl11Spec}. In this
+case, the native exponential function uses far fewer GPRs, removing the resource
+pressure encountered, and the undefined accuracy is not important.
 
 The OpenCL specification also provides geometric functions such as vector
-distance and vector length to complement it's vector data types. These have been
+distance and vector length to complement its vector data types. These have been
 used as far as possible, as they can also allow the compiler to perform hardware
 specific optimisations (and again they can sometimes map directly to individual
 instructions on the hardware).\cite{openCl11Spec}
@@ -1081,10 +1071,10 @@ could then happen:
 \end{itemize}
 
 The robot will only register as being on the boundary of the field if it is
-positioned within \SI{0.1}{\inch} of the field, i.e. within one grid step, as
+positioned within \SI{0.2}{\inch} of the field, i.e. within two grid steps, as
 illustrated in Figure \ref{fig:field-evaluation-boundary-condition}.  This
 represents a very small area, which could easily be missed if the robot is
-moving at greater than \SI{5}{\inch\per\second} (\SI{0.1}{\inch} per time-step)
+moving at greater than \SI{10}{\inch\per\second} (\SI{0.2}{\inch} per time-step)
 and the time-step falls wrong.
 
 \begin{figure}
@@ -1096,7 +1086,7 @@ and the time-step falls wrong.
   \\
   \subfloat{\includegraphics[trim=2cm 14.75cm 11cm 13cm,
   clip=true]{Images/illustrations}}
-  \caption{Field Evaluation}
+  \caption{Evaluation of a Step-Changing Field}
 \end{figure}
 
 If the robot begins the next time-step already inside the field, the field will
@@ -1104,38 +1094,36 @@ again evaluate as flat with respect to the outside field, and so the field will
 have no effect.
 
 Given that the robot can move at over \SI{50}{\inch\per\second}, the likelihood
-of the robot falling consistantly within the \SI{0.1}{\inch} region when
+of the robot falling consistently within the \SI{0.2}{\inch} region when
 required becomes vanishingly small, rendering these fields useless for the
 purposes required.
 
 Another limitation is introduced by the accuracy of the floating point values
 used to calculate the field intensities.  It is simpler if all the robot
 positions can be passed to the calculations without considering which one is the
-robot who's actions are being analysed.  As well as allowing fields to be reused
+robot whose actions are being analysed.  As well as allowing fields to be reused
 for different robots without recalculating, this would also allow multiple
-fields to be calculated concurrently by the GPU while reducing the slow
-memory transfers between CPU and GPU by only sending the position data
-once.
-
-This means that the robot being considered will also have a field projected
-around it.  This is not a significant problem as long as the field is
-symmetrical and centered on the robot, as this will cause the field to be equal
-at each point considered, and so the effect will cancel out.
+fields to be calculated concurrently by the GPU while reducing the slow memory
+transfers between CPU and GPU by only sending the position data once. This means
+that the robot being considered will also have a field projected around it. 
+This is not a significant problem as long as the field is symmetrical and
+centred on the robot, as this will cause the field to be equal at each point
+considered, and so the effect will cancel out.
 
 However, it is a limitation of floating point numbers that if a very large
 number and a very small number are added together, the effect of the small
-number may be lost.  This means, if the field immediatly around the robot has a
-very large intensity, the effect of a poorly scaled exterier field will be lost.
-
+number may be lost.  This means, if the field immediately around the robot has a
+very large intensity, the effect of a poorly scaled exterior field will be lost.
 This was why a Gaussian function was chosen over an inverse proportionality to
 generate the basic repulsive field (see Section
-\ref{sub:Basic-Repulsive-Field}), as an inverse proportionailty would become
+\ref{sub:Basic-Repulsive-Field}), as an inverse proportionality would become
 very large very quickly as it approached the centre of the robot, and could make
 the appropriate scaling of the fields more difficult to achieve.
 
 \section{Software Produced}
 
 Two types of software have been produced:
+
 \begin{itemize}
 \item The game playing strategy files
 \item The field renderer
@@ -1146,19 +1134,19 @@ only used to debug the potential fields.
 
 \subsection{Strategy Files}
 
-The strategy files are standard Microsoft Windows DLL files which
-implement three functions defined by the simulator:
+The strategy files are standard Microsoft Windows DLL files which implement
+three functions defined by the simulator:
+
 \begin{itemize}
 \item Create - Performs the initial setup for the strategy
 \item Strategy - Called on every simulator cycle to control the robots
-\item Destroy - Intended to perform the clean-up required for the strategy.
-This does not appear to be called by the simulator at this time, and so has been
- left as an empty function.
+\item Destroy - Intended to perform the clean-up required for the strategy. This does not appear to be called by the simulator at this time, and so has been left as an empty function.
 \end{itemize}
 
 A selection of these strategy files were produced, each designed to perform a
 different function.  They are then made available to the simulator, and the
 appropriate file can be loaded on demand.
+
 
 \subsubsection{HoldStillStrategy}
 
@@ -1173,37 +1161,35 @@ strategy files, to ensure that everything had been set up correctly.
 
 \subsubsection{PhysicsStrategy}
 
-In order to analyse the model in use by the simulator, a repeatable
-action was required to produce simple behaviour that could be analysed.  This
-was achieved by having the strategy feed a constant input into both motors,
-which caused the robot to accelerate in a straight line away from it's starting
-location.  The implementation of this can be seen in Appendix
-\ref{app:physicsStrategy}.
+In order to analyse the model used by the simulator, an action that produced
+simple repeatable behaviour was needed.  This was achieved by having the
+strategy feed a constant input into both motors, causing the robot to accelerate
+in a straight line away from its starting location.  The implementation of this
+can be seen in Appendix \ref{app:physicsStrategy}.
 
-The position of the robot is logged every cycle, allowing the velocity and
+The position of the robot was then logged every cycle, allowing the velocity and
 acceleration to be calculated by simple differentiation.  The time that each of
-the samples was taken at was also recorded to allow the time-step behaviour to be
-analysed.
+the samples was taken at was also recorded, which allowed the time-step
+behaviour to be analysed.
 
 The standard \texttt{clock} function provided by the Microsoft implementation of
 the CRT operates on a \SI{1}{\milli\second} scale \cite{windowsSDK}.  The
-time-step length seen from the simulator was varied around
+time-step length seen from the simulator varied around
 \SIrange{19}{20}{\milli\second}, and so it was decided that the accuracy of
-\texttt{clock} was insufficient for the time-step distribution analysis.
-Instead, the high-resolution performance counter provided by the Windows API was
-used.  On the test computer, this operated at approximatly
-\SI{2.9}{\mega\hertz}, and so provides a lot more accuracy than the built in
-function.  
+\texttt{clock} was insufficient for the time-step distribution analysis. It was
+replaced with the high-resolution performance counter provided by the Windows
+API, which on the test computer, operated at approximately
+\SI{2.9}{\mega\hertz}. This provides much greater accuracy than the CRT
+function.
 
-The collected data was then output into a CSV file, which recording the
-date and time of the run, the input velocity, and then each time-step's values. 
-This made the data available for use by Excel and MATLAB, allowing the required
-data analysis to be performed.
+The collected data was then output into a CSV file, which recorded the date and
+time of the run, the input velocity, and each time-step's values.  This could
+then be analysed using Microsoft Excel or MATLAB.
 
 \subsubsection{SquareStrategy}
 
-Once the motion controller had been designed, a simple test routine was required
-to ensure that it was working properly.  SquareStrategy was used to move a
+Once the motion controllers were designed, a simple test routine was required to
+ensure that it was working properly.  SquareStrategy was designed to move a
 single robot around a pre-planned path to ensure that the controller was working
 as expected.
 
@@ -1234,12 +1220,12 @@ used. The following states are defined:
 \end{itemize}
 
 State 0 is the default state on start-up, and is switched to if the ball is far
-away from the robot.  It uses the normal repulsive fields (Section
+away from the robot.  It uses the normal repulsive fields (see Section
 \ref{sub:Basic-Repulsive-Field}) to direct the robot away from obstacles, and a
-paired source (Section \ref{sub:paired-field}) to direct the robot to the side
-of the ball furthest from the goal.  The paired source is aligned so that the
-robot's final approach angle to the ball is along the vector between the ball
-and the goal.
+paired source (see Section \ref{sub:paired-field}) to direct the robot to the
+side of the ball furthest from the goal.  The paired source is aligned so that
+the robot's final approach angle to the ball is along the vector between the
+ball and the goal.
 
 This field is calculated using the OpenCL code found in Appendix
 \ref{app:initialApproachField}.
@@ -1274,7 +1260,7 @@ velocity of the ball through the named pipe set up by the Field Renderer.  The
 software attempts to do this on every simulator cycle, but if it fails (e.g. if
 the Renderer is busy handling the last received status report), it ignores the
 error and carries on.  This also allows the system to continue if the Renderer
-is busy, or if it is not running at all.
+is busy, or even if it is not running at all.
 
 \subsection{Field Renderer\label{sub:field-renderer}}
 
@@ -1285,30 +1271,27 @@ Presentation Foundation UI library. The OpenCL code is then executed using the
 Cloo library, which allows the program's managed code to access the unmanaged
 functions required to use OpenCL.
 
-The program receives a status from the simulator using a named pipe for which it
-acts as the server. The binary data received is intepretted into a structure to
-match the one used in the strategy file, and is stored as the latest
-environment. This occurs at the end of every simulator cycle, and is run in a
-seperate execution thread to the rest of the program. This allows the simulator
-to continue after transmission is complete without waiting for the renderer to
-work with the environment. Every time the status report is received, it triggers
-a rendering cycle, unless a rendering cycle is already underway. If a report
-arrives while a rendering cycle is unfinished, it is discarded. This ensures
-that the rendered images are as up to date as possible, without holding up the
-simulator.
+The program receives a status report from the simulator using a named pipe for
+which it acts as the server. The binary data received is interpreted into a
+structure to match the one used in the strategy file, and is stored as the
+latest environment. This occurs at the end of every simulator cycle, and is run
+in a separate execution thread. This allows the simulator to continue after
+transmission is complete without waiting for the renderer to work with the
+environment. Every time the status report is received, it triggers a rendering
+cycle, unless a rendering cycle is already underway. If a report arrives while a
+rendering cycle is unfinished, it is discarded. This ensures that the rendered
+images are as up to date as possible.
 
-The rendering process is also executed in it's own thread, ensuring that it does
-not interfere with the user interface. If this was not done, the program would
-to be unresponsive and the rendered images would never be displayed to the user.
-The process creates a copy of the latest status report, which ensures that the
-process is not effected by the concurrently running communication with the
-simulator. The code then performs the same process as the strategy file, using
-the OpenCL field calculation code (this time executed on the GPU) to
-calculate every data point in the field. Further OpenCL code is then used to
-calculate the magnitude of the gradient across the entire field, and to
-transform both sets of data into grayscale bitmaps. The produced bitmaps are
-then passed to the user interface thread, which then displays the images to the
-user.
+The rendering process is also executed in its own thread, ensuring that it does
+not interfere with the user interface. The process creates a copy of the latest
+status report, which ensures that the process is not affected by the
+concurrently running communication with the simulator. The code then performs
+the same process as the strategy file, using the OpenCL field calculation code
+(this time executed on the GPU) to calculate every data point in the field.
+Further OpenCL code is then used to calculate the magnitude of the gradient
+across the entire field, and to transform both sets of data into greyscale
+bitmaps. The produced bitmaps are then passed to the user interface thread,
+which then displays the images to the user.
 
 \section{Discussion}
 
@@ -1320,7 +1303,7 @@ The lack of documentation for the simulator has already been discussed in
 Section \ref{sub:motionControl}.  As previously mentioned, the behaviour of the
 system had to be reverse-engineered from the system's response to different
 inputs, allowing a model to be produced.  Because the governing variables are
-not fully known, the model is only an approximatation, but it appears to be
+not fully known, the model is only an approximation, but it appears to be
 sufficient to control the system to a basic degree.
 
 Because the focus of this project is on the high level control, it was decided
@@ -1331,53 +1314,51 @@ a negative impact on the quality of the high level control.
 It was noticed early on that the simulator provides no indication to the
 strategy files that the game has been restarted (e.g. after a goal has been
 scored and the player and ball positions have been reset).  It has been
-necessary to make strategies resilliant to sudden changes in the environment,
-and during testing it was often necessary to restart the entire simulator (and
+necessary to make strategies resilient to sudden changes in the environment, and
+during testing it was often necessary to restart the entire simulator (and
 hence, the strategy code) when a new test run was required.
 
-The most significant problem encountered with the simulator is in the simulated
-design of the robots.  Designed as simple cubes, they have no surface features
-to aid the manipulation of the ball.  In order to change the velocity of the
-ball, a force must be applied to it to increase the velocity in the desired
-direction, and decrease the velocity perpendicular to that direction.  Because
-the robot is flat and the ball is round, it is only possible to exert a force in
-the robot's direction of motion.
-
-If a substantial velocity change is desired, it can be achieved by having the
-robot collide with the ball with sufficient force to make any perpendicular
-velocity negligble compared to the forwards velocity.  However, it is not
-possible to create the small perpendicular forces required to achieve the minor
-adjustments to the vector of the ball required by the potential field navigation
-techniques used. This would require a change to the design of the robotm which
-would allow it to exert these forces.  This change could not be made with the
-current simulator, as the source code for the simulator is not availabe.
+The most significant problem encountered with the simulator was with the robots.
+ Designed as simple cubes, they have no surface features to aid the manipulation
+of the ball.  In order to change the velocity of the ball, a force must be
+applied to it to increase the velocity in the desired direction, and decrease
+the velocity perpendicular to that direction.  Because the robot is flat and the
+ball is round, it is only possible to exert a force in the robot's direction of
+motion. If a substantial velocity change is desired, it can be achieved by
+having the robot collide with the ball with sufficient force to make any
+perpendicular velocity negligible compared to the forwards velocity.  However,
+it is not possible to create the small perpendicular forces required to achieve
+the minor adjustments to the vector of the ball required by the potential field
+navigation techniques used. This would require a change to the design of the
+robot which would allow it to exert these forces.  This change could not be made
+with the current simulator, as the source code for the simulator is not
+available.
 
 \subsubsection{OpenCL Issues}
 
 Development using OpenCL presented a number of issues not normally encountered
-when developing with conventional, CPU run software.  This was a
-particular problem because a conventional debugger cannot be attached to the
-kernel instances, so normal debugging techniques (e.g. stepping through code and
+when developing with conventional, CPU run software.  This was a particular
+problem because a conventional debugger is not simply attached to the kernel
+instances, so normal debugging techniques (e.g. stepping through code and
 examining variable values) could not easily be achieved.
 
-The most common and disruptive problem encountered related to the transfer of
-data from the host computer to the GPU.  Where a large amount of data needs
-to be transfered, it is done by passing memory addresses to the OpenCL engine. 
+The most common and disruptive problems encountered related to the transfer of
+data from the host computer to the GPU.  Where a large amount of data needs to
+be transferred, it is done by passing memory addresses to the OpenCL engine. 
 This allows the local memory to be used instead of allocating some of the highly
 limited memory available on the graphics card.  In some cases, for reasons that
 are still not entirely clear, invalid memory addresses were passed to the
 runtime, and the graphics card attempted to access these invalid memory
 addresses.  This appeared to cause a low-level fault in the graphics hardware,
-which caused the computer to lock up, requiring a system restart to resolve.
+which caused the computer to lock up, and required a system restart to resolve.
 
-Another problem encountered with the data transfers were matching CPU and
-GPU data types.  No type-safety is provided by the OpenCL runtime when
-passing function parameters, and so the runtime will just convert the binary
-data into the expected data type.  Specific problems were encountered with
-floating point numbers, as the simulator worked at double precision while the
-GPU only supported single precision, and integral types, as the CPU
-software defaulted to operating with 64-bit integers, while the GPU defaulted to
-32-bit integers.
+Another problem encountered with the data transfers were matching CPU and GPU
+data types.  No type-safety is provided by the OpenCL runtime when passing
+function parameters, and so the runtime will just convert the binary data into
+the expected data type.  Specific problems were encountered with floating point
+numbers, as the simulator worked at double precision while the GPU only
+supported single precision, and integral types, as the CPU software defaulted to
+operating with 64-bit integers, while the GPU defaulted to 32-bit integers.
 
 \subsubsection{Controller Issues}
 
@@ -1393,39 +1374,57 @@ An attempt was made to fix this issue, but it was determined that doing so
 detuned the controllers, and there was insufficient time to recalibrate it with
 the corrected calculations.
 
-\section{Conclusions}
+\subsection{System Limitations}
 
-In the Project Plan and Literature Review already submitted, the following
-objectives were set:
+The system was designed and tested on a PC with the following specification:
 
 \begin{itemize}
-\item A subsystem that will allow the robots to position themselves at an 
+ \item Microsoft Windows 7 (64-bit)
+ \item Intel Core i5-2320 CPU
+ \item AMD Radeon HD 6450 GPU
+ \item \SI{4}{\giga\byte} RAM
+\end{itemize}
+
+The strategy file should run on any modern CPU, provided a compatible OpenCL
+runtime library is available (the design process used the AMD OpenCL library). 
+It requires Microsoft Windows, but only because the simulator requires it. With
+the exception of the named pipe and high performance timing routines (neither
+of which are required for the actual strategy), all of the code should be
+cross-platform compatible.
+
+The field renderer requires the .Net Framework 4, and so will only run on MS
+Windows Vista or later.  Additionally, the field rendering requires a graphics
+card which supports OpenCL.  Currently, both NVIDIA and AMD/ATI produce such
+graphics chipsets.
+
+\section{Conclusions}
+
+In the Project Plan and Literature Review already submitted, the objectives were
+set required the following things to be created:
+
+\begin{itemize}
+\item A subsystem that will allow the robots to position themselves at an
 arbitrary position with a given final speed and direction of motion (within the
-limits of the robots).  This will allow the robots to interact with the ball to 
+limits of the robots).  This will allow the robots to interact with the ball to
 produce the motion required by the higher-level planning algorithms.
-
-\item A subsystem that can predict the location of the ball or an opposing robot 
-at a given time in the future.  The prediction will only need to work for the 
+\item A subsystem that can predict the location of the ball or an opposing robot
+at a given time in the future.  The prediction will only need to work for the
 next two to three seconds, allowing better decisions to be made.
-
-\item A subsystem that will monitor the behaviour of each robot and ensure that 
-it's actions will not cause a foul (as described in the FIRA rules of play 
-\cite{simurosotSim}).  For example, it should intervene if an action will cause 
-a collision with an opponent by altering a planned route appropriately.  This 
-will ensure that the team is compliant with the rules and does not incur any 
+\item A subsystem that will monitor the behaviour of each robot and ensure that
+it's actions will not cause a foul (as described in the FIRA rules of play
+\cite{simurosotSim}).  For example, it should intervene if an action will cause
+a collision with an opponent by altering a planned route appropriately.  This
+will ensure that the team is compliant with the rules and does not incur any
 corrective action from the referee.
-
-\item A subsystem that will combine the previous two to produce a path for a 
-robot to allow it to interact with the ball to change the balls speed and 
-direction of motion.  This will allow the higher level planning sub-systems 
-to state a desired ball motion path and have a robot cause that action to 
-happen.
-
-\item A subsystem that will take in the current state of the system and decide 
-on an appropriate course of action. When the ball is under the control of the 
-current player, it will have the robots attack the opposing goal and attempt to 
-score a goal.  When the ball is under the control of the opposition it will 
-attempt to defend its own goal and disrupt the opponents actions. When the ball 
+\item A subsystem that will combine the previous two to produce a path for a
+robot to allow it to interact with the ball to change the balls speed and
+direction of motion.  This will allow the higher level planning sub-systems to
+state a desired ball motion path and have a robot cause that action to happen.
+\item A subsystem that will take in the current state of the system and decide
+on an appropriate course of action. When the ball is under the control of the
+current player, it will have the robots attack the opposing goal and attempt to
+score a goal.  When the ball is under the control of the opposition it will
+attempt to defend its own goal and disrupt the opponents actions. When the ball
 is not under any defined control, it will attempt to take control of the ball.
 \end{itemize}
 
@@ -1434,12 +1433,12 @@ is not under any defined control, it will attempt to take control of the ball.
 These objectives have been met with mixed results.
 
 A set of controllers have been produced, which can be manipulated to position
-the robot at a given position, or to make the robot move with a given velocity. 
+the robot at a given position, or to make the robot move with a given velocity.
 It is not currently possible to specify the velocity of the robot at a given
-point, but it should be possible to achieve this by manipulating the two
-controllers.  However, this objective is no longer as important, since the
-emphasis has changed from a planned motion strategy to a potential field based
-one.
+point in space and time, but it should be possible to achieve this by
+manipulating the two controllers.  However, this objective is no longer as
+important, since the emphasis has changed from a planned motion strategy to a
+more dynamic one.
 
 Some code has been produced that can begin to solve the equations required to
 predict the velocity of an object at a given time in the future.  It is
@@ -1450,20 +1449,22 @@ when the focus of the project changed.
 
 While some effort has been made into controlling the robot so that avoids
 collisions, the code does not currently make any other consideration to the
-other rules of the game, and does not successfully avoid all collisions.
+other rules of the game.  At present, the collision avoidance is also
+unreliable.
 
 The current code successfully manipulates the robot to intercept the ball and
 cause it to score a goal.  It isn't robust enough to properly play a full game
 yet, as it can only cope with a very small set of conditions, but, with proper
 manipulation of the fields, sufficient functionality is available to have the
-robot direct the ball to a useful location.
+robot direct the ball to any useful location.
 
 The decision making code is currently very simple, based around a state machine
 which responds to a specific set of circumstances.  It is not sufficient to play
-a game yet (for example, it cannot correctly take possession of the ball from
-an opponent).
+a game yet (for example, it cannot correctly take possession of the ball from an
+opponent), but it is in a position to be expanded to do so, once new field
+configurations are made available.
 
-Overall, each of the requirements have been partially met, but at present the
+Overall, each of the requirements has been partially met, but at present the
 system does not meet the full needs.  A lot of the work completed provides a
 basic level of functionality, which can then be built on to achieve the more
 complex goals.
@@ -1471,17 +1472,17 @@ complex goals.
 \section{Future Work}
 
 The code presented represents only part of the implementation required to
-produce a competative robot football team for the FIRA competition.  At
-present, the system cannot cope with any opposing activity, and operates at very
-low speeds.  A comparison with the default strategy has not been implemented,
-but it is anticipated that the produced strategy would lose, as the default
-strategy operates the robots far faster, and can successfully compete with an
-opposing team.
+produce a competitive robot football team for the FIRA competition.  At present,
+the system cannot cope with any opposing activity, and operates at very low
+speeds.  A comparison with the default strategy has not been performed, but it
+is anticipated that the produced strategy would lose, as the default strategy
+operates the robots far faster, and can successfully compete with an opposing
+team.
 
 If the system is intended to be used with a set of real robots, it would be very
 useful to reimplement the simulator to create a better representation of the
 robots in use.  This would resolve the problems encountered with the design of
-the robot (e.g. the lack of fine control), and would allow the information to
+the robot (e.g. the lack of fine control), and would allow the information
 provided to the robot controller to better match the information provided by the
 real system.  If the simulator is not changed, the strategy will need to be
 reconsidered to take into account this limitation.
@@ -1492,25 +1493,31 @@ division problem (perhaps by removing the division altogether) and retuning the
 controllers to match.
 
 Currently, for the paired source field, the position of the field is calculated
-locally and then passed to the calculation platform.  It would make debugging
-and reuse easier if this calculation could be performed on the platform,
-reducing the amount of duplicate code and ensuring that the debugging code
-always matches the actual field calculations used.
+(to determine when states should change) locally as well as on the calculation
+platform. It would make debugging and reuse easier if this calculation could be
+performed in one place only, reducing the amount of duplicate code and ensuring
+that the debugging code always matches the actual field calculations used.
 
 Additional field configuration need to be designed to cope with different
 situations.  This includes ones to implement defensive strategies (perhaps
-implementing some of the technqiues from \cite{neuroHassleDefence}), as well as
-others to take posession of the ball from the opposition. The current strategies
-also need to be improved to have the robot's move faster and react faster and
-more accuratly to the changing state of the game.  This will likely involved
-developing some new field shapes, and modifying some of the existing ones to
-better match the requirements. Once this is achieved, the fields can be spread
-out to all the robots, controlling all of them around the pitch instead of just
-one.
+implementing some of the techniques from \cite{neuroHassleDefence}), as well as
+others to take possession of the ball from the opposition. The current
+strategies also need to be improved to have the robot's move faster and react
+faster and more accurately to the changing state of the game.  This will likely
+involved developing some new field shapes, and modifying some of the existing
+ones to better match the requirements. Once this is achieved, the fields can be
+spread out to all the robots, controlling all of them around the pitch instead
+of just one.
 
 Once sophisticated motion can be completed, it would be interesting to see if
 field shapes could be developed that cause the robot to pass the ball in a
-certain direction, or perform other complex behaviour.
+certain direction, or perform other more complex behaviour.
+
+The current field selection routine is also currently very simplistic.  The
+current options could be extended to have a field to cover every possibility. 
+Alternatively, a fuzzy logic or artificial neural network system could be used
+to select the fields.  Finally, it could be interesting to apply fuzzy logic
+techniques to combine the fields instead.
 
 Once some more versatile field configurations (and configuration selection code)
 has been completed, the system can then be tested against the default strategy,
@@ -1519,11 +1526,12 @@ system can be evaluated.
 
 Overall, it is felt that a good start has been made on the project, but reduced
 man-hours (compared to normal competitive teams) and the large change of plan
-made early in the project have made it impossible to bring the project to it's
+made early in the project have made it impossible to bring the project to its
 conclusion.  It is believed that a good foundation has been produced that will
 allow further work to achieve the objectives to be completed.
 
 \cleardoublepage{}
-\include{appendices}
+\include{appendices} 
 
 \end{document}
+ 

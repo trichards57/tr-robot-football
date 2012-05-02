@@ -1,5 +1,7 @@
 \appendix
 
+\singlespacing
+
 \section{Derivations}
 
 \subsection{Least Squares Derivation \label{app:leastSquaresDerivation}}
@@ -72,11 +74,6 @@ size_t, __kernel},basicstyle=\small\ttfamily}
 \subsubsection{Gaussian Repulsive Field\label{app:gaussianRepulsive}}
 
 \begin{lstlisting}
-
-#define BALL_WEIGHT 10
-#define OBSTACLE_WEIGHT 100
-#define OBSTACLE_SIGMA 5
-
 inline float basicRepel(float2 realPos, float2 repulser)
 {
   float2 diff = repulser - realPos;
@@ -106,7 +103,7 @@ inline float stretchedBasicRepel(float2 realPos, float2 repulser)
 float fieldAtPoint(float2 realPos, float2 ball, float2 ballVelocity, 
                    __constant float2 *basicRepulsers)
 {
-  float2 posShift = normalize(ballVelocity)*-7;
+  float2 posShift = normalize(ballVelocity) * -7;
   float2 attractBall = ball - posShift;
   float2 repelBall = ball + posShift;
   float dist = distance(attractBall, realPos);
@@ -130,7 +127,7 @@ __kernel void main(float2 ball, float fieldResolution,
                    __constant float2 *basicRepulsers, __global float * out,
                    float2 ballVelocity) 
 {
-  int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
+  int2 gridPos = (int2)(get_global_id(0), get_global_id(1));
 
   size_t index = gridPos.x + gridPos.y * get_global_size(0);
 
@@ -144,7 +141,7 @@ __kernel void main(float2 ball, float fieldResolution,
 // Used to calculate the field at a set of given points
 __kernel void fieldAtPoints(float2 ball, __constant float2 *fieldPoints, 
                             __constant float2 *basicRepulsers, 
-                            __global float * out, float2 ballVelocity) 
+                            __global float *out, float2 ballVelocity) 
 {
   size_t pointId = get_global_id(0);
 
@@ -161,7 +158,7 @@ float possessionFieldAtPoint(float2 realPos, float2 ball,
                              __constant float2 *basicRepulsers, 
                              float2 goalTarget) 
 {
-  float2 vectorToGoal = normalize(goalTarget - realPos)*5;
+  float2 vectorToGoal = normalize(goalTarget - realPos) * 5;
   float2 attractBall = ball + vectorToGoal;
 
   float dist = distance(attractBall, realPos);
@@ -181,9 +178,9 @@ float possessionFieldAtPoint(float2 realPos, float2 ball,
 __kernel void possessionMain(float2 ball, float2 goalTarget, 
                              float fieldResolution, 
                              __constant float2 *basicRepulsers, 
-                             __global float * out) 
+                             __global float *out) 
  { 
-  int2 gridPos = (int2)(get_global_id(0),get_global_id(1));
+  int2 gridPos = (int2)(get_global_id(0), get_global_id(1));
 
   size_t index = gridPos.x + gridPos.y * get_global_size(0);
 
@@ -198,7 +195,7 @@ __kernel void possessionMain(float2 ball, float2 goalTarget,
 __kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget, 
                                       __constant float2 *fieldPoints, 
                                       __constant float2 *basicRepulsers, 
-                                      __global float * out) 
+                                      __global float *out) 
 {
   size_t pointId = get_global_id(0);
 
@@ -209,7 +206,7 @@ __kernel void possessionFieldAtPoints(float2 ball, float2 goalTarget,
 
 \section{Code Listings}
 
-The following listings contains a sub-set of the total code produced.  The full
+The following listings contain a sub-set of the total code produced.  The full
 code listings can be found on the included CD, along with the required build
 instructions and any additional libraries.
 
@@ -237,9 +234,9 @@ void VelocityController::Control(Vector3D targetVelocity,
 
   // Normalise between pi and -pi
   if (angle > M_PI)
-    angle -= 2*M_PI;
+    angle -= 2 * M_PI;
   if (angle < -M_PI)
-    angle += 2*M_PI;
+    angle += 2 * M_PI;
 
   if (fabs(angle) > M_PI/2) 
   {
@@ -249,9 +246,9 @@ void VelocityController::Control(Vector3D targetVelocity,
     angle += M_PI;
     // Normalise between pi and -pi
     if (angle > M_PI)
-      angle -= 2*M_PI;
+      angle -= 2 * M_PI;
     if (angle < -M_PI)
-      angle += 2*M_PI;
+      angle += 2 * M_PI;
   }
 
   auto turnSpeed = angle * angleProportionalTerm;

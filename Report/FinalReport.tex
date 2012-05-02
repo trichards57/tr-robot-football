@@ -48,7 +48,29 @@ as some of the work that could be done to extend this project.
 
 \section{Literature Review}
 
-TODO : Lit Review
+A literature review has already been completed in the previous report.  In
+summary, a large amount of work has been done in developing robots for this
+purpose.  Various different techniques have been examined to make the robots
+work together, including flocking algorithms \cite{taskBasedFlocking},
+artificial immune system algorithms \cite{artificialImmuneSystemCooperation} and
+role based strategies \cite{taskRoleSelectionStrategy}
+\cite{multiagentsDynamicBoxChange}.
+
+Decision making algorithms have included the max-plus algorithm
+\cite{maxPlusAlgorithm}, simulated annealling
+\cite{simulatedAnnealingDecisionMaking} and extended behaviour networks to model
+human behaviour \cite{modellingHumanDecisionMaking}. Risk based algorithms have
+also been tried \cite{balancingGainsRisksCostsPassing}.
+
+Route planning techniques including A* \cite{aiModernApproach} and potential
+field navigation \cite{intelligentAlgorithmPathPlanning} have been examined, and
+the latter has been taken further in this project.
+
+As well as the resources already considered, other resources were used to
+support development of this project.  In particular, the OpenCL development
+depended heavily on the introduction provided by AMD \cite{amdOpenCLTutorial}.
+This was supported by the full and quick references provided by Khronos
+(\cite{openCl11Spec} and \cite{openCl11QuickRef} respectively).  
 
 \section{Computational Methods}
 
@@ -170,6 +192,13 @@ coordinate system is using degrees to represent angles, and means that
 conversion will need to be made to allow the CRT trigonometric functions.
 
 The final coordinate frame is shown in Figure \ref{fig:simCoordinateFrame}.
+
+\begin{figure}
+ \centering
+ \includegraphics[trim=2cm 23.5cm 13cm 2cm, clip=true]{Images/illustrations}
+ \caption{Simulation Coordinate Frame}
+ \label{fig:simCoordinateFrame}
+\end{figure}
 
 \subsubsection{Uncontrolled Behaviour}
 
@@ -298,6 +327,12 @@ Both layers are simple proportional controllers, with the velocity control
 receiving velocity feedback and the position control receiving position
 feedback.  The overall control design is shown in Figure
 \ref{fig:overalController}.
+
+\begin{figure}
+ \includegraphics[width=0.8\textwidth]{Images/main-model}
+ \caption{Overall Control System Model}
+ \label{fig:overalController}
+\end{figure}
 
 The gains were tuned using the MATLAB Control System Toolbox. The velocity
 control was handled first, to ensure that it would stand alone, and then motion
@@ -584,6 +619,13 @@ producing object. This frame of reference can then be translated to the
 Cartesian coordinates in use elsewhere to allow the total field at a point to be
 calculated.
 
+\begin{figure}
+ \centering
+ \includegraphics[trim=9cm 23.5cm 7cm 2cm, clip=true]{Images/illustrations}
+ \caption{Simulation Coordinate Frame}
+ \label{fig:polarCoordinateFrame}
+\end{figure}
+
 \subsubsection{Basic Attractive Field\label{sub:Basic-Attractive-Field}}
 
 The field suggested by \cite{intelligentAlgorithmPathPlanning} for the
@@ -821,6 +863,15 @@ repulsive field acts to force the robot towards the ball instead of away from
 it.  The strategy will need to be designed so that this occurence is dealt with,
 or prevented from happening altogher.
 
+\begin{figure}
+ \centering
+ \subfloat[Field Exclusion Zone]{\includegraphics[trim=2cm 3.5cm 10cm 21cm,
+ clip=true]{Images/illustrations}\label{fig:pairedSourceApproachFieldNoFlyZone}}
+ \subfloat[Break-down Region]{\includegraphics[trim=2cm 22.5cm 10cm 2cm,
+ clip=true,
+ page=2]{Images/illustrations}\label{fig:pairedSourceApproachFieldBreakDownZone}}
+\end{figure}
+
 To ensure that the robot approaches from the correct location, the points must
 be placed to position the robot along the line that joins the ball and the
 desired desination (initially, the goal).  This is achieved by providing this
@@ -1036,6 +1087,18 @@ represents a very small area, which could easily be missed if the robot is
 moving at greater than \SI{5}{\inch\per\second} (\SI{0.1}{\inch} per time-step)
 and the time-step falls wrong.
 
+\begin{figure}
+  \centering
+  \subfloat[No-Change Condition]{\includegraphics[trim=2cm 17.5cm 10cm 7cm,
+  clip=true]{Images/illustrations}\label{fig:field-evaluation-pre-step}}
+  \subfloat[Boundary Condition]{\includegraphics[trim=2cm 9cm 10cm 16.5cm,
+  clip=true]{Images/illustrations}\label{fig:field-evaluation-boundary-condition}}
+  \\
+  \subfloat{\includegraphics[trim=2cm 14.75cm 11cm 13cm,
+  clip=true]{Images/illustrations}}
+  \caption{Field Evaluation}
+\end{figure}
+
 If the robot begins the next time-step already inside the field, the field will
 again evaluate as flat with respect to the outside field, and so the field will
 have no effect.
@@ -1115,7 +1178,7 @@ action was required to produce simple behaviour that could be analysed.  This
 was achieved by having the strategy feed a constant input into both motors,
 which caused the robot to accelerate in a straight line away from it's starting
 location.  The implementation of this can be seen in Appendix
-\ref{app:interceptStrategy}.
+\ref{app:physicsStrategy}.
 
 The position of the robot is logged every cycle, allowing the velocity and
 acceleration to be calculated by simple differentiation.  The time that each of
@@ -1285,18 +1348,17 @@ robot collide with the ball with sufficient force to make any perpendicular
 velocity negligble compared to the forwards velocity.  However, it is not
 possible to create the small perpendicular forces required to achieve the minor
 adjustments to the vector of the ball required by the potential field navigation
-techniques used. This would require a change to the design of the robot, much
-like those seen in some of the real robots produced, which would allow the robot
-to exert these forces \cite{aSuitablePaper}.  This change could not be made with
-the current simulator, as the source code for the simulator is not availabe.
+techniques used. This would require a change to the design of the robotm which
+would allow it to exert these forces.  This change could not be made with the
+current simulator, as the source code for the simulator is not availabe.
 
 \subsubsection{OpenCL Issues}
 
 Development using OpenCL presented a number of issues not normally encountered
-when developing with conventional, CPU run software.  Because a
-conventional debugger cannot be attached to the kernel instances, normal
-debugging techniques (e.g. stepping through code and examining variable values)
-cannot easily be achieved.
+when developing with conventional, CPU run software.  This was a
+particular problem because a conventional debugger cannot be attached to the
+kernel instances, so normal debugging techniques (e.g. stepping through code and
+examining variable values) could not easily be achieved.
 
 The most common and disruptive problem encountered related to the transfer of
 data from the host computer to the GPU.  Where a large amount of data needs
@@ -1436,14 +1498,19 @@ reducing the amount of duplicate code and ensuring that the debugging code
 always matches the actual field calculations used.
 
 Additional field configuration need to be designed to cope with different
-situations.  This includes ones to implement defensive strategies, as well as
-others to take posession of the ball from the opposition.  The current
-strategies also need to be improved to have the robot's move faster and react
-faster and more accuratly to the changing state of the game.  This will likely
-involved developing some new field shapes, and modifying some of the existing
-ones to better match the requirements. Once this is achieved, the fields can be
-spread out to all the robots, controlling all of them around the pitch instead
-of just one.
+situations.  This includes ones to implement defensive strategies (perhaps
+implementing some of the technqiues from \cite{neuroHassleDefence}), as well as
+others to take posession of the ball from the opposition. The current strategies
+also need to be improved to have the robot's move faster and react faster and
+more accuratly to the changing state of the game.  This will likely involved
+developing some new field shapes, and modifying some of the existing ones to
+better match the requirements. Once this is achieved, the fields can be spread
+out to all the robots, controlling all of them around the pitch instead of just
+one.
+
+Once sophisticated motion can be completed, it would be interesting to see if
+field shapes could be developed that cause the robot to pass the ball in a
+certain direction, or perform other complex behaviour.
 
 Once some more versatile field configurations (and configuration selection code)
 has been completed, the system can then be tested against the default strategy,

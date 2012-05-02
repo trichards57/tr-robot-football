@@ -57,6 +57,8 @@ namespace Strategies
 		static Vector3D Divide(const Vector3D a, const double val);
 		/// @brief Multiplies a Vector3D by a given value, componentwise.
 		/// @param[in] a The Vector3D to process.
+		/// @param[in] val The value to multiply the components by.
+		/// @return The Vector3D with teh x and y elements multiplied by val.
 		static Vector3D Multiply(const Vector3D a, const double val);
 	};
 }

@@ -1,5 +1,62 @@
 \appendix
 
+\section{Derivations}
+
+\subsection{Least Squares Derivation \label{app:leastSquaresDerivation}}
+
+\begin{align*}
+  S &= \sum_{i=1}^n (a t_i^2+ u t_i + c - x_i)^2 \\
+  {} &= \sum_{i=1}^n (a^2 t_i^4 + u^2 t_i^2 + c^2 + x_i^2 + 2au t_i^3 +
+  2ac t_i^2 + 2uc t_i - 2a t_i^2x_i - 2u t_i x_i - 2c x_i) \\
+  {} &= (a^2 \sum_{i=1}^n t_i^4 + u^2 \sum_{i=1}^n t_i^2 + n c^2 + \sum_{i=1}^n
+  x_i^2 + 2au \sum_{i=1}^n t_i^3 + 2ac \sum_{i=1}^n t_i^2 + 2uc \sum_{i=1}^n t_i
+  - 2a \sum_{i=1}^n t_i^2x_i - 2u \sum_{i=1}^n t_i x_i - 2c \sum_{i=1}^n x_i) \\
+  {} &= (a^2 \sum_{i=1}^n t_i^4 + 2au \sum_{i=1}^n t_i^3 + (u^2 + 2ac)
+  \sum_{i=1}^n t_i^2 + 2uc \sum_{i=1}^n t_i + \sum_{i=1}^n
+  x_i^2 - 2a \sum_{i=1}^n t_i^2x_i - 2u \sum_{i=1}^n t_i x_i - 2c \sum_{i=1}^n
+  x_i + nc^2) \\
+  \frac{\partial S}{\partial a} &= 2a \sum_{i=1}^n t_i^4+2u \sum_{i=1}^n t_i^3 +
+  2c \sum_{i=1}^n t_i^2 - 2 \sum_{i=1}^n t_i^2x_i \\
+  \frac{\partial S}{\partial u} &= 2a \sum_{i=1}^n t_i^3 + 2u \sum_{i=1}^n t_i^2
+  + 2c \sum_{i=1}^n t_i - 2 \sum_{i=1}^n t_i x_i \\
+  \frac{\partial S}{\partial c} &= 2a \sum_{i=1}^n t_i^2 + 2u \sum_{i=1}^n t_i +
+  2nc - 2 \sum_{i=1}^n x_i
+\end{align*}
+
+Assuming all three equations are at a minimum:
+
+\begin{align*}
+  \frac{\partial S}{\partial a} &= 0 \\
+  \frac{\partial S}{\partial u} &= 0 \\
+  \frac{\partial S}{\partial c} &= 0
+\end{align*}
+
+Therefore:
+
+\begin{equation*}
+  \left[
+   \begin{matrix}
+    \sum t_i^4 & \sum t_i^3 & \sum t_i^2 \\
+    \sum t_i^3 & \sum t_i^2 & \sum t_i^1 \\
+    \sum t_i^2 & \sum t_i^1 & \sum n
+   \end{matrix}
+  \right]
+  \left[
+   \begin{matrix}
+    a \\
+    u \\
+    c
+   \end{matrix}
+  \right]
+  =
+  \left[
+   \begin{matrix}
+    \sum t_i^2 y_i \\
+    \sum t_i y_i \\
+    \sum y_i
+   \end{matrix}
+  \right]
+\end{equation*}
 
 \section{OpenCL Kernels\label{sub:OpenCL-Kernels}}
 
@@ -254,7 +311,7 @@ void MotionController::Control(Vector3D targetPosition,
 }
 \end{lstlisting}
 
-\subsubsection{Physics Strategy File\label{app:physicsStrategy}}
+\subsection{Physics Strategy File\label{app:physicsStrategy}}
 
 \begin{lstlisting}
 // Initialises the strategy

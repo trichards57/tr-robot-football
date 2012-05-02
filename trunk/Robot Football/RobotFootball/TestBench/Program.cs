@@ -17,6 +17,9 @@ namespace TestBench
     /// </summary>
     class Program
     {
+        /// <summary>
+        /// The initial function run by the runtime.
+        /// </summary>
         static void Main()
         {
             var field = new Field(5000, 1000);
